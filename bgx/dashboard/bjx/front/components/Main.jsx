@@ -14,18 +14,16 @@ class Main extends React.Component {
       <div className="container">
             <Logo/>
         <div className="row">
-          <div className="col-4">
-            <div className="row">
               <div className="col-12">
                 <Graph/>
               </div>
-            </div>
-            <div className="row">
+        </div>
+        <div className="row">
               <div className="col-12">
                 <Legend/>
               </div>
-            </div>
-          </div>
+        </div>
+         <div className="row">
           <div className="col-8">
             <ul className={classNames('nav', 'nav-tabs')}>
               <li className="nav-item">
