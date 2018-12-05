@@ -450,10 +450,99 @@ class Graph extends React.Component {
             dy += ddy;
         });
       });
+        setTimeout(function(){
+        console.log('TTTTTIMEEEOUT')
+        graph.node.each(function(d) {
 
+            var node   = d3.select(this),
+                text   = node.selectAll('text'),
+                bounds = {},
+                first  = true;
+            text.each(function() {
+                var box = this.getBBox();
+                if (first || box.x < bounds.x1) {
+                    bounds.x1 = box.x;
+                }
+                if (first || box.y < bounds.y1) {
+                    bounds.y1 = box.y;
+                }
+                if (first || box.x + box.width > bounds.x2) {
+                    bounds.x2 = box.x + box.width;
+                }
+                if (first || box.y + box.height > bounds.y2) {
+                    bounds.y2 = box.y + box.height;
+                }
+                first = false;
+            }).attr('text-anchor', 'middle');
 
+            var padding  = config.graph.labelPadding,
+                margin   = config.graph.labelMargin,
+                oldWidth = bounds.x2 - bounds.x1;
 
+            bounds.x1 -= oldWidth / 2;
+            bounds.x2 -= oldWidth / 2;
+
+            bounds.x1 -= padding.left;
+            bounds.y1 -= padding.top;
+            bounds.x2 += padding.left + padding.right;
+            bounds.y2 += padding.top  + padding.bottom;
+
+            node.select('rect')
+                .attr('x', bounds.x1)
+                .attr('y', bounds.y1)
+                .attr('width' , bounds.x2 - bounds.x1)
+                .attr('height', bounds.y2 - bounds.y1);
+
+            d.extent = {
+                left   : bounds.x1 - margin.left,
+                right  : bounds.x2 + margin.left + margin.right,
+                top    : bounds.y1 - margin.top,
+                bottom : bounds.y2 + margin.top  + margin.bottom
+            };
+
+            d.edge = {
+                left   : new that.LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
+                right  : new that.LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
+                top    : new that.LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
+                bottom : new that.LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
+            };
+        });
+
+        graph.numTicks = 0;
+        graph.preventCollisions = false;
+        graph.force.start();
+        console.log("SSSSTARRT", that.graphh.links)
+        for (var i = 0; i < config.graph.ticksWithoutCollisions; i++) {
+            graph.force.tick();
+        }
+        graph.preventCollisions = true;
+        $('#graph-container').css('visibility', 'visible');
+    });
     }
+
+LineSegment(x1, y1, x2, y2) {
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x2 = x2;
+    this.y2 = y2;
+
+    // Ax + By = C
+    this.a = y2 - y1;
+    this.b = x1 - x2;
+    this.c = x1 * this.a + y1 * this.b;
+
+    if (eq(this.a, 0) && eq(this.b, 0)) {
+        throw new Error(
+            'Cannot construct a LineSegment with two equal endpoints.');
+    }
+
+    function eq(a, b) {
+    return (Math.abs(a - b) < 1e-10);
+    }
+};
+
+
+
 
     wrap(text) {
       let maxLineChars = 10;
@@ -733,8 +822,9 @@ function flatten(root) {
 }
 
   render() {
-    return( <div className='container'>
-        <div  id='graph'>
+    return( <div className='container' >
+        <div  id='graph-container'>
+            <div  id='graph'></div>
         </div>
         <div className='chartContainer'>
           <svg className='chart'>
