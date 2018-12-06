@@ -12,19 +12,21 @@ class Main extends React.Component {
   render() {
     return (
       <div className="container">
-            <Logo/>
+        <Logo/>
         <div className="row">
+          <div className="col-5">
+            <div className="row">
               <div className="col-12">
                 <Graph/>
               </div>
-        </div>
-        <div className="row">
+            </div>
+            <div className="row">
               <div className="col-12">
                 <Legend/>
               </div>
-        </div>
-         <div className="row">
-          <div className="col-8">
+            </div>
+          </div>
+          <div className="col-7">
             <ul className={classNames('nav', 'nav-tabs')}>
               <li className="nav-item">
                 <a className={classNames('nav-link active')}

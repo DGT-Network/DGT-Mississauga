@@ -6,6 +6,8 @@ import $ from 'jquery';
 import colorbrewer from 'colorbrewer';
 import { connect } from 'react-redux'
 
+import LineSegment from '../helpers/LineSegment'
+
 import { selectPeer as selectP } from '../actions/actions';
 
 let createHandlers = function(dispatch) {
@@ -43,7 +45,7 @@ class Graph extends React.Component {
     "graph" : {
         "linkDistance" : 60,
         "charge"       : -400,
-        "height"       : 800,
+        "height"       : 500,
         "numColors"    : 12,
         "labelPadding" : {
             "left"   : 3,
@@ -287,17 +289,16 @@ graph.data = Object.assign({}, this.props.data);
 
                 var x    = d.target.x,
                     y    = d.target.y,
-                    line = new that.LineSegment(d.source.x, d.source.y, x, y);
+                    line = new LineSegment(d.source.x, d.source.y, x, y);
 
-                // for (var e in d.target.edge) {
-                //     console.log(d.target.edge)
-                //     var ix = line.intersect(d.target.edge[e].offset(x, y));
-                //     if (ix.in1 && ix.in2) {
-                //         x = ix.x;
-                //         y = ix.y;
-                //         break;
-                //     }
-                // }
+                 for (var e in d.target.edge) {
+                     var ix = line.intersect(d.target.edge[e].offset(x, y));
+                    if (ix.in1 && ix.in2) {
+                        x = ix.x;
+                        y = ix.y;
+                        break;
+                    }
+                 }
 
                 d3.select(this)
                     .attr('x2', x)
@@ -560,10 +561,10 @@ graph.data = Object.assign({}, this.props.data);
             };
 
             d.edge = {
-                left   : new that.LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
-                right  : new that.LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
-                top    : new that.LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
-                bottom : new that.LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
+                left   : new LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
+                right  : new LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
+                top    : new LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
+                bottom : new LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
             };
         });
 
@@ -578,29 +579,6 @@ graph.data = Object.assign({}, this.props.data);
         $('#graph-container').css('visibility', 'visible');
     });
     }
-
-LineSegment(x1, y1, x2, y2) {
-    this.x1 = x1;
-    this.y1 = y1;
-    this.x2 = x2;
-    this.y2 = y2;
-
-    // Ax + By = C
-    this.a = y2 - y1;
-    this.b = x1 - x2;
-    this.c = x1 * this.a + y1 * this.b;
-
-    if (eq(this.a, 0) && eq(this.b, 0)) {
-        throw new Error(
-            'Cannot construct a LineSegment with two equal endpoints.');
-    }
-
-    function eq(a, b) {
-    return (Math.abs(a - b) < 1e-10);
-    }
-};
-
-
 
     wrap(text) {
       let maxLineChars = 10;

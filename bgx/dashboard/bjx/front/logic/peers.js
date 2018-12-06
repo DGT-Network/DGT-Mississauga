@@ -13,14 +13,10 @@ export function convertPeers(data) {
 
   let t = convertNode(r, data.data.net_structure.parent_node )
 
-  console.log (t)
-
   return t
 }
 
 function convertNode(r, node, parent_node = null){
-
-  console.log(node)
 
   let ch = []
   let parentRelation = []
