@@ -724,7 +724,6 @@ selectObject(obj, el) {
     node.classed('selected', true);
     $('#docs').html(obj.docs);
     $('#docs-container').scrollTop(0);
-    resize(true);
 
     var $graph   = $('#graph-container'),
         nodeRect = {
@@ -753,41 +752,10 @@ selectObject(obj, el) {
 
 deselectObject(doResize) {
   let graph = this.graphh;
-    if (doResize || typeof doResize == 'undefined') {
-        resize(false);
-    }
     graph.node.classed('selected', false);
     this.selected = {};
     this.highlightObject(null);
 }
-
-resize(showDocs) {
-    var docsHeight  = 0,
-        graphHeight = 0,
-        $docs       = $('#docs-container'),
-        $graph      = $('#graph-container'),
-        $close      = $('#docs-close');
-
-    if (typeof showDocs == 'boolean') {
-        showingDocs = showDocs;
-        $docs[showDocs ? 'show' : 'hide']();
-    }
-
-    if (showingDocs) {
-        docsHeight = desiredDocsHeight;
-        $docs.css('height', docsHeight + 'px');
-    }
-
-    graphHeight = window.innerHeight - docsHeight;
-    $graph.css('height', graphHeight + 'px');
-
-    $close.css({
-        top   : graphHeight + docsClosePadding + 'px',
-        right : window.innerWidth - $docs[0].clientWidth + docsClosePadding + 'px'
-    });
-}
-
-
 
     drawGraph2() {
 const data = Object.assign({}, this.props.data);
