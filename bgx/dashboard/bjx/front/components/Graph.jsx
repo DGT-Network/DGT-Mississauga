@@ -167,6 +167,12 @@ graph.data = Object.assign({}, this.props.data);
     graph.height = $('#graph').height() - graph.margin.top  - graph.margin.bottom;
     $('#graph').css('display', display);
 
+
+    var div = d3.select("#graph-container").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute");
+
     for (var name in graph.data) {
         var obj = graph.data[name];
         obj.positionConstraints = [];
@@ -466,6 +472,7 @@ graph.data = Object.assign({}, this.props.data);
                     graph.mouseoutTimeout = null;
                 }
                 that.highlightObject(d);
+                that.showTooltip(d);
             }
         })
         .on('mouseout', function() {
@@ -476,6 +483,7 @@ graph.data = Object.assign({}, this.props.data);
                 }
                 graph.mouseoutTimeout = setTimeout(function() {
                     that.highlightObject(null);
+                    that.hideTooltip();
                 }, 300);
             }
         })
@@ -673,6 +681,22 @@ highlightObject(obj) {
     }
 }
 
+hideTooltip(){
+    var div = d3.select(".tooltip")
+    div.style("opacity", 0)
+        .style("left", "-100px")
+        .style("top", "-100px");
+  }
+
+showTooltip(d){
+  var div = d3.select(".tooltip")
+  div.style("opacity", .9)
+    .html("IP: "+d.IP + "<br/>"+
+            d.node_state +"<br/>"+
+            d.node_type)
+   .style("left", (d.x + 30) + "px")
+   .style("top", (d.y - 75) + "px")
+}
 
 selectObject(obj, el) {
   let graph = this.graphh;

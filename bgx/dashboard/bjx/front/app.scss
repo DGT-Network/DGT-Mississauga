@@ -29,6 +29,7 @@ line.link {
   stroke: #9ecae1;
   stroke-width: 1.5px;
 }
+*/
 
 .tooltip {
   background-color: white;
@@ -37,7 +38,35 @@ line.link {
   padding: 5px;
 }
 
-*/
+
+.tooltip {
+  position: relative;
+  border: 1px solid black;
+}
+.tooltip:after, .tooltip:before {
+  top: 100%;
+  left: 20%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.tooltip:after {
+  border-color: transparent;
+  border-top-color: white;
+  border-width: 7px;
+  margin-left: -7px;
+}
+.tooltip:before {
+  border-color: transparent;
+  border-top-color: black;
+  border-width: 8px;
+  margin-left: -8px;
+}
+
 .link {
     fill: none;
     stroke: #666;
