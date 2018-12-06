@@ -27,14 +27,16 @@ function convertNode(r, node, parent_node = null){
  if (typeof node.children !== 'undefined'){
     ch = node.children
     ch.forEach((j) => {
-          (convertNode(r, j, node));
-        })
-
-
+      convertNode(r, j, node);
+    })
   }
 
   r[node.IP] =  {
       name: node.IP,
+      IP: node.IP,
+      port: node.port,
+      node_state: node.node_state,
+      node_type: node.node_type,
       type: "group0",
       depends:  ch.map((j) => {
         return j.IP;

@@ -478,7 +478,10 @@ graph.data = Object.assign({}, this.props.data);
                     that.highlightObject(null);
                 }, 300);
             }
-        });
+        })
+        .on('click', function(d) {
+            store.dispatch(selectP(d));
+        })
 
     graph.nodeRect = graph.node.append('rect')
         .attr('rx', 5)
@@ -732,6 +735,7 @@ deselectObject(doResize) {
     graph.node.classed('selected', false);
     this.selected = {};
     this.highlightObject(null);
+    store.dispatch(selectP(null))
 }
 
     drawGraph2() {
