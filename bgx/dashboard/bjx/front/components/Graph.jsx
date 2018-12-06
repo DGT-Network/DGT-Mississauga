@@ -251,7 +251,64 @@ class Graph extends React.Component {
         .size([graph.width, graph.height])
         .linkDistance(config.graph.linkDistance)
         .charge(config.graph.charge)
-        .on('tick', this.tick)
+        .on('tick', tick)
+
+
+   function tick(e) {
+
+        graph.numTicks++;
+
+        for (var name in graph.data) {
+            var obj = graph.data[name];
+
+            obj.positionConstraints.forEach(function(c) {
+                var w = c.weight * e.alpha;
+                if (!isNaN(c.x)) {
+                    obj.x = (c.x * w + obj.x * (1 - w));
+                }
+                if (!isNaN(c.y)) {
+                    obj.y = (c.y * w + obj.y * (1 - w));
+                }
+            });
+        }
+
+        if (graph.preventCollisions) {
+            //that.preventCollisions();
+        }
+
+        graph.line
+            .attr('x1', function(d) {
+                return d.source.x;
+            })
+            .attr('y1', function(d) {
+                return d.source.y;
+            })
+            .each(function(d) {
+
+                var x    = d.target.x,
+                    y    = d.target.y,
+                    line = new that.LineSegment(d.source.x, d.source.y, x, y);
+
+                // for (var e in d.target.edge) {
+                //     console.log(d.target.edge)
+                //     var ix = line.intersect(d.target.edge[e].offset(x, y));
+                //     if (ix.in1 && ix.in2) {
+                //         x = ix.x;
+                //         y = ix.y;
+                //         break;
+                //     }
+                // }
+
+                d3.select(this)
+                    .attr('x2', x)
+                    .attr('y2', y);
+            });
+
+        graph.node
+            .attr('transform', function(d) {
+                return 'translate(' + d.x + ',' + d.y + ')';
+});
+    }
 
 
     graph.svg = d3.select('#graph').append('svg')
@@ -346,7 +403,6 @@ class Graph extends React.Component {
     $('#graph-container').on('scroll', function() {
         graph.legend.attr('transform', 'translate(0,' + $(this).scrollTop() + ')');
     });
-    console.log("1231",graph.force.links())
     graph.line = graph.svg.append('g').selectAll('.link')
         .data(graph.force.links())
       .enter().append('line')
@@ -452,6 +508,9 @@ class Graph extends React.Component {
       });
         setTimeout(function(){
         console.log('TTTTTIMEEEOUT')
+
+//that.drawGraph2();
+
         graph.node.each(function(d) {
 
             var node   = d3.select(this),
@@ -511,8 +570,11 @@ class Graph extends React.Component {
         graph.numTicks = 0;
         graph.preventCollisions = false;
         graph.force.start();
-        console.log("SSSSTARRT", that.graphh.links)
+
+        //that.drawGraph2();
+
         for (var i = 0; i < config.graph.ticksWithoutCollisions; i++) {
+            console.log('tickIndex', i)
             graph.force.tick();
         }
         graph.preventCollisions = true;
@@ -543,7 +605,6 @@ LineSegment(x1, y1, x2, y2) {
 
 
 
-
     wrap(text) {
       let maxLineChars = 10;
       let wrapChars = ' /_-.'.split('');
@@ -561,6 +622,52 @@ LineSegment(x1, y1, x2, y2) {
         }
         return [text.substring(0, maxLineChars)]
             .concat(this.wrap(text.substring(maxLineChars)));
+    }
+}
+
+preventCollisions() {
+    var quadtree = d3.geom.quadtree(graph.nodeValues);
+
+    for (var name in graph.data) {
+        var obj = graph.data[name],
+            ox1 = obj.x + obj.extent.left,
+            ox2 = obj.x + obj.extent.right,
+            oy1 = obj.y + obj.extent.top,
+            oy2 = obj.y + obj.extent.bottom;
+
+        quadtree.visit(function(quad, x1, y1, x2, y2) {
+            if (quad.point && quad.point !== obj) {
+                // Check if the rectangles intersect
+                var p   = quad.point,
+                    px1 = p.x + p.extent.left,
+                    px2 = p.x + p.extent.right,
+                    py1 = p.y + p.extent.top,
+                    py2 = p.y + p.extent.bottom,
+                    ix  = (px1 <= ox2 && ox1 <= px2 && py1 <= oy2 && oy1 <= py2);
+                if (ix) {
+                    var xa1 = ox2 - px1, // shift obj left , p right
+                        xa2 = px2 - ox1, // shift obj right, p left
+                        ya1 = oy2 - py1, // shift obj up   , p down
+                        ya2 = py2 - oy1, // shift obj down , p up
+                        adj = Math.min(xa1, xa2, ya1, ya2);
+
+                    if (adj == xa1) {
+                        obj.x -= adj / 2;
+                        p.x   += adj / 2;
+                    } else if (adj == xa2) {
+                        obj.x += adj / 2;
+                        p.x   -= adj / 2;
+                    } else if (adj == ya1) {
+                        obj.y -= adj / 2;
+                        p.y   += adj / 2;
+                    } else if (adj == ya2) {
+                        obj.y += adj / 2;
+                        p.y   -= adj / 2;
+                    }
+                }
+                return ix;
+            }
+        });
     }
 }
 
@@ -656,13 +763,39 @@ deselectObject(doResize) {
     highlightObject(null);
 }
 
+resize(showDocs) {
+    var docsHeight  = 0,
+        graphHeight = 0,
+        $docs       = $('#docs-container'),
+        $graph      = $('#graph-container'),
+        $close      = $('#docs-close');
+
+    if (typeof showDocs == 'boolean') {
+        showingDocs = showDocs;
+        $docs[showDocs ? 'show' : 'hide']();
+    }
+
+    if (showingDocs) {
+        docsHeight = desiredDocsHeight;
+        $docs.css('height', docsHeight + 'px');
+    }
+
+    graphHeight = window.innerHeight - docsHeight;
+    $graph.css('height', graphHeight + 'px');
+
+    $close.css({
+        top   : graphHeight + docsClosePadding + 'px',
+        right : window.innerWidth - $docs[0].clientWidth + docsClosePadding + 'px'
+    });
+}
 
 
-  componentDidUpdate() {
-    const data = Object.assign({}, this.props.data);
+
+    drawGraph2() {
+const data = Object.assign({}, this.props.data);
 
 
-    this.drawGraph();
+
 
 var width = +d3.select('.chart').style('width').slice(0, -2),
     height = 300,
@@ -743,14 +876,14 @@ function update() {
       .style("opacity",  function(d) { return d.node_state == 'active' ? 1 : 0.3; })
 }
 
-function tick() {
-  link.attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
+// function tick() {
+//   link.attr("x1", function(d) { return d.source.x; })
+//       .attr("y1", function(d) { return d.source.y; })
+//       .attr("x2", function(d) { return d.target.x; })
+//       .attr("y2", function(d) { return d.target.y; });
 
-  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-}
+//   node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+// }
 
 function color(d) {
   return d.ssselect ? "#00FF00"
@@ -819,6 +952,11 @@ function flatten(root) {
   recurse(root);
   return nodes;
 }
+    }
+
+  componentDidUpdate() {
+        this.drawGraph();
+
 }
 
   render() {
@@ -826,10 +964,7 @@ function flatten(root) {
         <div  id='graph-container'>
             <div  id='graph'></div>
         </div>
-        <div className='chartContainer'>
-          <svg className='chart'>
-          </svg>
-        </div>
+
       </div>);
   }
 }
