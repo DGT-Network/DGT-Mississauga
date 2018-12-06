@@ -507,8 +507,6 @@ class Graph extends React.Component {
         });
       });
         setTimeout(function(){
-        console.log('TTTTTIMEEEOUT')
-
 //that.drawGraph2();
 
         graph.node.each(function(d) {
@@ -538,13 +536,16 @@ class Graph extends React.Component {
                 margin   = config.graph.labelMargin,
                 oldWidth = bounds.x2 - bounds.x1;
 
-            bounds.x1 -= oldWidth / 2;
-            bounds.x2 -= oldWidth / 2;
+
+             bounds.x1 -= 0;
+             bounds.x2 -= 0;
 
             bounds.x1 -= padding.left;
-            bounds.y1 -= padding.top;
+             bounds.y1 -= padding.top;
             bounds.x2 += padding.left + padding.right;
-            bounds.y2 += padding.top  + padding.bottom;
+             bounds.y2 += padding.top  + padding.bottom;
+
+
 
             node.select('rect')
                 .attr('x', bounds.x1)
@@ -571,10 +572,7 @@ class Graph extends React.Component {
         graph.preventCollisions = false;
         graph.force.start();
 
-        //that.drawGraph2();
-
         for (var i = 0; i < config.graph.ticksWithoutCollisions; i++) {
-            console.log('tickIndex', i)
             graph.force.tick();
         }
         graph.preventCollisions = true;
@@ -716,7 +714,7 @@ selectObject(obj, el) {
     }
     this.deselectObject(false);
 
-    selected = {
+    this.selected = {
         obj : obj,
         el  : el
     };
@@ -759,8 +757,8 @@ deselectObject(doResize) {
         resize(false);
     }
     graph.node.classed('selected', false);
-    selected = {};
-    highlightObject(null);
+    this.selected = {};
+    this.highlightObject(null);
 }
 
 resize(showDocs) {
