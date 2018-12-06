@@ -466,16 +466,17 @@ graph.data = Object.assign({}, this.props.data);
         .attr('class', 'node')
         .call(graph.drag)
         .on('mouseover', function(d) {
+            that.showTooltip(d);
             if (!that.selected.obj) {
                 if (graph.mouseoutTimeout) {
                     clearTimeout(graph.mouseoutTimeout);
                     graph.mouseoutTimeout = null;
                 }
                 that.highlightObject(d);
-                that.showTooltip(d);
             }
         })
         .on('mouseout', function() {
+            that.hideTooltip();
             if (!that.selected.obj) {
                 if (graph.mouseoutTimeout) {
                     clearTimeout(graph.mouseoutTimeout);
@@ -483,7 +484,6 @@ graph.data = Object.assign({}, this.props.data);
                 }
                 graph.mouseoutTimeout = setTimeout(function() {
                     that.highlightObject(null);
-                    that.hideTooltip();
                 }, 300);
             }
         })
