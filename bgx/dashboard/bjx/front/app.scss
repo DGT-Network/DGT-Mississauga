@@ -137,3 +137,9 @@ body.firefox .node.selected rect {
     font: 10px sans-serif;
     pointer-events: none;
 }
+
+.link.collapsed,
+.node.collapsed rect,
+.node.collapsed text {
+    display: none;
+}

@@ -29,6 +29,7 @@ class Graph extends React.Component {
 
     this.selected    = {}
     this.highlighted = null
+    this.collapsed = null
     this.graphh       = {}
   }
 
@@ -490,6 +491,9 @@ graph.data = Object.assign({}, this.props.data);
         .on('click', function(d) {
             store.dispatch(selectP(d));
         })
+        .on('dblclick', function(d) {
+            that.highlightObject2(d);
+        })
 
     graph.nodeRect = graph.node.append('rect')
         .attr('rx', 5)
@@ -664,6 +668,34 @@ preventCollisions() {
                 return ix;
             }
         });
+    }
+}
+
+highlightObject2(obj) {
+  let graph = this.graphh;
+    if (obj) {
+        if (obj !== this.collapsed) {
+            graph.node.classed('collapsed', function(d) {
+                return (obj !== d
+                     && d.depends.indexOf(obj.name) == -1
+                     && d.dependedOnBy.indexOf(obj.name) == -1);
+            });
+            graph.line.classed('collapsed', function(d) {
+                return (obj !== d.source && obj !== d.target);
+            });
+        }
+        else {
+            graph.node.classed('collapsed', false);
+            graph.line.classed('collapsed', false);
+            this.collapsed = null;
+        }
+        this.collapsed = obj;
+    } else {
+        if (this.collapsed) {
+            graph.node.classed('collapsed', false);
+            graph.line.classed('collapsed', false);
+        }
+        this.collapsed = null;
     }
 }
 
