@@ -1,5 +1,5 @@
 export function convertPeers(data) {
-  console.log('data',data)
+  //console.log('data',data)
   let parent_node = data.data.net_structure.parent_node
   const data2 = {
       IP: parent_node.IP,
@@ -10,10 +10,33 @@ export function convertPeers(data) {
       }),
   }
   let r = {}
+  let rr = []
 
-  let t = convertNode(r, data.data.net_structure.parent_node )
+  return {
+    data : convertNodeToArray(rr, data.data.net_structure.parent_node),
+    graph: convertNode(r, data.data.net_structure.parent_node )
+  }
+}
 
-  return t
+function convertNodeToArray(r, node) {
+
+  if (typeof node.children !== 'undefined'){
+    node.children.forEach((i) => {
+      convertNodeToArray(r, i);
+    })
+  }
+
+
+  r.push({
+    name: node.IP,
+    IP: node.IP,
+    port: node.port,
+    node_state: node.node_state,
+    node_type: node.node_type,
+    node_type_desc: typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
+    public_key:  node.public_key,
+  })
+  return r;
 }
 
 function convertNode(r, node, parent_node = null){

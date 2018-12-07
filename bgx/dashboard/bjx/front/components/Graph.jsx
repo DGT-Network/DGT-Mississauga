@@ -988,7 +988,7 @@ function flatten(root) {
 
 function mapStateToProps(store) {
   return {
-    data: store.peersReducer.data,
+    data: store.peersReducer.data.graph,
   };
 }
 
