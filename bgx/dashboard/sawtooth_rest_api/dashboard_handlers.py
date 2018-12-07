@@ -17,6 +17,7 @@ import asyncio
 import re
 import logging
 import json
+import yaml
 import base64
 import hashlib
 import random
@@ -142,11 +143,11 @@ class DashboardRouteHandler(RouteHandler):
             client_state_pb2.ClientStateGetRequest(
                 state_root=root, address=address),
             error_traps)
-        content = cbor.loads(response['value'].encode('utf-8'))
-        LOGGER.debug('DashboardRouteHandler: fetch_state=(%s) type=%s',content,type(response['value']))
+        content = cbor.loads(base64.b64decode(response['value']))
+        LOGGER.debug('DashboardRouteHandler: fetch_state=(%s)',content)
         return self._wrap_response(
             request,
-            data=response['value'],
+            data=content,
             metadata=self._get_metadata(request, response, head=head))
 
 
