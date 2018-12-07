@@ -1,4 +1,5 @@
 export function trimHash(s) {
+  if (typeof s === 'undefined') return '';
   if (s.length < 13)
     return s;
   else {

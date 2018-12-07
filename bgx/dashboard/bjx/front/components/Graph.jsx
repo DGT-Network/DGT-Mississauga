@@ -45,7 +45,7 @@ class Graph extends React.Component {
     "graph" : {
         "linkDistance" : 60,
         "charge"       : -400,
-        "height"       : 500,
+        "height"       : 400,
         "numColors"    : 12,
         "labelPadding" : {
             "left"   : 3,
@@ -163,8 +163,8 @@ graph.data = Object.assign({}, this.props.data);
     $('#graph')
         .css('display', 'block')
         .css('height', config.graph.height + 'px');
-    graph.width  = $('#graph').width()  - graph.margin.left - graph.margin.right;
-    graph.height = $('#graph').height() - graph.margin.top  - graph.margin.bottom;
+    graph.width  = 800; //$('#graph').width()  - graph.margin.left - graph.margin.right;
+    graph.height = 800;//$('#graph').height() - graph.margin.top  - graph.margin.bottom;
     $('#graph').css('display', display);
 
 
@@ -590,7 +590,14 @@ graph.data = Object.assign({}, this.props.data);
             graph.force.tick();
         }
         graph.preventCollisions = true;
-        $('#graph-container').css('visibility', 'visible');
+
+        const graphRect = $('#graph-container');
+        graphRect.css('visibility', 'visible');
+
+        graphRect.animate({
+            scrollLeft : graphRect.width()  / 2,
+            scrollTop  : graphRect.height() / 2
+        }, 500);
     });
     }
 
@@ -745,10 +752,14 @@ selectObject(obj, el) {
             width  : $graph.width(),
             height : $graph.height()
         };
-    if (nodeRect.left < graphRect.left ||
-        nodeRect.top  < graphRect.top  ||
-        nodeRect.left + nodeRect.width  > graphRect.left + graphRect.width ||
-        nodeRect.top  + nodeRect.height > graphRect.top  + graphRect.height) {
+
+    const offset = 20;
+
+    if (nodeRect.left + nodeRect.width/2 < graphRect.left + graphRect.width/2 - offset ||
+        nodeRect.left + nodeRect.width/2 > graphRect.left + graphRect.width/2 + offset ||
+        nodeRect.top + nodeRect.height/2 < graphRect.top + graphRect.height/2 - offset ||
+        nodeRect.top + nodeRect.height/2 > graphRect.top + graphRect.height/2 + offset) {
+
 
         $graph.animate({
             scrollLeft : nodeRect.left + nodeRect.width  / 2 - graphRect.width  / 2,
