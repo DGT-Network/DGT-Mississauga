@@ -7,7 +7,7 @@ import State from './State'
 import Peers from './Peers'
 import LogoSvg from '../assets/logo.svg'
 
-import { getTransactions, getPeers, getState, getBlocks } from '../actions/actions';
+import { getTransactions, getPeers, getStates, getBlocks } from '../actions/actions';
 
 class Main extends React.Component {
   constructor(props){
@@ -18,7 +18,7 @@ class Main extends React.Component {
   handleClick() {
     store.dispatch(getTransactions());
     store.dispatch(getPeers());
-    store.dispatch(getState());
+    store.dispatch(getStates());
     store.dispatch(getBlocks());
   }
 

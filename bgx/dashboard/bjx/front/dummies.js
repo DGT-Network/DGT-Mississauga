@@ -327,7 +327,7 @@ export const transactions = {
   }
 }
 
-export const state = {
+export const states = {
   "data": [
     {
       "address": "000000a87cb5eafdcca6a8cde0fb0dec1400c5ab274474a6aa82c12840f169a04216b7",
@@ -2471,4 +2471,12 @@ export const blocks = {
     "limit": null,
     "start": null
   }
+}
+
+export const state = {
+  "data": {
+    "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEnm6mqtaKs/jrDfLA4xHUxqiIDiqLbY/GN0f5ZdCH+BdBDl3h8Y8iVAehM1QujHdHodBtuWMoph9OZV12zVq6pw==": "{\"b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741\": \"{\\\"group_code\\\": \\\"b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741\\\", \\\"granularity\\\": \\\"1\\\", \\\"balance\\\": \\\"4\\\", \\\"decimals\\\": \\\"18\\\", \\\"owner_key\\\": \\\"None\\\", \\\"sign\\\": \\\"None\\\"}\"}"
+  },
+  "head": "f1940b24f41a42937fcea51564a154aade155640160d553392dd0fc9a0d56f7f2eda9a6fdef8adb9bce0be1d68258c703ba66ecc6a99bbc0fef3540c4c45810a",
+  "link": "http://18.222.233.160:8003/state/e6717479ad5c5f8447c48f2f682031954630979dfdd68f3404883e328dc42f06a6e061?head=f1940b24f41a42937fcea51564a154aade155640160d553392dd0fc9a0d56f7f2eda9a6fdef8adb9bce0be1d68258c703ba66ecc6a99bbc0fef3540c4c45810a"
 }

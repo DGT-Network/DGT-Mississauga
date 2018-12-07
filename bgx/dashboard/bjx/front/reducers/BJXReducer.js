@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux'
-import { GET_TRANSACTIONS, GET_PEERS, SELECT_PEER, GET_STATE, GET_BLOCKS } from '../actions/actions'
+import { GET_TRANSACTIONS, GET_PEERS, SELECT_PEER, GET_STATE, GET_STATES, GET_BLOCKS } from '../actions/actions'
+import {addState} from '../logic/state'
 
 const initialState = {
   data: [],
@@ -12,13 +13,18 @@ const initialPeersState = {
 
 function stateReducer(state=initialState, action) {
   switch(action.type) {
-    case GET_STATE:
+    case GET_STATES:
       return Object.assign({}, state, {
         data: action.data
       });
 
-      default:
-        return state;
+    case GET_STATE:
+      return Object.assign({}, state, {
+        data: addState(state.data, action.data)
+      });
+
+    default:
+      return state;
   }
   return state;
 }

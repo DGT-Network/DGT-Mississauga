@@ -12,7 +12,7 @@ import Main from './components/Main';
 
 import BJXReducer from './reducers/BJXReducer';
 
-import { getTransactions, getPeers, getState, getBlocks } from './actions/actions';
+import { getTransactions, getPeers, getStates, getBlocks } from './actions/actions';
 
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -21,7 +21,7 @@ window.store = createStore(BJXReducer,
 
 store.dispatch(getTransactions());
 store.dispatch(getPeers());
-store.dispatch(getState());
+store.dispatch(getStates());
 store.dispatch(getBlocks());
 
 render(

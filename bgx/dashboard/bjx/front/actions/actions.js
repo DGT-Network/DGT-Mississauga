@@ -1,16 +1,17 @@
 import axios from 'axios';
 
-import { nodes, transactions, state, blocks } from '../dummies'
+import { nodes, transactions, states, state, blocks } from '../dummies'
 
 import { convertPeers } from '../logic/peers'
 import { convertTransactions } from '../logic/transactions'
-import { convertState } from '../logic/state'
+import { convertStates, convertState } from '../logic/state'
 import { convertBlocks } from '../logic/blocks'
 
 const apiUrl = 'http://18.222.233.160:8003';
 
 export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
 
+export const GET_STATES = 'GET_STATES';
 export const GET_STATE = 'GET_STATE';
 
 export const GET_BLOCKS = 'GET_BLOCKS';
@@ -36,7 +37,7 @@ export function getTransactions() {
   };
 }
 
-export function getState() {
+export function getStates() {
     //TEMP
   //return getStateSuccess(convertState(state));
   //END TEMP
@@ -44,15 +45,34 @@ export function getState() {
   return function(dispatch) {
     return axios.get(`${apiUrl}/state`)
       .then( response => {
-        dispatch(getStateSuccess(convertState(response.data)))
+        dispatch(getStatesSuccess(convertStates(response.data)))
       })
       .catch(error => {
         //throw(error);
         console.log(error)
-        dispatch(getStateSuccess(convertState(state)));
+        dispatch(getStatesSuccess(convertStates(states)));
       })
   };
 }
+
+export function getState(address) {
+    //TEMP
+  //return getStateSuccess(convertState(state));
+  //END TEMP
+
+  return function(dispatch) {
+    return axios.get(`${apiUrl}/state/${address}`)
+      .then( response => {
+        dispatch(getStateSuccess(convertState(response.data, address)))
+      })
+      .catch(error => {
+        //throw(error);
+        console.log(error)
+        dispatch(getStateSuccess(convertState(state, address)));
+      })
+  };
+}
+
 
 export function getBlocks() {
   //TEMP
@@ -94,6 +114,13 @@ export function selectPeer(peer) {
   return {
     type: SELECT_PEER,
     peer,
+    };
+}
+
+function getStatesSuccess(data) {
+  return {
+    type: GET_STATES,
+    data,
     };
 }
 
