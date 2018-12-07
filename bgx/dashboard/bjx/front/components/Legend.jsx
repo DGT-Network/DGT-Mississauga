@@ -1,6 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
+import Hash from './Hash'
+
 class Legend extends React.Component {
   render() {
     const {peer} = this.props;
@@ -13,8 +15,7 @@ class Legend extends React.Component {
         <div className="card">
           <div className="card-body">
             <h5 className="card-title">Legend</h5>
-            Public Key: {peer.public_key}
-            <br/>
+            Public Key: <Hash hash ={peer.public_key} />
             Ip: {peer.IP}
             <br/>
             Port: {peer.port}
@@ -22,6 +23,8 @@ class Legend extends React.Component {
             node_state: {peer.node_state}
             <br/>
             node_type: {peer.node_type}
+            <br/>
+            node_type_desc: {peer.node_type_desc}
             <br/>
             Age: <i className='text-muted'> 4months 3 days 4 hours</i>
             <br/>

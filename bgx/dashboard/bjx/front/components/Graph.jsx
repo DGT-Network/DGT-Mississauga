@@ -543,6 +543,9 @@ graph.data = Object.assign({}, this.props.data);
                 first = false;
             }).attr('text-anchor', 'middle');
 
+            if (d.node_state !== 'active')
+                text.style('opacity', 0.5).style('font-style', 'italic');
+
             var padding  = config.graph.labelPadding,
                 margin   = config.graph.labelMargin,
                 oldWidth = bounds.x2 - bounds.x1;
@@ -693,7 +696,7 @@ showTooltip(d){
   div.style("opacity", .9)
     .html("IP: "+d.IP + "<br/>"+
             d.node_state +"<br/>"+
-            d.node_type)
+            d.node_type_desc)
    .style("left", (d.x + 30) + "px")
    .style("top", (d.y - 75) + "px")
 }

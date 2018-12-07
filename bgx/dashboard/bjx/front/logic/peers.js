@@ -1,5 +1,5 @@
 export function convertPeers(data) {
-  //console.log('data',data)
+  console.log('data',data)
   let parent_node = data.data.net_structure.parent_node
   const data2 = {
       IP: parent_node.IP,
@@ -37,6 +37,8 @@ function convertNode(r, node, parent_node = null){
       port: node.port,
       node_state: node.node_state,
       node_type: node.node_type,
+      node_type_desc: typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
+      public_key:  node.public_key,
       type: "group0",
       depends:  ch.map((j) => {
         return j.IP;

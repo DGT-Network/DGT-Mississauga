@@ -1,5 +1,17 @@
 export const nodes = {
   "data": {
+    "groups": [
+      {
+        "field": "node_state",
+        "list": [],
+        "name": "Activity"
+      },
+      {
+        "field": "node_type",
+        "list": [],
+        "name": "Type"
+      }
+    ],
     "net_structure": {
       "parent_node": {
         "IP": "192.168.1.1",
@@ -9,14 +21,16 @@ export const nodes = {
             "children": [],
             "node_state": "inactive",
             "node_type": "plink",
+            "node_type_desc": "Permalink",
             "port": 8080,
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf61"
           },
           {
             "IP": "192.168.1.3",
             "children": [],
-            "node_state": "active",
+            "node_state": "inactive",
             "node_type": "aux",
+            "node_type_desc": "Secondary",
             "port": 8080,
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf62"
           },
@@ -28,20 +42,23 @@ export const nodes = {
                 "children": [],
                 "node_state": "inactive",
                 "node_type": "plink",
+                "node_type_desc": "Permalink",
                 "port": 8080,
                 "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf64"
               },
               {
                 "IP": "192.168.1.6",
                 "children": [],
-                "node_state": "active",
+                "node_state": "inactive",
                 "node_type": "aux",
+                "node_type_desc": "Secondary",
                 "port": 8080,
                 "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf65"
               }
             ],
             "node_state": "inactive",
             "node_type": "plink",
+            "node_type_desc": "Permalink",
             "port": 8080,
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf63"
           },
@@ -50,20 +67,22 @@ export const nodes = {
             "children": [
               {
                 "IP": "192.168.1.8",
-                "node_state": "inactive",
+                "node_state": "active",
                 "node_type": "plink",
+                "node_type_desc": "Permalink",
                 "port": 8080,
                 "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf67"
               },
               {
                 "IP": "192.168.1.9",
-                "node_state": "active",
+                "node_state": "inactive",
                 "node_type": "aux",
+                "node_type_desc": "Secondary",
                 "port": 8080,
                 "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf68"
               }
             ],
-            "node_state": "active",
+            "node_state": "inactive",
             "node_type": "aux",
             "port": 8080,
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf66"
@@ -75,6 +94,7 @@ export const nodes = {
                 "IP": "192.168.1.11",
                 "node_state": "inactive",
                 "node_type": "plink",
+                "node_type_desc": "Permalink",
                 "port": 8080,
                 "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf6a"
               },
@@ -82,18 +102,21 @@ export const nodes = {
                 "IP": "192.168.1.12",
                 "node_state": "inactive",
                 "node_type": "aux",
+                "node_type_desc": "Secondary",
                 "port": 8080,
                 "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf6b"
               }
             ],
-            "node_state": "active",
+            "node_state": "inactive",
             "node_type": "arbiter",
+            "node_type_desc": "Arbiter",
             "port": 8080,
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf69"
           }
         ],
         "node_state": "active",
         "node_type": "leader",
+        "node_type_desc": "Leader",
         "port": 8080,
         "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf6c"
       }
