@@ -14,6 +14,14 @@
 .tab-offset {
   margin-top: 30px;
 }
+
+.navbar-text {
+  margin: 0 10px;
+}
+
+#accordion .card-header {
+  padding: 0.25em;
+}
 /*
 
 .node circle {
@@ -36,7 +44,7 @@ line.link {
 */
 
 #graph-container {
-  overflow: scroll;
+  overflow: auto;
 }
 
 .tooltip {

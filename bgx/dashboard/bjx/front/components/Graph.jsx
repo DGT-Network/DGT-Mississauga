@@ -165,7 +165,7 @@ graph.data = Object.assign({}, this.props.data);
         .css('display', 'block')
         .css('height', config.graph.height + 'px');
     graph.width  = 800; //$('#graph').width()  - graph.margin.left - graph.margin.right;
-    graph.height = 800;//$('#graph').height() - graph.margin.top  - graph.margin.bottom;
+    graph.height = 600;//$('#graph').height() - graph.margin.top  - graph.margin.bottom;
     $('#graph').css('display', display);
 
 
