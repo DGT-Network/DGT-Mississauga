@@ -789,3 +789,19 @@ class _RollingAverage(object):
         self._current_average = sum(self._samples) / len(self._samples)
 
         return self._current_average
+
+class BlockEmpty(Exception):
+    """There are no batches in the block."""
+
+class BlockInProgress(Exception):
+    """There is already a block in progress."""
+
+
+class BlockNotInitialized(Exception):
+    """There is no block in progress to finalize."""
+
+
+class MissingPredecessor(Exception):
+    """A predecessor was missing"""
+
+
