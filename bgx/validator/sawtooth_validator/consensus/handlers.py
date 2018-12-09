@@ -111,11 +111,11 @@ class ConsensusRegisterHandler(ConsensusServiceHandler):
         if startup_info is None:
             response.status = consensus_pb2.ConsensusRegisterResponse.NOT_READY
             return
-
+            
         chain_head = startup_info.chain_head
         peers = [bytes.fromhex(peer_id) for peer_id in startup_info.peers]
         local_peer_info = startup_info.local_peer_info
-
+        LOGGER.debug('ConsensusRegisterHandler: peers=%s local=%s chain_head=%s header=%s',peers,local_peer_info,chain_head,type(chain_head.header))
         block_header = BlockHeader()
         block_header.ParseFromString(chain_head.header)
 
