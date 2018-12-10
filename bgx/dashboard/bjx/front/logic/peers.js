@@ -41,10 +41,10 @@ function convertNode(r, node, parent_node = null){
       node_type_desc: typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
       public_key:  node.public_key,
       type: "group0",
-      depends:  ch.map((j) => {
+      dependedOnBy:  ch.map((j) => {
         return j.IP;
         }),
-      dependedOnBy: parentRelation,
+      depends: parentRelation,
     });
 
   return r;
