@@ -2,6 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
+import {selectPeer} from '../actions/actions'
+
 import Graph from './Graph'
 
 import Hash from './Hash'
@@ -9,6 +11,11 @@ import Hash from './Hash'
 import ReactTable from 'react-table'
 
 class Peers extends React.Component {
+
+  showDetails(info) {
+    store.dispatch(selectPeer(info.original.IP));
+  }
+
   render() {
     const {peers, columns, className, id, role} = this.props
     return (
@@ -21,7 +28,23 @@ class Peers extends React.Component {
               defaultPageSize={10}
               columns={columns}
               minRows={0}
-              className='-striped'/>
+              className='-striped'
+              getTdProps={(state, rowInfo, column, instance) => {
+                return {
+                  onClick: (e, handleOriginal) => {
+                    this.showDetails(rowInfo)
+
+                    // IMPORTANT! React-Table uses onClick internally to trigger
+                    // events like expanding SubComponents and pivots.
+                    // By default a custom 'onClick' handler will override this functionality.
+                    // If you want to fire the original onClick handler, call the
+                    // 'handleOriginal' function.
+                    if (handleOriginal) {
+                      handleOriginal();
+                    }
+                  }
+                };
+              }}/>
           </div>
         </div>
       }

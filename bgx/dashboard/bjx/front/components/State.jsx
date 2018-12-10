@@ -30,7 +30,7 @@ class State extends React.Component {
           columns={columns}
           minRows={0}
           className='-striped'
-           getTdProps={(state, rowInfo, column, instance) => {
+          getTdProps={(state, rowInfo, column, instance) => {
             return {
               onClick: (e, handleOriginal) => {
                 this.showDetails(rowInfo)

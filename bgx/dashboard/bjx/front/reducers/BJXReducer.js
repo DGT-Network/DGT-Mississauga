@@ -70,7 +70,7 @@ function peersReducer(state=initialPeersState, action) {
 
     case SELECT_PEER:
       return Object.assign({}, state, {
-        selectedPeer: action.peer
+        selectedPeerIP: action.IP
       });
 
       default:

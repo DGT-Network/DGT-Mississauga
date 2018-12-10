@@ -369,7 +369,7 @@ graph.data = this.props.data;
       .enter().append('feMergeNode')
         .attr('in', String);
 
-    graph.legend = graph.svg.append('g')
+    /*graph.legend = graph.svg.append('g')
         .attr('class', 'legend')
         .attr('x', 0)
         .attr('y', 0)
@@ -413,9 +413,12 @@ graph.data = this.props.data;
             return d.typeName + (d.group ? ': ' + d.group : '');
         });
 
+
+
     $('#graph-container').on('scroll', function() {
         graph.legend.attr('transform', 'translate(0,' + $(this).scrollTop() + ')');
     });
+    */
     graph.line = graph.svg.append('g').selectAll('.link')
         .data(graph.force.links())
       .enter().append('line')
@@ -493,9 +496,9 @@ graph.data = this.props.data;
                 }, 300);
             }
         })
-        .on('click', function(d) {
-            store.dispatch(selectP(d));
-        })
+        // .on('click', function(d) {
+        //     store.dispatch(selectP(d));
+        // })
         .on('dblclick', function(d) {
             that.highlightObject2(d);
         })
@@ -514,6 +517,10 @@ graph.data = this.props.data;
 
     graph.node.each(function(d) {
 
+
+        if (d.IP == that.props.selectedPeerIP)
+            that.selectObject(d)
+
         var node  = d3.select(this),
             rect  = node.select('rect'),
             lines = [d.name],
@@ -528,7 +535,6 @@ graph.data = this.props.data;
         });
       });
         setTimeout(function(){
-
         graph.node.each(function(d) {
 
             var node   = d3.select(this),
@@ -677,7 +683,7 @@ preventCollisions() {
 }
 
 colorFor(d){
- return d.filtered ? '#007bff': '#6c757d';
+ return d.filtered ? '#6c757d': '#007bff';
 }
 
 colorForDarker(d){
@@ -714,6 +720,7 @@ highlightObject2(obj) {
 
 
 highlightObject(obj) {
+    console.log('try highlight');
   let graph = this.graphh;
     if (obj) {
         if (obj !== this.highlighted) {
@@ -818,7 +825,7 @@ deselectObject(doResize) {
     graph.node.classed('selected', false);
     this.selected = {};
     this.highlightObject(null);
-    store.dispatch(selectP(null))
+    //store.dispatch(selectP(null))
 }
 
     drawGraph2() {
@@ -954,13 +961,13 @@ function dblClick(d) {
   update();
 }
 
-function click(d) {
-  if (d3.event.defaultPrevented) return; // ignore drag
-    unselect(root)
-  d.ssselect = true;
-  store.dispatch(selectP(d))
-  update();
-}
+// function click(d) {
+//   if (d3.event.defaultPrevented) return; // ignore drag
+//     unselect(root)
+//   d.ssselect = true;
+//   store.dispatch(selectP(d))
+//   update();
+// }
 function unselect(root) {
 
   root.ssselect = false
@@ -1007,6 +1014,7 @@ function mapStateToProps(store) {
   return {
     data: store.peersReducer.data.data,
     filters: store.peersReducer.data.filters,
+    selectedPeerIP:store.peersReducer.selectedPeerIP,
   };
 }
 

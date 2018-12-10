@@ -118,10 +118,10 @@ export function filterPeers(filter) {
     };
 }
 
-export function selectPeer(peer) {
+export function selectPeer(IP) {
   return {
     type: SELECT_PEER,
-    peer,
+    IP,
     };
 }
 
