@@ -19,10 +19,15 @@
 import time
 #import services
 #import inspect
+import logging
+
 
 from smart_bgt.processor.services import BGXlistener
 from smart_bgt.processor.crypto import BGXCrypto
 from smart_bgt.processor.token import Token, MetaToken
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 # Prototype for a EmissionMechanism class
@@ -30,50 +35,49 @@ from smart_bgt.processor.token import Token, MetaToken
 
 class EmissionMechanism:
 
-    def __init__(self):
-        self.type = "BGX"
-
-    def checkEthereum(self, bgt_amount, wallet_address, bgt_price, dec_price):
+    @classmethod
+    def check_ethereum(cls, bgt_amount, wallet_address, bgt_price, dec_price):
         dec_amount = BGXlistener.balanceOf(wallet_address)
         return int(bgt_amount) * bgt_price <= dec_amount * dec_price
 
     # TODO: implement
-
-    def getProvedHashOfClass(self):
-        return True
+    #def getProvedHashOfClass(self):
+        #return True
 
     # TODO: implement
-
-    def checkHashOfClass(self):
+    #def checkHashOfClass(self):
         #lines = inspect.getsource(EmissionMechanism)
         #hash = BGXCrypto.intHash(lines)
-        return True
+        #return True
 
-
-
-    def releaseTokens(self, name, symbol, company_id, digital_signature, ethereum_address, num_bgt, description, \
+    @classmethod
+    def release_tokens(cls, name, symbol, company_id, ethereum_address, num_bgt, description, \
                       bgt_price = 1, dec_price = 1):
 
-        if not self.checkEthereum(num_bgt, ethereum_address, bgt_price, dec_price):
+        if not EmissionMechanism.check_ethereum(num_bgt, ethereum_address, bgt_price, dec_price):
             return None, None
 
-        imprint = name + str(num_bgt) + str(bgt_price)
-        group_code = BGXCrypto.strHash(imprint)
+        imprint = name
+        group_code = BGXCrypto.get_string_hash(imprint)
+        digital_signature = BGXCrypto.get_validator_signature()
 
         meta = MetaToken(name, symbol, company_id, group_code, num_bgt, description, bgt_price, digital_signature)
         token = Token(group_code, num_bgt, digital_signature)
         return token, meta
 
-    def releaseExtraTokens(self, token, meta_token, digital_signature, ethereum_address, num_bgt, bgt_price, dec_price):
+    @classmethod
+    def release_extra_tokens(cls, token, meta_token, ethereum_address, num_bgt, bgt_price, dec_price):
 
         if not isinstance(meta_token, MetaToken):
             return None, None
 
-        if not self.checkEthereum(num_bgt, ethereum_address, bgt_price, dec_price):
+        if not EmissionMechanism.check_ethereum(num_bgt, ethereum_address, bgt_price, dec_price):
             return None, None
 
+        digital_signature = BGXCrypto.get_validator_signature()
+
         if not isinstance(token, Token):
-            group_code = meta.get_group_code()
+            group_code = meta_token.get_group_code()
             token = Token(group_code, num_bgt, digital_signature)
         else:
             token.add(num_bgt)

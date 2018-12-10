@@ -22,7 +22,9 @@ SMART_BGT_META = 'BGX_Token'
 SMART_BGT_CREATOR_KEY = 'creator_key'
 SMART_BGT_PRESENT_AMOUNT = 7
 SMART_BGT_ADDRESS_PREFIX = hashlib.sha512(FAMILY_NAME.encode('utf-8')).hexdigest()[0:6]
-
+TRANSFER_FEE = 0.05
+SMART_BGT_META_ADDRESS = 'some bgx metatokens storage'
+ALLOWANCE_INFO = 'allowance local storage'
 
 def make_smart_bgt_address(name):
     return SMART_BGT_ADDRESS_PREFIX + hashlib.sha512(name.encode('utf-8')).hexdigest()[-64:]
