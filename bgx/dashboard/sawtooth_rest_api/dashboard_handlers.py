@@ -144,10 +144,11 @@ class DashboardRouteHandler(RouteHandler):
                 state_root=root, address=address),
             error_traps)
         content = cbor.loads(base64.b64decode(response['value']))
-        for key in content:
-            LOGGER.debug('DashboardRouteHandler:_get_token GROUP (%s)',key)
-            token = json.loads(content[key])
-            content[key] = token
+        if isinstance(content, dict) :
+            for key in content:
+                LOGGER.debug('DashboardRouteHandler:_get_token GROUP (%s)',key)
+                token = json.loads(content[key])
+                content[key] = token
         LOGGER.debug('DashboardRouteHandler: fetch_state=(%s)',content)
         return self._wrap_response(
             request,
