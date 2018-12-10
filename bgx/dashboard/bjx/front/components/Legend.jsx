@@ -34,7 +34,6 @@ class Legend extends React.Component {
                     data-parent='#accordion'>
                     <div className="card-body">
                       {Object.keys(i[key]).map((j) => {
-                        console.log('33333', `${j}: ${i[key][j]}`)
                         return (<div>{`${j}: ${i[key][j]}`}</div>)
                       })}
                     </div>
@@ -48,7 +47,9 @@ class Legend extends React.Component {
 }
 function mapStateToProps(store) {
   return {
-    peer: store.peersReducer.selectedPeer,
+    peer: undefined ==  store.peersReducer.data.data ?
+          null :
+          store.peersReducer.data.data.find((p) => {return  p.IP == store.peersReducer.selectedPeerIP}),
   };
 }
 

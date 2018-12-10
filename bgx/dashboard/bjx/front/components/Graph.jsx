@@ -496,9 +496,9 @@ graph.data = this.props.data;
                 }, 300);
             }
         })
-        // .on('click', function(d) {
-        //     store.dispatch(selectP(d));
-        // })
+        .on('click', function(d) {
+            store.dispatch(selectP(d.IP));
+        })
         .on('dblclick', function(d) {
             that.highlightObject2(d);
         })
@@ -720,7 +720,6 @@ highlightObject2(obj) {
 
 
 highlightObject(obj) {
-    console.log('try highlight');
   let graph = this.graphh;
     if (obj) {
         if (obj !== this.highlighted) {
