@@ -42,9 +42,16 @@ line.link {
   stroke-width: 1.5px;
 }
 */
+.graphLayer {
+  #graph-container {
+    overflow: scroll;
+  }
 
-#graph-container {
-  overflow: auto;
+  .legend {
+    position: absolute;
+    top:15px;
+    right: 45px;
+  }
 }
 
 .tooltip {
@@ -53,6 +60,7 @@ line.link {
   border-radius: 3px;
   padding: 5px;
 }
+
 
 
 .tooltip {

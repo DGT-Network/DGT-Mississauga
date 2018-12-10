@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
 import Graph from './Graph'
-import Legend from './Legend'
 
 import Hash from './Hash'
 
@@ -14,27 +13,18 @@ class Peers extends React.Component {
     const {peers, columns, className, id, role} = this.props
     return (
     <div className={classNames('row', className)} id={id} role={role}>
-      <div className='col-12'>
-        <div className="row">
-          <div className="col-9">
-            <Graph/>
-          </div>
-          <div className="col-3">
-            <Legend/>
+      <Graph/>
+      {peers.length &&
+        <div className={classNames('tab-offset')}>
+          <div className="col-12">
+            <ReactTable data={peers}
+              defaultPageSize={10}
+              columns={columns}
+              minRows={0}
+              className='-striped'/>
           </div>
         </div>
-        {peers.length &&
-          <div className={classNames("row", 'tab-offset')}>
-            <div className="col-12">
-              <ReactTable data={peers}
-                defaultPageSize={10}
-                columns={columns}
-                minRows={0}
-                className='-striped'/>
-              </div>
-          </div>
-        }
-      </div>
+      }
     </div>
     )
   }

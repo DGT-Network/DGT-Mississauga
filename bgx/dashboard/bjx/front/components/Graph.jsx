@@ -9,6 +9,7 @@ import { connect } from 'react-redux'
 import LineSegment from '../helpers/LineSegment'
 
 import { selectPeer as selectP } from '../actions/actions';
+import Legend from './Legend'
 
 let createHandlers = function(dispatch) {
   let selectPeer = function(id) {
@@ -978,12 +979,15 @@ function flatten(root) {
 }
 
   render() {
-    return( <div className='container' >
-        <div  id='graph-container'>
-            <div  id='graph'></div>
-        </div>
-
-      </div>);
+    return(
+        <div className='col-12'>
+            <div className='graphLayer'>
+                <div  id='graph-container'>
+                    <div  id='graph'></div>
+                </div>
+                <Legend/>
+            </div>
+        </div>);
   }
 }
 

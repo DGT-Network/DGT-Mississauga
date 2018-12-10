@@ -15,7 +15,7 @@ class Legend extends React.Component {
 
     else
       return (
-        <div id='accordion'>
+        <div id='accordion' className='legend'>
           {peer.legend.map((i) => {
 
             t++;
