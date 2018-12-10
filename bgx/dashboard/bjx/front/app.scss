@@ -45,6 +45,10 @@ line.link {
 .graphLayer {
   #graph-container {
     overflow: scroll;
+
+    #graph {
+      position: relative;
+    }
   }
 
   .legend {
@@ -70,7 +74,8 @@ line.link {
 
 
 .tooltip {
-  position: relative;
+  opacity: 0;
+  position: absolute;
   border: 1px solid black;
 }
 .tooltip:after, .tooltip:before {

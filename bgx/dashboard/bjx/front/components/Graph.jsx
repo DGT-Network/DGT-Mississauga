@@ -172,7 +172,7 @@ graph.data = this.props.data;
     $('#graph').css('display', display);
 
 
-    var div = d3.select("#graph-container").append("div")
+    var div = d3.select("#graph").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "absolute");
@@ -877,10 +877,10 @@ function update() {
 
   node.exit().remove();
 
-  var div = d3.select(".chartContainer").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0)
-    .style("position", "absolute");
+  // var div = d3.select(".chartContainer").append("div")
+  //   .attr("class", "tooltip")
+  //   .style("opacity", 0)
+  //   .style("position", "absolute");
 
   var nodeEnter = node.enter().append("g")
       .attr("class", "node")
@@ -995,7 +995,9 @@ function flatten(root) {
         <div className='col-12'>
             <div className='graphLayer'>
                 <div  id='graph-container'>
-                    <div  id='graph'></div>
+                    <div  id='graph'>
+                    <div className='tooltip'/>
+                    </div>
                 </div>
                 <Legend/>
                 <Filters/>
