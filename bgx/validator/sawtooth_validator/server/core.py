@@ -34,6 +34,7 @@ from sawtooth_validator.journal.batch_sender import BroadcastBatchSender
 from sawtooth_validator.journal.block_sender import BroadcastBlockSender
 from sawtooth_validator.journal.block_store import BlockStore
 from sawtooth_validator.journal.block_cache import BlockCache
+from sawtooth_validator.journal.block_manager import BlockManager
 from sawtooth_validator.journal.completer import Completer
 from sawtooth_validator.journal.responder import Responder
 from sawtooth_validator.journal.batch_injector import \
@@ -138,6 +139,13 @@ class Validator(object):
         block_store = BlockStore(block_db)
         block_cache = BlockCache(
             block_store, keep_time=300, purge_frequency=30)
+        # The cache keep time for the journal's block cache must be greater
+        # than the cache keep time used by the completer.
+        base_keep_time = 1200
+
+        block_manager = BlockManager()
+        block_manager.add_store("commit_store", block_store)
+
 
         # -- Setup Thread Pools -- #
         component_thread_pool = InstrumentedThreadPoolExecutor(
@@ -350,7 +358,7 @@ class Validator(object):
         self._network_dispatcher = network_dispatcher
         self._network_service = network_service
         self._network_thread_pool = network_thread_pool
-        block_manager = None
+        #block_manager = None
         consensus_proxy = ConsensusProxy(
             block_manager=block_manager,
             chain_controller=chain_controller,

@@ -115,9 +115,12 @@ class ConsensusRegisterHandler(ConsensusServiceHandler):
         chain_head = startup_info.chain_head
         peers = [bytes.fromhex(peer_id) for peer_id in startup_info.peers]
         local_peer_info = startup_info.local_peer_info
-        LOGGER.debug('ConsensusRegisterHandler: peers=%s local=%s chain_head=%s header=%s',peers,local_peer_info,chain_head,type(chain_head.header))
+        LOGGER.debug('ConsensusRegisterHandler: peers=%s local=%s chain_head[%s]=%s header=%s block=%s',peers,local_peer_info,type(chain_head),chain_head,type(chain_head.header),type(chain_head.block))
         block_header = BlockHeader()
-        block_header.ParseFromString(chain_head.header)
+        """
+        for last version validator(rust) used chain_head.header because  chain_head is Block not WrapperBlock as for python validator
+        """
+        block_header.ParseFromString(chain_head.block.header)  
 
         response.chain_head.block_id = bytes.fromhex(
             chain_head.header_signature)
@@ -458,7 +461,10 @@ class ConsensusChainHeadGetHandler(ConsensusServiceHandler):
             chain_head = self._proxy.chain_head_get()
 
             block_header = BlockHeader()
-            block_header.ParseFromString(chain_head.header)
+            """
+            chain_head.header for RUST 
+            """
+            block_header.ParseFromString(chain_head.block.header)
 
             response.block.block_id = bytes.fromhex(
                 chain_head.header_signature)
