@@ -608,11 +608,6 @@ graph.data = this.props.data;
 
         const graphRect = $('#graph-container');
         graphRect.css('visibility', 'visible');
-
-        graphRect.animate({
-            scrollLeft : graphRect.width()  / 2,
-            scrollTop  : graphRect.height() / 2
-        }, 500);
     });
     }
 
