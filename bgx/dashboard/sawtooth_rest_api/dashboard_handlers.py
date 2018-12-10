@@ -75,8 +75,8 @@ class DashboardRouteHandler(RouteHandler):
         try:
             with open('./network.json') as file:
                 self._network = json.load(file)
-        except:
-            pass
+        except Exception as err:
+            LOGGER.debug('DashboardRouteHandler: err=%s',err)
 
         
         #LOGGER.debug('DashboardRouteHandler: network=%s',self._network)

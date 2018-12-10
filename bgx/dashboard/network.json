@@ -40,7 +40,7 @@
                         "node_state": "inactive",
                         "Cluster Info" : {
                             "Clusters": "TacoBell AirPlans",
-                            "BGT name": "Tacos",
+                            "BGT name": "Tacos"
                         },
                         "children":[
                             {
