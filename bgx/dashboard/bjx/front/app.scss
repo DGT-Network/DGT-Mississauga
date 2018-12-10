@@ -52,6 +52,12 @@ line.link {
     top:15px;
     right: 45px;
   }
+
+  .filters {
+    position: absolute;
+    top:15px;
+    left: 15px;
+  }
 }
 
 .tooltip {
@@ -118,7 +124,7 @@ marker#end {
 }
 
 .node text {
-    fill: #000;
+    fill: #FFF;
     font: 10px sans-serif;
     pointer-events: none;
 }

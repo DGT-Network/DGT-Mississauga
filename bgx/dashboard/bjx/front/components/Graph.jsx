@@ -10,6 +10,7 @@ import LineSegment from '../helpers/LineSegment'
 
 import { selectPeer as selectP } from '../actions/actions';
 import Legend from './Legend'
+import Filters from './Filters'
 
 let createHandlers = function(dispatch) {
   let selectPeer = function(id) {
@@ -250,8 +251,10 @@ graph.data = this.props.data;
             }));
     }
 
-    graph.strokeColor = getColorScale( 0.7);
-    graph.fillColor   = getColorScale(-0.1);
+    graph.strokeColor = getColorScale( 0.1);
+    graph.strokeColorActive = getColorScale( 0.8);
+    graph.fillColorActive   = getColorScale(-0.1);
+        graph.fillColor   = getColorScale(-0.3);
 
     graph.nodeValues = d3.values(graph.data);
 
@@ -501,10 +504,10 @@ graph.data = this.props.data;
         .attr('rx', 5)
         .attr('ry', 5)
         .attr('stroke', function(d) {
-            return graph.strokeColor(d.categoryKey);
+            return that.colorForDarker(d);
         })
         .attr('fill', function(d) {
-            return graph.fillColor(d.categoryKey);
+            return that.colorFor(d);
         })
         .attr('width' , 200)
         .attr('height', 30);
@@ -671,6 +674,14 @@ preventCollisions() {
             }
         });
     }
+}
+
+colorFor(d){
+ return d.filtered ? '#007bff': '#6c757d';
+}
+
+colorForDarker(d){
+    this.colorFor(d)
 }
 
 highlightObject2(obj) {
@@ -986,6 +997,7 @@ function flatten(root) {
                     <div  id='graph'></div>
                 </div>
                 <Legend/>
+                <Filters/>
             </div>
         </div>);
   }
@@ -994,6 +1006,7 @@ function flatten(root) {
 function mapStateToProps(store) {
   return {
     data: store.peersReducer.data.data,
+    filters: store.peersReducer.data.filters,
   };
 }
 

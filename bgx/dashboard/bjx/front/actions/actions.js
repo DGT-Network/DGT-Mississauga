@@ -18,6 +18,7 @@ export const GET_BLOCKS = 'GET_BLOCKS';
 
 export const GET_PEERS = 'GET_PEERS';
 export const SELECT_PEER = 'SELECT_PEER';
+export const FILTER_PEERS = 'FILTER_PEERS';
 
 export function getTransactions() {
     //TEMP
@@ -108,6 +109,13 @@ export function getPeers() {
         dispatch(getPeersSuccess(convertPeers(nodes)))
       })
   };
+}
+
+export function filterPeers(filter) {
+  return {
+    type: FILTER_PEERS,
+    filter,
+    };
 }
 
 export function selectPeer(peer) {

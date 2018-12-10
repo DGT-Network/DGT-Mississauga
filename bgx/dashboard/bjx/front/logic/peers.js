@@ -10,10 +10,22 @@ export function convertPeers(data) {
       }),
   }
   let r = []
-
+  convertNode(r, data.data.net_structure.parent_node )
   return {
-    data: convertNode(r, data.data.net_structure.parent_node )
+    data: r,
+    filters: convertFilters(data.data.groups, r),
   }
+}
+
+function convertFilters(filters, d){
+  return filters.map((f) => {
+    d.forEach((i) => {
+      if ( !f.list.includes(i[f.field]) ){
+        f.list.push(i[f.field])
+      }
+    })
+    return f
+  })
 }
 
 function convertNode(r, node, parent_node = null){
@@ -50,14 +62,6 @@ function convertNode(r, node, parent_node = null){
     legend.push( r )
     })
 
-  console.log('legend', legend)
-
-  // {
-  //   legend: node.keys().map((k) => {
-  //     if []
-
-  //   })
-  // }
 
   r.push({
       name: node.IP,
@@ -67,13 +71,25 @@ function convertNode(r, node, parent_node = null){
       node_type: node.node_type,
       node_type_desc: typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
       public_key:  node.public_key,
-      type: "group0",
+      type: node.IP,
       dependedOnBy:  ch.map((j) => {
         return j.IP;
         }),
       depends: parentRelation,
       legend: legend,
+      filtered: false,
     });
 
   return r;
+}
+
+
+export function filterPeers(data, filter) {
+  let filterKey = Object.keys(filter)[0];
+
+  let r = data;
+
+  r.data = r.data.map((i) => {i.filtered = (i[filterKey] != filter[filterKey]); return i;});
+
+  return data;
 }

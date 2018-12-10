@@ -36,7 +36,6 @@ export function convertState(data, address) {
 }
 
 export function addState(to, data) {
-  console.log('convertData', data)
   return to.map((i) => {
     if (i.address === data.address)
       i.decoded_data=data
