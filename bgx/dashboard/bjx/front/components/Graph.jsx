@@ -685,30 +685,41 @@ colorForDarker(d){
     this.colorFor(d)
 }
 
+addToHide(array, IP){
+    let graph = this.graphh;
+    let el = graph.data.find((g) => {return g.IP == IP})
+    el.dependedOnBy.forEach((ip) => {
+        this.addToHide(array,ip)})
+    array.push(IP)
+}
+
+
 highlightObject2(obj) {
   let graph = this.graphh;
-    if (obj) {
-        if (obj !== this.collapsed) {
-            graph.node.classed('collapsed', function(d) {
-                return (obj !== d
-                     && d.depends.indexOf(obj.name) == -1
-                     && d.dependedOnBy.indexOf(obj.name) == -1);
+  console.log(obj.dependedOnBy)
+  let forHide  = [];
+
+  this.addToHide(forHide, obj.IP)
+
+  forHide.pop();
+
+  console.log(obj)
+  console.log(this.collapsed)
+
+
+    if (obj !== this.collapsed){
+      graph.node.classed('collapsed', function(d) {
+                    return (obj !== d
+                         && forHide.includes(d.IP) );
+                });
+      graph.line.classed('collapsed', function(d) {
+                return forHide.includes(d.target.IP);
             });
-            graph.line.classed('collapsed', function(d) {
-                return (obj !== d.source && obj !== d.target);
-            });
-        }
-        else {
-            graph.node.classed('collapsed', false);
-            graph.line.classed('collapsed', false);
-            this.collapsed = null;
-        }
-        this.collapsed = obj;
-    } else {
-        if (this.collapsed) {
-            graph.node.classed('collapsed', false);
-            graph.line.classed('collapsed', false);
-        }
+      this.collapsed = obj;
+}
+    else{
+        graph.node.classed('collapsed', false)
+        graph.line.classed('collapsed', false)
         this.collapsed = null;
     }
 }
