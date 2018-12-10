@@ -26,7 +26,7 @@ export const nodes = {
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf61"
           },
           {
-            "IP": "192.168.1.23",
+            "IP": "192.168.1.32",
             "children": [],
             "node_state": "inactive",
             "node_type": "aux",
@@ -35,6 +35,10 @@ export const nodes = {
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf62"
           },
           {
+            "Cluster Info": {
+              "BGT name": "Tacos",
+              "Clusters": "TacoBell AirPlans"
+            },
             "IP": "192.168.1.3",
             "children": [
               {
@@ -122,7 +126,7 @@ export const nodes = {
       }
     }
   },
-  "link": "http://18.222.233.160:8003/peers"
+  "link": "http://127.0.0.1:8003/peers"
 }
 
 export const transactions = {

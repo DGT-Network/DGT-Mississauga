@@ -32,6 +32,33 @@ function convertNode(r, node, parent_node = null){
     })
   }
 
+  let legend = []
+
+  legend.push({"Main": {
+    'Address': `${node.IP}:${node.port}`,
+    'State': node.node_state,
+    'Type': typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
+  }})
+
+  let keys_for_legend = Object.keys(node).filter((k) => {
+  return !['IP', 'port', 'node_type', 'node_type_desc', 'node_state', 'public_key',
+            'children'].includes(k) })
+
+  keys_for_legend.forEach((k) => {
+    let r = {}
+    r[k] = node[k]
+    legend.push( r )
+    })
+
+  console.log('legend', legend)
+
+  // {
+  //   legend: node.keys().map((k) => {
+  //     if []
+
+  //   })
+  // }
+
   r.push({
       name: node.IP,
       IP: node.IP,
@@ -45,6 +72,7 @@ function convertNode(r, node, parent_node = null){
         return j.IP;
         }),
       depends: parentRelation,
+      legend: legend,
     });
 
   return r;

@@ -7,3 +7,8 @@ export function trimHash(s) {
     return r;
   }
 }
+
+export function trimSpaces(s) {
+  if (typeof s === 'undefined') return '';
+  return s.replace(/\s/g, '');
+}
