@@ -9,34 +9,11 @@ export function convertPeers(data) {
                 size: 4000}
       }),
   }
-  let r = {}
-  let rr = []
+  let r = []
 
   return {
-    data : convertNodeToArray(rr, data.data.net_structure.parent_node),
-    graph: convertNode(r, data.data.net_structure.parent_node )
+    data: convertNode(r, data.data.net_structure.parent_node )
   }
-}
-
-function convertNodeToArray(r, node) {
-
-  if (typeof node.children !== 'undefined'){
-    node.children.forEach((i) => {
-      convertNodeToArray(r, i);
-    })
-  }
-
-
-  r.push({
-    name: node.IP,
-    IP: node.IP,
-    port: node.port,
-    node_state: node.node_state,
-    node_type: node.node_type,
-    node_type_desc: typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
-    public_key:  node.public_key,
-  })
-  return r;
 }
 
 function convertNode(r, node, parent_node = null){
@@ -49,12 +26,13 @@ function convertNode(r, node, parent_node = null){
 
  if (typeof node.children !== 'undefined'){
     ch = node.children
+
     ch.forEach((j) => {
       convertNode(r, j, node);
     })
   }
 
-  r[node.IP] =  {
+  r.push({
       name: node.IP,
       IP: node.IP,
       port: node.port,
@@ -67,20 +45,7 @@ function convertNode(r, node, parent_node = null){
         return j.IP;
         }),
       dependedOnBy: parentRelation,
-    }
+    });
 
   return r;
-
-  // node.children.map((j) => {
-  //       return {IP: j.IP,
-  //               size: 4000}
-  //     })
-  // return {
-  //   "IP": {
-  //     name: node.IP,
-  //     type: "group0",
-  //     depends: [],
-  //     dependedOnBy: [],
-  //   }
-  // }
 }

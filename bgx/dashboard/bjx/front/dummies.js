@@ -26,7 +26,7 @@ export const nodes = {
             "public_key": "02f2068c16fe9fd0ffcc1da19fd98add24c89c6c5b6c080a1895ee53b565d5cf61"
           },
           {
-            "IP": "192.168.1.3",
+            "IP": "192.168.1.23",
             "children": [],
             "node_state": "inactive",
             "node_type": "aux",
