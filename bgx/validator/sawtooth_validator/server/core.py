@@ -137,8 +137,7 @@ class Validator(object):
             flag='c',
             indexes=BlockStore.create_index_configuration())
         block_store = BlockStore(block_db)
-        block_cache = BlockCache(
-            block_store, keep_time=300, purge_frequency=30)
+        block_cache = BlockCache(block_store, keep_time=300, purge_frequency=30)
         # The cache keep time for the journal's block cache must be greater
         # than the cache keep time used by the completer.
         base_keep_time = 1200
