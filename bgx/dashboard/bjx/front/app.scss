@@ -129,9 +129,15 @@ marker#end {
 }
 
 .node text {
-    fill: #FFF;
+    fill: #000;
     font: 10px sans-serif;
     pointer-events: none;
+
+    &.inactive {
+      fill: #333;
+      font-size: 8px;
+      font-style: italic;
+    }
 }
 
 .node.selected rect {
@@ -173,4 +179,14 @@ body.firefox .node.selected rect {
 .node.collapsed rect,
 .node.collapsed text {
 opacity: 0;
+}
+
+.marker {
+  width: 10px;
+  height: 10px;
+  background-color: blue;
+  float: left;
+  position: relative;
+  top: 8px;
+  margin-right: 5px;
 }

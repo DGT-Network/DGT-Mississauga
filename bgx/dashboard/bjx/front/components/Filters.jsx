@@ -12,30 +12,38 @@ class Filters extends React.Component {
 
     this.clickFilter = this.clickFilter.bind(this);
   }
-  clickFilter(field, value){
-    let r = {}
-    r[field] = value;
-    store.dispatch(filterPeers(r));
+  clickFilter(value){
+    store.dispatch(filterPeers(value));
   }
   render() {
-    const {filters} = this.props
-   return (filters.length &&
-    <div className='filters'>
+    const {filters, colors} = this.props
+
+
+   return (<div className='filters'>
+      {filters.length &&
+
       <ul className='list-group'>
 
         {filters.map((f) => {
           return (<li className='list-group-item'>
             {f.name}
              <ul className='list-group'>
-              {f.list.map((l) => {
+              {
+                Object.keys(f.list).map((key) => {
+                  let value = f.list[key]
+                  let selected = {}
+                  selected[f.field] = key
                 return (<li className='list-group-item' >
-                  <div onClick={() => this.clickFilter(f.field, l)}>{l}</div>
+
+                  <div onClick={() => this.clickFilter(selected)}>
+                  <span className='marker' style={ {backgroundColor: value} } ></span>{key}</div>
                 </li>)
               })}
              </ul>
           </li>)
         })}
       </ul>
+      }
     </div>)
   }
 }
@@ -46,7 +54,10 @@ Filters.defaultProps = {
 
 function mapStateToProps(store) {
   return {
-    filters: store.peersReducer.data.filters,
+    filters:  store.peersReducer.data.length == 0 ?
+      [] : store.peersReducer.data.filters.filters,
+    colors:  store.peersReducer.data.length == 0 ?
+      [] : store.peersReducer.data.filters.colors,
   };
 }
 

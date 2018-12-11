@@ -65,7 +65,7 @@ function peersReducer(state=initialPeersState, action) {
 
     case FILTER_PEERS:
       return Object.assign({}, state, {
-        data: filterPeers(state.data, action.filter)
+        selected: action.filter
     });
 
     case SELECT_PEER:

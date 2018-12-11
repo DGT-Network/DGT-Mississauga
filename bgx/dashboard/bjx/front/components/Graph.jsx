@@ -12,22 +12,10 @@ import { selectPeer as selectP } from '../actions/actions';
 import Legend from './Legend'
 import Filters from './Filters'
 
-let createHandlers = function(dispatch) {
-  let selectPeer = function(id) {
-    dispatch(selectP(id))
-  };
-
-  return {
-    selectPeer,
-    // other handlers
-  };
-}
 
 class Graph extends React.Component {
   constructor(props) {
     super(props);
-
-    this.handlers = createHandlers(this.props.dispatch);
 
     this.state = {collapsedNodes: [],
                   hiddenNodes: []}
@@ -44,7 +32,6 @@ class Graph extends React.Component {
     let that = this;
 
     let graph = this.graphh;
-
 
     let config = {
     "title" : "Les Miserables characters",
@@ -465,7 +452,7 @@ graph.data = this.props.data;
             d.fixed &= ~6;
         });
 
-    $('#graph-container').on('click', function(e) {
+    $('#graph-container').off('click').on('click', function(e) {
         if (!$(e.target).closest('.node').length) {
             that.deselectObject();
         }
@@ -570,16 +557,12 @@ graph.data = this.props.data;
                     bounds.y2 = box.y + box.height;
             }).attr('text-anchor', 'middle');
 
-            if (d.node_state !== 'active')
-                text.style('opacity', 0.5).style('font-style', 'italic');
+
+                text.classed('inactive', d.node_state !== 'active');
 
             var padding  = config.graph.labelPadding,
                 margin   = config.graph.labelMargin,
                 oldWidth = bounds.x2 - bounds.x1;
-
-
-                console.log('oldWidth', oldWidth)
-                console.log('boundes', bounds)
 
              bounds.x1 -= oldWidth/2;
              bounds.x2 -= oldWidth/2;
@@ -588,9 +571,6 @@ graph.data = this.props.data;
              bounds.y1 -= padding.top;
             bounds.x2 += padding.left + padding.right;
              bounds.y2 += padding.top  + padding.bottom;
-
-
-
 
             node.select('rect')
                 .attr('x', -35)
@@ -622,8 +602,7 @@ graph.data = this.props.data;
         }
         graph.preventCollisions = true;
 
-        const graphRect = $('#graph-container');
-        graphRect.css('visibility', 'visible');
+        $('#graph-container').css('visibility', 'visible');
     });
     }
 
@@ -694,7 +673,16 @@ preventCollisions() {
 }
 
 colorFor(d){
- return d.filtered ? '#6c757d': '#007bff';
+  const { selected, filters } = this.props;
+
+  if (undefined === selected || Object.keys(selected).length == 0 )
+    return '#007bff';
+
+  const key = Object.keys(selected)[0]
+
+  const list = filters.filter((f) => {return f.field == key })[0].list
+
+  return list[d[key]];
 }
 
 colorForDarker(d){
@@ -733,7 +721,6 @@ highlightObject2(obj) {
 
 
 highlightObject(obj) {
-  return;
   let graph = this.graphh;
     if (obj) {
         if (obj !== this.highlighted) {
@@ -791,7 +778,6 @@ selectObject(obj, el) {
         this.deselectObject();
         return;
     }
-    this.deselectObject(false);
 
     this.selected = {
         obj : obj,
@@ -838,7 +824,7 @@ deselectObject(doResize) {
     graph.node.classed('selected', false);
     this.selected = {};
     this.highlightObject(null);
-    //store.dispatch(selectP(null))
+   store.dispatch(selectP(null))
 }
 
     drawGraph2() {
@@ -1028,8 +1014,10 @@ function flatten(root) {
 function mapStateToProps(store) {
   return {
     data: store.peersReducer.data.data,
-    filters: store.peersReducer.data.filters,
+    filters:  store.peersReducer.data.length == 0 ?
+      [] : store.peersReducer.data.filters.filters,
     selectedPeerIP:store.peersReducer.selectedPeerIP,
+    selected: store.peersReducer.selected,
   };
 }
 

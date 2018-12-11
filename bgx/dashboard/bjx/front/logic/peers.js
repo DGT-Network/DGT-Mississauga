@@ -1,3 +1,6 @@
+import colorbrewer from 'colorbrewer';
+
+
 export function convertPeers(data) {
   //console.log('data',data)
   let parent_node = data.data.net_structure.parent_node
@@ -18,7 +21,7 @@ export function convertPeers(data) {
 }
 
 function convertFilters(filters, d){
-  return filters.map((f) => {
+  let f = filters.map((f) => {
     d.forEach((i) => {
       if ( !f.list.includes(i[f.field]) ){
         f.list.push(i[f.field])
@@ -26,6 +29,31 @@ function convertFilters(filters, d){
     })
     return f
   })
+
+  let count =0
+  let ff = []
+
+  f.forEach((f) => {
+    count += f.list.length
+    ff = ff.concat(f.list)
+  })
+  let colors = colorbrewer.Set3[count+5];
+
+  let r = 0;
+
+  f.forEach((f) => {
+    let arr = {}
+    f.list.forEach((i) => {
+      return arr[i] = colors[r++]
+    })
+    f.list = arr;
+  })
+
+  let i={}
+  ff.map((f) => { i[f] = colors[r++]; return i})
+
+  return {filters: f,
+  }
 }
 
 function convertNode(r, node, parent_node = null){
@@ -84,12 +112,12 @@ function convertNode(r, node, parent_node = null){
 }
 
 
-export function filterPeers(data, filter) {
-  let filterKey = Object.keys(filter)[0];
+// export function filterPeers(filter) {
+//   let filterKey = Object.keys(filter)[0];
 
-  let r = data;
+//   let r = data;
 
-  r.data = r.data.map((i) => {i.filtered = (i[filterKey] != filter[filterKey]); return i;});
+//   r.data = r.data.map((i) => {i.filtered = (i[filterKey] != filter[filterKey]); return i;});
 
-  return data;
-}
+//   return data;
+// }
