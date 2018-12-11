@@ -11,6 +11,11 @@ import Hash from './Hash'
 import ReactTable from 'react-table'
 
 class Peers extends React.Component {
+  constructor(props){
+    super(props)
+    this.state= { selectedIP: null}
+  }
+
 
   showDetails(info) {
     store.dispatch(selectPeer(info.original.IP));
@@ -44,6 +49,23 @@ class Peers extends React.Component {
                     }
                   }
                 };
+              }}
+              getTrProps={(state, rowInfo) => {
+                if (rowInfo && rowInfo.row) {
+                  return {
+                    onClick: (e) => {
+                      this.setState({
+                        selectedIP: rowInfo.row.ip,
+                      })
+                    },
+                    style: {
+                      background: rowInfo.row.ip === this.state.selectedIP ? '#b8daff' :
+                       rowInfo.index%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+                    }
+                  }
+                }else{
+                  return {}
+                }
               }}/>
           </div>
         </div>

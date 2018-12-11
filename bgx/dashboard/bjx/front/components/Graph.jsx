@@ -736,7 +736,6 @@ highlightObject2(obj) {
 
 
 highlightObject(obj) {
-  console.log('oneclick')
   let graph = this.graphh;
     if (obj) {
         if (obj !== this.highlighted) {
