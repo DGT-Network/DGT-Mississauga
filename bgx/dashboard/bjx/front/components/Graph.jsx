@@ -338,8 +338,8 @@ graph.data = this.props.data;
     var glow = graph.svg.append('filter')
         .attr('x'     , '-50%')
         .attr('y'     , '-50%')
-        .attr('width' , '200%')
-        .attr('height', '200%')
+        .attr('width' , '20px')
+        .attr('height', '400px')
         .attr('id'    , 'blue-glow');
 
     glow.append('feColorMatrix')
@@ -350,7 +350,7 @@ graph.data = this.props.data;
                       + '0 0 0 1  0 ');
 
     glow.append('feGaussianBlur')
-        .attr('stdDeviation', 3)
+        .attr('stdDeviation', 6)
         .attr('result'      , 'coloredBlur');
 
     glow.append('feMerge').selectAll('feMergeNode')
