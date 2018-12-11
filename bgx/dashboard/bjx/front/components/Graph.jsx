@@ -562,14 +562,14 @@ graph.data = this.props.data;
 
             rect.classed('filtered', function(d){
 
-              const { selected, filters } = that.props;
+              const { selectedFilters, filters } = that.props;
 
-              if (undefined === selected || Object.keys(selected).length == 0 )
+              if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
                   return false;
 
-              const key = Object.keys(selected)[0]
+              const key = Object.keys(selectedFilters)[0]
 
-              return d[key] != selected[key];
+              return d[key] != selectedFilters[key];
             });
 
 
@@ -686,12 +686,12 @@ preventCollisions() {
 }
 
 colorFor(d){
-  const { selected, filters } = this.props;
+  const { selectedFilters, filters } = this.props;
 
-  if (undefined === selected || Object.keys(selected).length == 0 )
+  if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
     return '#007bff';
 
-  const key = Object.keys(selected)[0]
+  const key = Object.keys(selectedFilters)[0]
 
   const list = filters.filter((f) => {return f.field == key })[0].list
 
@@ -734,6 +734,7 @@ highlightObject2(obj) {
 
 
 highlightObject(obj) {
+  console.log('oneclick')
   let graph = this.graphh;
     if (obj) {
         if (obj !== this.highlighted) {
@@ -837,8 +838,8 @@ deselectObject(doResize) {
     graph.node.classed('selected', false);
     this.selected = {};
     this.highlightObject(null);
-   store.dispatch(selectP(null))
-   store.dispatch(filterPeers({}))
+   //store.dispatch(selectP(null))
+   //store.dispatch(filterPeers({}))
 }
 
     drawGraph2() {
@@ -1031,7 +1032,7 @@ function mapStateToProps(store) {
     filters:  store.peersReducer.data.length == 0 ?
       [] : store.peersReducer.data.filters.filters,
     selectedPeerIP:store.peersReducer.selectedPeerIP,
-    selected: store.peersReducer.selected,
+    selectedFilters: store.peersReducer.selected,
   };
 }
 
