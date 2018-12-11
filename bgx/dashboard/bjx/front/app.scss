@@ -172,5 +172,5 @@ body.firefox .node.selected rect {
 .link.collapsed,
 .node.collapsed rect,
 .node.collapsed text {
-    display: none;
+opacity: 0;
 }

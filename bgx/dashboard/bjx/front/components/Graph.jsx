@@ -29,6 +29,9 @@ class Graph extends React.Component {
 
     this.handlers = createHandlers(this.props.dispatch);
 
+    this.state = {collapsedNodes: [],
+                  hiddenNodes: []}
+
     this.selected    = {}
     this.highlighted = null
     this.collapsed = null
@@ -269,7 +272,6 @@ graph.data = this.props.data;
 
 
    function tick(e) {
-
         graph.numTicks++;
 
         for (var name in graph.data) {
@@ -515,8 +517,21 @@ graph.data = this.props.data;
         .attr('width' , 200)
         .attr('height', 30);
 
-    graph.node.each(function(d) {
+    graph.nodeRect.each(function(d) {
+        if (that.state.hiddenNodes.includes(d.IP))
+          d3.select(this).attr('display', 'none')
 
+    });
+
+    graph.line.each(function(d) {
+        if (that.state.hiddenNodes.includes(d.target.IP))
+          d3.select(this).attr('display', 'none')
+
+    });
+
+    graph.node.each(function(d) {
+        if (that.state.hiddenNodes.includes(d.IP))
+          return;
 
         if (d.IP == that.props.selectedPeerIP)
             that.selectObject(d)
@@ -534,28 +549,25 @@ graph.data = this.props.data;
             dy += ddy;
         });
       });
-        setTimeout(function(){
-        graph.node.each(function(d) {
 
+    setTimeout(function(){
+        graph.node.each(function(d) {
             var node   = d3.select(this),
                 text   = node.selectAll('text'),
-                bounds = {},
-                first  = true;
+                bounds = {}
+
+            if (!text[0].length) return;
+
             text.each(function() {
                 var box = this.getBBox();
-                if (first || box.x < bounds.x1) {
+
                     bounds.x1 = box.x;
-                }
-                if (first || box.y < bounds.y1) {
+
                     bounds.y1 = box.y;
-                }
-                if (first || box.x + box.width > bounds.x2) {
+
                     bounds.x2 = box.x + box.width;
-                }
-                if (first || box.y + box.height > bounds.y2) {
+
                     bounds.y2 = box.y + box.height;
-                }
-                first = false;
             }).attr('text-anchor', 'middle');
 
             if (d.node_state !== 'active')
@@ -565,6 +577,9 @@ graph.data = this.props.data;
                 margin   = config.graph.labelMargin,
                 oldWidth = bounds.x2 - bounds.x1;
 
+
+                console.log('oldWidth', oldWidth)
+                console.log('boundes', bounds)
 
              bounds.x1 -= oldWidth/2;
              bounds.x2 -= oldWidth/2;
@@ -576,11 +591,12 @@ graph.data = this.props.data;
 
 
 
+
             node.select('rect')
-                .attr('x', bounds.x1)
-                .attr('y', bounds.y1)
-                .attr('width' , bounds.x2 - bounds.x1)
-                .attr('height', bounds.y2 - bounds.y1);
+                .attr('x', -35)
+                .attr('y', -12)
+                .attr('width' , 70)
+                .attr('height', 20);
 
             d.extent = {
                 left   : bounds.x1 - margin.left,
@@ -685,47 +701,39 @@ colorForDarker(d){
     this.colorFor(d)
 }
 
-addToHide(array, IP){
+hideChildren(array, IP){
     let graph = this.graphh;
     let el = graph.data.find((g) => {return g.IP == IP})
     el.dependedOnBy.forEach((ip) => {
-        this.addToHide(array,ip)})
+        this.hideChildren(array,ip)
+    })
     array.push(IP)
 }
 
 
 highlightObject2(obj) {
   let graph = this.graphh;
-  console.log(obj.dependedOnBy)
+
+  if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
+    this.setState({collapsedNodes: this.state.collapsedNodes.concat([obj.IP]) })
+  }
+  else {
+    this.setState({collapsedNodes: this.state.collapsedNodes.filter((ip) => {return ip != obj.IP})})
+  }
+
   let forHide  = [];
 
-  this.addToHide(forHide, obj.IP)
+  this.state.collapsedNodes.forEach((ip) => {
+      this.hideChildren(forHide,ip)
+      forHide.pop();
+    });
 
-  forHide.pop();
-
-  console.log(obj)
-  console.log(this.collapsed)
-
-
-    if (obj !== this.collapsed){
-      graph.node.classed('collapsed', function(d) {
-                    return (obj !== d
-                         && forHide.includes(d.IP) );
-                });
-      graph.line.classed('collapsed', function(d) {
-                return forHide.includes(d.target.IP);
-            });
-      this.collapsed = obj;
-}
-    else{
-        graph.node.classed('collapsed', false)
-        graph.line.classed('collapsed', false)
-        this.collapsed = null;
-    }
+    this.setState({hiddenNodes: forHide})
 }
 
 
 highlightObject(obj) {
+  return;
   let graph = this.graphh;
     if (obj) {
         if (obj !== this.highlighted) {
