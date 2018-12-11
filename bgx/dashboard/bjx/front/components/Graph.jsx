@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 
 import LineSegment from '../helpers/LineSegment'
 
-import { selectPeer as selectP } from '../actions/actions';
+import { selectPeer as selectP, filterPeers} from '../actions/actions';
 import Legend from './Legend'
 import Filters from './Filters'
 
@@ -540,6 +540,7 @@ graph.data = this.props.data;
     setTimeout(function(){
         graph.node.each(function(d) {
             var node   = d3.select(this),
+                rect  = node.select('rect'),
                 text   = node.selectAll('text'),
                 bounds = {}
 
@@ -557,8 +558,20 @@ graph.data = this.props.data;
                     bounds.y2 = box.y + box.height;
             }).attr('text-anchor', 'middle');
 
+            text.classed('inactive', d.node_state !== 'active');
 
-                text.classed('inactive', d.node_state !== 'active');
+            rect.classed('filtered', function(d){
+
+              const { selected, filters } = that.props;
+
+              if (undefined === selected || Object.keys(selected).length == 0 )
+                  return false;
+
+              const key = Object.keys(selected)[0]
+
+              return d[key] != selected[key];
+            });
+
 
             var padding  = config.graph.labelPadding,
                 margin   = config.graph.labelMargin,
@@ -573,9 +586,9 @@ graph.data = this.props.data;
              bounds.y2 += padding.top  + padding.bottom;
 
             node.select('rect')
-                .attr('x', -35)
+                .attr('x', -40)
                 .attr('y', -12)
-                .attr('width' , 70)
+                .attr('width' , 80)
                 .attr('height', 20);
 
             d.extent = {
@@ -825,6 +838,7 @@ deselectObject(doResize) {
     this.selected = {};
     this.highlightObject(null);
    store.dispatch(selectP(null))
+   store.dispatch(filterPeers({}))
 }
 
     drawGraph2() {

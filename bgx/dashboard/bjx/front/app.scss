@@ -126,11 +126,19 @@ marker#end {
     transition: opacity 250ms;
     -webkit-transition: opacity 250ms;
     -moz-transition: opacity 250ms;
+
+    &.filtered {
+      opacity: 0.6;
+    }
 }
 
-.node text {
+.node {
+  font: 10px sans-serif;
+
+  text {
     fill: #000;
-    font: 10px sans-serif;
+
+
     pointer-events: none;
 
     &.inactive {
@@ -138,10 +146,16 @@ marker#end {
       font-size: 8px;
       font-style: italic;
     }
-}
+  }
 
-.node.selected rect {
-    filter: url(#blue-glow);
+  &.selected {
+    font: 12px sans-serif;
+    border: 2px solid black;
+    rect {
+
+      filter: url(#blue-glow);
+    }
+  }
 }
 
 body.firefox .node.selected rect {
