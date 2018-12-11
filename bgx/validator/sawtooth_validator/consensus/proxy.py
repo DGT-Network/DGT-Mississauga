@@ -74,8 +74,7 @@ class ConsensusProxy:
     def initialize_block(self, previous_id):
         if previous_id:
             try:
-                previous_block = next(
-                    self._block_manager.get([previous_id.hex()]))
+                previous_block = next(self._block_manager.get([previous_id.hex()]))
             except StopIteration:
                 raise UnknownBlock()
             
