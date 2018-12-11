@@ -531,7 +531,9 @@ graph.data = this.props.data;
 
         lines.forEach(function(line) {
             var text = node.append('text')
-                .text(line)
+                .text(function(d) {
+                   return that.state.collapsedNodes.indexOf(d.IP) == -1 ? d.IP : `${d.IP}...`;
+                })
                 .attr('dy', dy + 'em');
             dy += ddy;
         });
@@ -915,7 +917,9 @@ function update() {
 
   nodeEnter.append("text")
       .attr("dy", "-1em")
-      .text(function(d) { return d.IP; })
+      .text(function(d) {
+        console.log('112113', this.state.collapsedNodes)
+        return this.state.collapsedNodes.indexOf(d.IP) == -1 ? d.IP : `${d.IP}...` })
       .style("opacity",  function(d) { return d.node_state == 'active' ? 1 : 0.3; })
       .style("font-weight",  function(d) { return d.node_state == 'active' ? 'bold' : 'normal'; })
   node.select("circle")
