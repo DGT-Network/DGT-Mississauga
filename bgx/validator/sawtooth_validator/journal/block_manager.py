@@ -83,7 +83,7 @@ class BlockManager():
                    ctypes.py_object(block_store))
         """
         self._name = name
-        self._block_store = block_store if block_store is not None else {}
+        #self._block_store = block_store if block_store is not None else {}
         LOGGER.debug("BlockManager: add_store name=%s",name)
 
     def put(self, branch):

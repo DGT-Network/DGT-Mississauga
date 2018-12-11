@@ -23,7 +23,6 @@ import base64
 LOGGER = logging.getLogger(__name__)
 try:
     import sawtooth_validator.protobuf.transaction_pb2 as txn_pb
-    
 except TypeError:
     import sawtooth_sdk.protobuf.transaction_pb2 as txn_pb
 
@@ -42,6 +41,7 @@ from bgx_pbft.consensus.consensus_state_store import ConsensusStateStore
 from bgx_pbft.consensus import utils
 from bgx_pbft.enclave.utils import json2dict
 from bgx_pbft.enclave.utils import dict2json
+
 import bgx_pbft_common.protobuf.bgx_validator_registry_pb2 as vr_pb
 from bgx_pbft_common.validator_registry_view.validator_registry_view import ValidatorRegistryView
 
@@ -275,7 +275,6 @@ class PbftBlockPublisher(BlockPublisherInterface):
         if block_header.previous_block_id == PbftBlockPublisher._previous_block_id:
             LOGGER.debug("PbftBlockPublisher::initialize_block block_header.previous_block_id == PbftBlockPublisher._previous_block_id TRUE")
             return False
-
         PbftBlockPublisher._previous_block_id = block_header.previous_block_id
         # Using the current chain head, we need to create a state view so we
         # can create a PBFT enclave.
@@ -304,50 +303,51 @@ class PbftBlockPublisher(BlockPublisherInterface):
         # other validators think we are using.
         if _VREG_:
             validator_registry_view = ValidatorRegistryView(state_view)
-            validator_info = None
+        validator_info = None
 
-            try:
-                validator_id = block_header.signer_public_key
-                validator_info = validator_registry_view.get_validator_info(validator_id=validator_id)
-            except KeyError:
-                pass
+        try:
+            validator_id = block_header.signer_public_key
+            validator_info = validator_registry_view.get_validator_info(validator_id=validator_id)
+        except KeyError:
+            pass
 
-            # If we don't have a validator registry entry, then check the active
-            # key.  If we don't have one, then we need to sign up.  If we do have
-            # one, then our validator registry entry has not percolated through the
-            # system, so nothing to to but wait.
-            active_pbft_public_key = self._pbft_key_state_store.active_key
-            if validator_info is None:
-                if active_pbft_public_key is None:
-                    LOGGER.debug('PbftBlockPublisher::initialize_block No public key found, so going to register new signup information')
-                    self._register_signup_information(block_header=block_header)
+        # If we don't have a validator registry entry, then check the active
+        # key.  If we don't have one, then we need to sign up.  If we do have
+        # one, then our validator registry entry has not percolated through the
+        # system, so nothing to to but wait.
+        active_pbft_public_key = self._pbft_key_state_store.active_key
+        if validator_info is None:
+            if active_pbft_public_key is None:
+                LOGGER.debug('PbftBlockPublisher::initialize_block No public key found, so going to register new signup information')
+                self._register_signup_information(block_header=block_header)
 
-                else:  # Check if we need to give up on this registration attempt
-                    try:
-                        nonce = self._pbft_key_state_store[active_pbft_public_key].signup_nonce
-                    except (ValueError, AttributeError):
-                        self._pbft_key_state_store.active_key = None
-                        LOGGER.warning('PbftBlockPublisher::initialize_block Pbft Key State Store had inaccessible or '
-                                       'corrupt active key [%s] clearing '
-                                       'key.', active_pbft_public_key)
-                        return False
-                    LOGGER.debug('PbftBlockPublisher::initialize_block Check if we need to give up on this registration attempt')
-                    self._handle_registration_timeout(
-                        block_header=block_header,
-                        pbft_enclave_module=None,#pbft_enclave_module,
+            else:  # Check if we need to give up on this registration attempt
+                try:
+                    nonce = self._pbft_key_state_store[active_pbft_public_key].signup_nonce
+                except (ValueError, AttributeError):
+                    self._pbft_key_state_store.active_key = None
+                    LOGGER.warning('PbftBlockPublisher::initialize_block Pbft Key State Store had inaccessible or '
+                                   'corrupt active key [%s] clearing '
+                                   'key.', active_pbft_public_key)
+                    return False
+                LOGGER.debug('PbftBlockPublisher::initialize_block Check if we need to give up on this registration attempt')
+                self._handle_registration_timeout(
+                    block_header=block_header,
+                    pbft_enclave_module=None,#pbft_enclave_module,
                         state_view=state_view,
-                        signup_nonce=nonce,
-                        pbft_public_key=active_pbft_public_key
-                    )
-                LOGGER.debug("PbftBlockPublisher::initialize_block validator_info NONE")
-                return True #False
+                    signup_nonce=nonce,
+                    pbft_public_key=active_pbft_public_key
+                )
+            LOGGER.debug("PbftBlockPublisher::initialize_block validator_info NONE")
+            return True #False
 
         # Retrieve the key state corresponding to the PBFT public key in our
         # validator registry entry.
         pbft_key_state = None
         try:
             if _VREG_:
-                pbft_key_state = self._pbft_key_state_store[validator_info.signup_info.pbft_public_key]
+            pbft_key_state = self._pbft_key_state_store[
+                    validator_info.signup_info.pbft_public_key]
         except (ValueError, KeyError):
             pass
 
@@ -378,7 +378,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
         # Check the key state.  If it is marked as being refreshed, then we are
         # waiting until our PBFT public key is updated in the validator
         # registry and therefore we cannot publish any blocks.
-        if _VREG_ and pbft_key_state.has_been_refreshed :
+        if _VREG_ and pbft_key_state.has_been_refreshed:
             LOGGER.debug(
                 'PBFT public key %s...%s has been refreshed.  Wait for new '
                 'key to show up in validator registry.',
@@ -399,30 +399,29 @@ class PbftBlockPublisher(BlockPublisherInterface):
         # one, then we need to switch the active key in the key state store.
         if _VREG_:
             if validator_info.signup_info.pbft_public_key != active_pbft_public_key:
-                active_pbft_public_key = validator_info.signup_info.pbft_public_key
-                self._pbft_key_state_store.active_key = active_pbft_public_key
+            active_pbft_public_key = validator_info.signup_info.pbft_public_key
+            self._pbft_key_state_store.active_key = active_pbft_public_key
 
-            # Ensure that the enclave is using the appropriate keys
-            try:
+        # Ensure that the enclave is using the appropriate keys
+        try:
                 signup_data = json2dict(base64.b64decode(pbft_key_state.sealed_signup_data.encode()).decode())
                 unsealed_pbft_public_key = signup_data.get('pbft_public_key')
-            except SystemError:
-                # Signup data is unuseable
-                LOGGER.error(
-                    'Could not unseal signup data associated with PPK: %s..%s',
-                    active_pbft_public_key[:8],
-                    active_pbft_public_key[-8:])
-                self._pbft_key_state_store.active_key = None
-                return False
+        except SystemError:
+            # Signup data is unuseable
+            LOGGER.error(
+                'Could not unseal signup data associated with PPK: %s..%s',
+                active_pbft_public_key[:8],
+                active_pbft_public_key[-8:])
+            self._pbft_key_state_store.active_key = None
+            return False
+        LOGGER.debug("PbftBlockPublisher::unsealed_pbft_public_key=%s ~ %s signup_data=%s",unsealed_pbft_public_key,active_pbft_public_key,signup_data)
+        assert active_pbft_public_key == unsealed_pbft_public_key
 
-            LOGGER.debug("PbftBlockPublisher::unsealed_pbft_public_key=%s ~ %s signup_data=%s",unsealed_pbft_public_key,active_pbft_public_key,signup_data)
-            assert active_pbft_public_key == unsealed_pbft_public_key
-
-            LOGGER.debug('Using PBFT public key: %s...%s',active_pbft_public_key[:8],active_pbft_public_key[-8:])
-            LOGGER.debug('Unseal signup data: %s...%s',pbft_key_state.sealed_signup_data[:8],pbft_key_state.sealed_signup_data[-8:])
+        LOGGER.debug('Using PBFT public key: %s...%s',active_pbft_public_key[:8],active_pbft_public_key[-8:])
+        LOGGER.debug('Unseal signup data: %s...%s',pbft_key_state.sealed_signup_data[:8],pbft_key_state.sealed_signup_data[-8:])
             """
             LOGGER.debug("PbftBlockPublisher::initialize_block  ADD CONSENSUS_STATE for block_id=%s",block_header.previous_block_id)
-            consensus_state = ConsensusState.consensus_state_for_block_id(
+        consensus_state = ConsensusState.consensus_state_for_block_id(
                     block_id=block_header.previous_block_id,
                     block_cache=self._block_cache,
                     state_view_factory=self._state_view_factory,
@@ -432,18 +431,19 @@ class PbftBlockPublisher(BlockPublisherInterface):
             """
             #pbft_settings_view = PbftSettingsView(state_view)
             #LOGGER.debug("PbftBlockPublisher::pbft_settings_view node=%s",pbft_settings_view.pbft_node)
-            # If our signup information does not pass the freshness test, then we
-            # know that other validators will reject any blocks we try to claim so
-            # we need to try to sign up again.
+
+        # If our signup information does not pass the freshness test, then we
+        # know that other validators will reject any blocks we try to claim so
+        # we need to try to sign up again.
 
             # Using the consensus state for the block upon which we want to
-            # build, check to see how many blocks we have claimed on this chain
-            # with this PBFT key.  If we have hit the key block claim limit, then
-            # we need to check if the key has been refreshed.
+        # build, check to see how many blocks we have claimed on this chain
+        # with this PBFT key.  If we have hit the key block claim limit, then
+        # we need to check if the key has been refreshed.
             # We need to create a wait timer for the block...this is what we
-            # will check when we are asked if it is time to publish the block
-            pbft_key_state = self._pbft_key_state_store[active_pbft_public_key]
-            sealed_signup_data = pbft_key_state.sealed_signup_data
+        # will check when we are asked if it is time to publish the block
+        pbft_key_state = self._pbft_key_state_store[active_pbft_public_key]
+        sealed_signup_data = pbft_key_state.sealed_signup_data
 
         # At this point, we know that if we are able to claim the block we are
         # initializing, we will not be prevented from doing so because of PBFT
