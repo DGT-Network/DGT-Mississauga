@@ -2479,8 +2479,23 @@ export const blocks = {
 
 export const state = {
   "data": {
-    "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEnm6mqtaKs/jrDfLA4xHUxqiIDiqLbY/GN0f5ZdCH+BdBDl3h8Y8iVAehM1QujHdHodBtuWMoph9OZV12zVq6pw==": "{\"b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741\": \"{\\\"group_code\\\": \\\"b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741\\\", \\\"granularity\\\": \\\"1\\\", \\\"balance\\\": \\\"4\\\", \\\"decimals\\\": \\\"18\\\", \\\"owner_key\\\": \\\"None\\\", \\\"sign\\\": \\\"None\\\"}\"}"
+    "BGX_Token": {
+      "bgx_conversion": "False",
+      "company_id": "company_id",
+      "creator_key": "0236bd0b2f6041338ffe5a2236be89f369ec3094e5247bb40aad3aaa18ff2da395",
+      "currency_code": "1",
+      "decimals": "18",
+      "description": "BGT token",
+      "ethereum_conversion": "False",
+      "granularity": "1",
+      "group_code": "b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741",
+      "internal_conversion": "False",
+      "internal_token_price": "1",
+      "name": "BGX_Token",
+      "symbol": "BGT",
+      "total_supply": "20"
+    }
   },
-  "head": "f1940b24f41a42937fcea51564a154aade155640160d553392dd0fc9a0d56f7f2eda9a6fdef8adb9bce0be1d68258c703ba66ecc6a99bbc0fef3540c4c45810a",
-  "link": "http://18.222.233.160:8003/state/e6717479ad5c5f8447c48f2f682031954630979dfdd68f3404883e328dc42f06a6e061?head=f1940b24f41a42937fcea51564a154aade155640160d553392dd0fc9a0d56f7f2eda9a6fdef8adb9bce0be1d68258c703ba66ecc6a99bbc0fef3540c4c45810a"
+  "head": "83c332c98aa1f86bc63c24900a086660480e05e14d8cbbd2e2a727edf6e8a1b24dc441b4064e159ef51c29868ea5e501cd476f15a78a34dbdf42668d7707b81d",
+  "link": "http://18.222.233.160:8003/state/e6717403fe89bbc3dacab69f21bbf2d546e9e4c71197cb4818640df60ed6e610db398f?head=83c332c98aa1f86bc63c24900a086660480e05e14d8cbbd2e2a727edf6e8a1b24dc441b4064e159ef51c29868ea5e501cd476f15a78a34dbdf42668d7707b81d"
 }

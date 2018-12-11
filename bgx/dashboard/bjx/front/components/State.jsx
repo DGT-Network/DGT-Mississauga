@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import Hash from './Hash'
+import DecodedData from './DecodedData'
 
 import ReactTable from "react-table"
 
@@ -63,22 +64,7 @@ State.defaultProps = {
     id: 'data',
     Header: 'Data',
     accessor: t => {
-      if (t.decoded_data == null)
-        return <Hash hash={t.data}/>
-      else
-        return (<div>
-          key: <Hash hash={t.decoded_data.key} />
-          granularity: {t.decoded_data.data.granularity}
-          <br/>
-          balance: {t.decoded_data.data.balance}
-          <br/>
-          decimals: {t.decoded_data.data.decimals}
-          <br/>
-          owner key: {t.decoded_data.data.owner_key}
-          <br/>
-          group code: <Hash hash={t.decoded_data.data.group_code} />
-          <br/>
-        </div>);
+        return <DecodedData data={t.data} decodedData={t.decoded_data}/>;
     },
   }]
 };
