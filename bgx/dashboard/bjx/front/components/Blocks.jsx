@@ -161,7 +161,7 @@ class Blocks extends React.Component {
                     },
                     style: {
                       background: rowInfo.index === this.state.selectedBlockNum ? '#b8daff' :
-                       rowInfo.index%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+                       rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
                     }
                   }
                 }else{

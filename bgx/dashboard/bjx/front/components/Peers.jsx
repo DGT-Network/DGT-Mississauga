@@ -60,7 +60,7 @@ class Peers extends React.Component {
                     },
                     style: {
                       background: rowInfo.row.ip === this.state.selectedIP ? '#b8daff' :
-                       rowInfo.index%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+                       rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
                     }
                   }
                 }else{
