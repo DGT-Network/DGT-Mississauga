@@ -2499,3 +2499,19 @@ export const state = {
   "head": "83c332c98aa1f86bc63c24900a086660480e05e14d8cbbd2e2a727edf6e8a1b24dc441b4064e159ef51c29868ea5e501cd476f15a78a34dbdf42668d7707b81d",
   "link": "http://18.222.233.160:8003/state/e6717403fe89bbc3dacab69f21bbf2d546e9e4c71197cb4818640df60ed6e610db398f?head=83c332c98aa1f86bc63c24900a086660480e05e14d8cbbd2e2a727edf6e8a1b24dc441b4064e159ef51c29868ea5e501cd476f15a78a34dbdf42668d7707b81d"
 }
+
+// export const state = {
+//   "data": 10,
+//   "head": "9e2f89d6e26d8f1e125a9afaffd4f7ccf8f30035ade452bf6851e0ff8d18cabc2e566ad27a640c73f55258bd3f4a56fc45d84b4da224f5497c9ad1a6d04cfb40",
+//   "link": "http://18.222.233.160:8003/state/000000a87cb5eafdcca6a8cde0fb0dec1400c5ab274474a6aa82c12840f169a04216b7?head=9e2f89d6e26d8f1e125a9afaffd4f7ccf8f30035ade452bf6851e0ff8d18cabc2e566ad27a640c73f55258bd3f4a56fc45d84b4da224f5497c9ad1a6d04cfb40"
+// }
+
+// export const state = {
+//   "data": {
+//     "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE1++lRaoTUEHtgCHtco2a7g0clsfyDbGj/CW48I9Ssk2e36GEzOmsMe4pxK+ALU2qc3KfRBSY5ixeu1qGwdMd3Q==": {
+//       "b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741": "{\"group_code\": \"b5c59dee52aa77c037c5d3e33e02328975647fa8db8fcf9107fe495da4df3741\", \"granularity\": \"1\", \"balance\": \"7\", \"decimals\": \"18\", \"owner_key\": \"None\", \"sign\": \"None\"}"
+//     }
+//   },
+//   "head": "9e2f89d6e26d8f1e125a9afaffd4f7ccf8f30035ade452bf6851e0ff8d18cabc2e566ad27a640c73f55258bd3f4a56fc45d84b4da224f5497c9ad1a6d04cfb40",
+//   "link": "http://18.222.233.160:8003/state/e671743bf2b848f2874c7a7f3fb23a908e6f5a5a9d41b18f05bcf78fad0a7c7b50dd6c?head=9e2f89d6e26d8f1e125a9afaffd4f7ccf8f30035ade452bf6851e0ff8d18cabc2e566ad27a640c73f55258bd3f4a56fc45d84b4da224f5497c9ad1a6d04cfb40"
+// }

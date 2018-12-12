@@ -60,6 +60,7 @@ State.defaultProps = {
     id: 'address',
     Header: 'Address',
     accessor: t => <Hash hash={t.address} />,
+    width: 150,
   },{
     id: 'data',
     Header: 'Data',

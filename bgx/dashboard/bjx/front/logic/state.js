@@ -11,7 +11,7 @@ export function convertStates(data) {
 export function convertState(data, address) {
 
   return {
-    data: data.data.BGX_Token,
+    data: data.data,
     address: address
   }
 

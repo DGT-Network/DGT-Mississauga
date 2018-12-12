@@ -1,4 +1,6 @@
 import React from 'react'
+import JSONPretty from 'react-json-pretty'
+
 import  Hash  from './Hash'
 
 class DecodedData extends React.Component {
@@ -18,14 +20,16 @@ class DecodedData extends React.Component {
     }}>
     {
       open && decodedData != null?
+        <JSONPretty json={decodedData.data}/>
 
-        Object.keys(decodedData.data).map((key) => {
-          return (
-            <div>{key}:&nbsp;
-            {decodedData.data[key].length > 10 ?
-            <Hash hash={decodedData.data[key]}/> : decodedData.data[key]}
-            </div>);
-        })
+        // Object.keys(decodedData.data).map((key) => {
+        //   console.log('eee',decodedData.data)
+        //   return (
+        //     <div>{key}:&nbsp;
+        //     {decodedData.data[key].length > 10 ?
+        //     <Hash hash={decodedData.data[key]}/> : decodedData.data[key]}
+        //     </div>);
+        // })
        :
         (<Hash hash={data}/>)
 
@@ -34,7 +38,7 @@ class DecodedData extends React.Component {
   }
 }
 DecodedData.defaultProps = {
-  decodedData: {data: []},
+  decodedData: {},
 }
 
 export default DecodedData;
