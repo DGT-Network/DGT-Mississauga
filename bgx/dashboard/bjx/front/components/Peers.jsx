@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
+import { humanize } from '../logic/peers'
 import {selectPeer} from '../actions/actions'
 
 import Graph from './Graph'
@@ -82,24 +83,22 @@ Peers.defaultProps = {
     id: 'ip',
     Header: 'IP',
     accessor: t => `${t.IP}:${t.port}`,
+    width: 180,
   },
   { id: 'node_state',
-    Header: 'Node State',
-    accessor: t => t.node_state,
+    Header: humanize('node_state'),
+    accessor: t => humanize(t.node_state),
+    width: 100,
   },
   {
     id: 'node_type',
-    Header: 'Node Type',
-    accessor: t => t.node_type,
-  },
-  {
-    id: 'node_type_desc',
-    Header: 'Node Type desc',
-    accessor: t => t.node_type_desc,
+    Header: humanize('node_type'),
+    accessor: t => humanize(t.node_type),
+    width: 100,
   },
   { id: 'public_key',
     Header: 'Public Key',
-    accessor: t => <Hash hash={t.public_key}/>,
+    accessor: t => <Hash hash={t.public_key} length={40}/>,
   },]
 };
 

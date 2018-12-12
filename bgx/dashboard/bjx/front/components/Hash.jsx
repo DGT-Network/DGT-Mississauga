@@ -3,10 +3,10 @@ import { trimHash } from '../helpers/helper'
 
 class Hash extends React.Component {
   render() {
-    const { hash } = this.props
+    const { hash, length} = this.props
     return (
 <div data-toggle="tooltip" data-placement="top" title={hash} style={{padding: '3px'}}>
-          {trimHash(hash)}
+          {trimHash(hash, length)}
         </div>);
   }
 }

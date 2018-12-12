@@ -1,9 +1,9 @@
-export function trimHash(s) {
+export function trimHash(s, length=5) {
   if (typeof s === 'undefined') return '';
-  if (s.length < 13)
+  if (s.length < 3+ 2*length)
     return s;
   else {
-    let r = s.slice(0,5) + '...' + s.slice(s.length-5);
+    let r = s.slice(0,length) + '...' + s.slice(s.length-length);
     return r;
   }
 }
