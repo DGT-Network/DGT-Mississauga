@@ -183,7 +183,7 @@ Blocks.defaultProps = {
     id: 'blockNum',
     Header: 'Block Num',
     accessor: d => parseInt(d.header.block_num),
-    width: 30,
+    width: 100,
   },
   { id: 'batchIds',
     Header: 'Batch Ids',
@@ -205,7 +205,7 @@ Blocks.defaultProps = {
     accessor: d => <Hash hash={d.header.signer_public_key}/>,
   },
     { id: 'stateRootHash',
-    Header: 'state Root Hash',
+    Header: 'State Root Hash',
     accessor: d =><Hash hash={d.header.state_root_hash}/>,
   },]
 };
