@@ -17,6 +17,7 @@ class Transactions extends React.Component {
           ) : (
           <ReactTable data={transactions}
             defaultPageSize={10}
+            filterable
             minRows={0}
             columns={columns}
             className='-striped'/>
@@ -32,32 +33,48 @@ Transactions.defaultProps = {
   columns: [
   {
     id: 'family',
-    Header: 'Family name (family version)',
+    Header: 'Family name (version)',
     accessor: t => `${t.header.family_name} ${t.header.family_version}`,
   },
   { id: 'inputs',
     Header: 'Inputs',
-    accessor: t => t.header.inputs.map((i) => {
-          return (  <Hash key={i} hash={i}/> )
+    filterable: false,
+    accessor: t =>{
+      let index = 0;
+      return t.header.inputs.map((i) => {
+          return (  <Hash key={index++} hash={i}/> )
         })
+    }
   },
   {
     id: 'outputs',
     Header: 'Outputs',
-    accessor: t => t.header.outputs.map((i) => {
-          return (  <Hash key={i} hash={i}/> )
+    filterable: false,
+    accessor: t => {
+      let index = 0;
+      return t.header.outputs.map((i) => {
+          return (  <Hash key={index++} hash={i}/> )
         })
+   }
   },
   { id: 'from',
     Header: 'From',
+    filterable: false,
     accessor: d => <i>wallet key</i>,
   },
   { id: 'to',
     Header: 'To',
+    filterable: false,
     accessor: d => <i>wallet key</i>,
+  },
+  { id: 'transaction_hash',
+    Header: 'Transaction Hash',
+    filterable: false,
+    accessor: d => <i>transaction hash</i>,
   },
   { id: 'signerPublicKey',
     Header: 'Signer Public Key',
+    filterable: false,
     accessor: d => <Hash hash={d.header.signer_public_key}/>,
   }]
 };
