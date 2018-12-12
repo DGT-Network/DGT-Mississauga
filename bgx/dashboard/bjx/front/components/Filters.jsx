@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import {trimSpaces} from '../helpers/helper'
 import { filterPeers } from '../actions/actions';
+import { humanize } from '../logic/peers';
 
 import Hash from './Hash'
 
@@ -22,7 +23,7 @@ class Filters extends React.Component {
    return (<div className='filters'>
       {filters.length &&
 
-      <ul className='list-group'>
+      <ul className={classNames('list-group list-group-root')}>
 
         {filters.map((f) => {
           return (<li className='list-group-item'>
@@ -36,7 +37,7 @@ class Filters extends React.Component {
                 return (<li className='list-group-item' >
 
                   <div onClick={() => this.clickFilter(selected)}>
-                  <span className='marker' style={ {backgroundColor: value} } ></span>{key}</div>
+                  <span className='marker' style={ {backgroundColor: value} } ></span>{humanize(key)}</div>
                 </li>)
               })}
              </ul>

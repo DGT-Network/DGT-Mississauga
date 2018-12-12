@@ -1,5 +1,20 @@
 import colorbrewer from 'colorbrewer';
 
+export const NODETYPE = {
+  inactive: 'Inactive',
+  active: 'Active',
+  plink: 'Permalink',
+  aux: 'Secondary',
+  arbiter: 'Arbiter',
+  leader: 'Leader',
+}
+
+export function humanize(string) {
+  if (!Object.keys(NODETYPE).includes(string))
+    return string
+  else
+    return NODETYPE[string]
+}
 
 export function convertPeers(data) {
   //console.log('data',data)
@@ -77,7 +92,7 @@ function convertNode(r, node, parent_node = null){
   legend.push({"Main": {
     'Address': `${node.IP}:${node.port}`,
     'State': node.node_state,
-    'Type': typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
+    'Type': node.node_type,
   }})
 
   let keys_for_legend = Object.keys(node).filter((k) => {
@@ -97,7 +112,6 @@ function convertNode(r, node, parent_node = null){
       port: node.port,
       node_state: node.node_state,
       node_type: node.node_type,
-      node_type_desc: typeof node.node_type_desc !== 'undefined' ? node.node_type_desc : '',
       public_key:  node.public_key,
       type: node.IP,
       dependedOnBy:  ch.map((j) => {

@@ -6,6 +6,8 @@ import $ from 'jquery';
 import colorbrewer from 'colorbrewer';
 import { connect } from 'react-redux'
 
+import { humanize } from '../logic/peers'
+
 import LineSegment from '../helpers/LineSegment'
 
 import { selectPeer as selectP, filterPeers} from '../actions/actions';
@@ -338,8 +340,8 @@ graph.data = this.props.data;
     var glow = graph.svg.append('filter')
         .attr('x'     , '-50%')
         .attr('y'     , '-50%')
-        .attr('width' , '20px')
-        .attr('height', '400px')
+        .attr('width' , '200%')
+        .attr('height', '200%')
         .attr('id'    , 'blue-glow');
 
     glow.append('feColorMatrix')
@@ -769,8 +771,8 @@ showTooltip(d){
   var div = d3.select(".tooltip")
   div.style("opacity", .9)
     .html("IP: "+d.IP + "<br/>"+
-            d.node_state +"<br/>"+
-            d.node_type_desc)
+            humanize(d.node_state) +"<br/>"+
+            humanize(d.node_type))
    .style("left", (d.x + 30) + "px")
    .style("top", (d.y - 75) + "px")
 }

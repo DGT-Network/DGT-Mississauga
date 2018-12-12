@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import {trimSpaces} from '../helpers/helper'
 
+import { humanize } from '../logic/peers'
+
 import Hash from './Hash'
 
 class Legend extends React.Component {
@@ -34,7 +36,7 @@ class Legend extends React.Component {
                     data-parent='#accordion'>
                     <div className="card-body">
                       {Object.keys(i[key]).map((j) => {
-                        return (<div>{`${j}: ${i[key][j]}`}</div>)
+                        return (<div>{`${j}: ${humanize(i[key][j])}`}</div>)
                       })}
                     </div>
                   </div>
