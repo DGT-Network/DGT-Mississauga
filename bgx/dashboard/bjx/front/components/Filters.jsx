@@ -16,34 +16,51 @@ class Filters extends React.Component {
   clickFilter(value){
     store.dispatch(filterPeers(value));
   }
+
+  isSelected(t) {
+    console.log(t.f)
+    return false
+}
+
   render() {
-    const {filters, colors} = this.props
+    const {filters, selectedFilters} = this.props
 
 
    return (<div className='filters'>
       {filters.length &&
+       <div className='card'>
+       <div className='card-header'>
+        <button className={classNames('btn btn-sm  btn-link')}
+          data-toggle='collapse'
+          data-target='#ffilters'>
+          Filters
+        </button>
+       </div>
 
-      <ul className={classNames('list-group list-group-root')}>
+      <ul id='ffilters' className={classNames('list-group show')}>
 
         {filters.map((f) => {
-          return (<li className='list-group-item'>
-            {f.name}
-             <ul className='list-group'>
+          return (<>
+            <li className={classNames('list-group-item', 'disabled')}>
+            {humanize(f.field)}</li>
               {
                 Object.keys(f.list).map((key) => {
                   let value = f.list[key]
                   let selected = {}
                   selected[f.field] = key
-                return (<li className='list-group-item' >
+                return (<li className='list-group-item'
+                            style={ {backgroundColor: selectedFilters[f.field] !== undefined &&
+                                                      selectedFilters[f.field] === key ? value : false } }>
 
                   <div onClick={() => this.clickFilter(selected)}>
                   <span className='marker' style={ {backgroundColor: value} } ></span>{humanize(key)}</div>
                 </li>)
               })}
-             </ul>
-          </li>)
+          </>
+          )
         })}
       </ul>
+      </div>
       }
     </div>)
   }
@@ -51,14 +68,14 @@ class Filters extends React.Component {
 
 Filters.defaultProps = {
   filters: [],
+  selectedFilters: {},
 }
 
 function mapStateToProps(store) {
   return {
     filters:  store.peersReducer.data.length == 0 ?
       [] : store.peersReducer.data.filters.filters,
-    colors:  store.peersReducer.data.length == 0 ?
-      [] : store.peersReducer.data.filters.colors,
+    selectedFilters: store.peersReducer.selected,
   };
 }
 

@@ -7,6 +7,9 @@ export const NODETYPE = {
   aux: 'Secondary',
   arbiter: 'Arbiter',
   leader: 'Leader',
+  //------------------------
+  node_type: 'Type',
+  node_state: 'Activity',
 }
 
 export function humanize(string) {
