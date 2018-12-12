@@ -159,8 +159,8 @@ graph.data = this.props.data;
     $('#graph')
         .css('display', 'block')
         .css('height', config.graph.height + 'px');
-    graph.width  = 800; //$('#graph').width()  - graph.margin.left - graph.margin.right;
-    graph.height = 600;//$('#graph').height() - graph.margin.top  - graph.margin.bottom;
+    graph.width  = $('#graph').width()  - graph.margin.left - graph.margin.right;
+    graph.height = $('#graph').height() - graph.margin.top  - graph.margin.bottom;
     $('#graph').css('display', display);
 
 
@@ -313,7 +313,6 @@ graph.data = this.props.data;
                 return 'translate(' + d.x + ',' + d.y + ')';
 });
     }
-
 
     graph.svg = d3.select('#graph').append('svg')
         .attr('width' , graph.width  + graph.margin.left + graph.margin.right)
