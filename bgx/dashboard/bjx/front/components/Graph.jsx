@@ -413,10 +413,7 @@ graph.data = cloneDeep(this.props.data);
         graph.legend.attr('transform', 'translate(0,' + $(this).scrollTop() + ')');
     });
     */
-    graph.line = graph.svg.append('g').selectAll('.link')
-        .data(graph.force.links())
-      .enter().append('line')
-        .attr('class', 'link');
+
 
     graph.draggedThreshold = d3.scale.linear()
         .domain([0, 0.1])
@@ -519,6 +516,7 @@ graph.data = cloneDeep(this.props.data);
 }
 
 updateGraph(){
+    console.log('updategraph', this.state.hiddenNodes)
     let graph = this.graphh;
     let that = this;
 
@@ -529,6 +527,15 @@ updateGraph(){
             that.deselectObject();
         }
     });
+
+        if (graph.line !== undefined)
+            graph.line.selectAll("*").remove();
+        graph.svg.selectAll('.link').remove()
+
+        graph.line = graph.svg.append('g').selectAll('.link')
+        .data(graph.force.links())
+      .enter().append('line')
+        .attr('class', 'link');
 
         // console.log('node', graph.node)
         graph.node.selectAll("*").remove();
@@ -736,6 +743,7 @@ hideChildren(array, IP){
 
 
 highlightObject2(obj) {
+    console.log('highlightObject2')
   let graph = this.graphh;
 
   if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
@@ -753,6 +761,7 @@ highlightObject2(obj) {
     });
 
     this.setState({hiddenNodes: forHide})
+    this.forceUpdate();
 }
 
 
@@ -864,7 +873,6 @@ deselectObject(doResize) {
    //store.dispatch(selectP(null))
    //store.dispatch(filterPeers({}))
 }
-
 
 
 componentDidMount() {
