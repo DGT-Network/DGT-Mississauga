@@ -22,7 +22,7 @@ import database
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_SIZE = 1024**4
+DEFAULT_SIZE = 1024**2
 
 
 class IndexOutOfSyncError(Exception):

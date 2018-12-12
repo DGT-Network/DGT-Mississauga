@@ -121,14 +121,33 @@ class BlockManager():
 
     def put(self, branch):
         ordered_branch = self.check_predecessors(branch)
-        head_block_header = block_pb2.BlockHeader().FromString(ordered_branch[0].header)
-        traversed_blocks = []
-        for block in self._block_store.get_block_iter(reverse=True):
-            traversed_blocks.append(block)
-            if block.header_signature == head_block_header.previous_block_id:
-                break
         wrapped_ordered_branch = [BlockWrapper(block) for block in ordered_branch]
-        self._block_store.update_chain(wrapped_ordered_branch, traversed_blocks)
+        head_block_header = block_pb2.BlockHeader().FromString(ordered_branch[0].header)
+
+        chain_head = self._block_store.chain_head
+        if chain_head is not None and chain_head.block.header_signature != head_block_header.previous_block_id:
+            raise MissingPredecessor()
+        self._block_store.update_chain(wrapped_ordered_branch)
+
+        # Works with next logic
+        # If A(prev: 0) <- B(prev: A) <- C(prev: B)
+        # And branch to put is A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
+        # Then after update chain will be A(prev: 0) <- B(prev: A) <- A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
+        # Note block C2(prev: B2) will be removed
+        # predecessor_found = False
+        # block_store_has_blocks = False
+        # traversed_blocks = []
+        # for wrapped_block in self._block_store.get_block_iter(reverse=True):
+        #     block = wrapped_block.block
+        #     block_store_has_blocks = True
+        #     if block.header_signature == head_block_header.previous_block_id:
+        #         predecessor_found = True
+        #         break
+        #     traversed_blocks.append(block)
+        # if predecessor_found or (not block_store_has_blocks):
+        #     self._block_store.update_chain(wrapped_ordered_branch, traversed_blocks)
+        # else:
+        #     raise MissingPredecessor()
         LOGGER.debug("BlockManager: put branch=%s", ordered_branch)
 
     # Raises UnknownBlock if the block is not found

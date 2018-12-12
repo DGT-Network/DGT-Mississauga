@@ -1,4 +1,4 @@
-# Copyright 2018 NTRlab 
+# Copyright 2018 NTRlab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ from enum import IntEnum
 LOGGER = logging.getLogger(__name__)
 
 #from sawtooth_validator.ffi import OwnedPointer
-from sawtooth_validator.protobuf.block_pb2 import Block
+from sawtooth_validator.protobuf.block_pb2 import Block, BlockHeader
+from sawtooth_validator.journal.block_wrapper import BlockWrapper
 #from sawtooth_validator import ffi
 
 
@@ -74,7 +75,7 @@ class BlockManager():
         """
         self.pointer = 1 # this is fake pointer
         LOGGER.debug("BlockManager: __init__")
-            
+
     def add_store(self, name, block_store):
         """
         _pylibexec("block_manager_add_store",
@@ -84,7 +85,7 @@ class BlockManager():
         """
         self._name = name
         self._block_store = block_store if block_store is not None else {}
-        LOGGER.debug("BlockManager: add_store name=%s",name)
+        LOGGER.debug("BlockManager: add_store name=%s", name)
 
     @staticmethod
     def check_predecessors(branch):
@@ -92,7 +93,9 @@ class BlockManager():
         heads = []
         tail = ''
         for block in branch:
-            predecessors.append(block.header.previous_block_id)
+            block_header = BlockHeader().FromString(block.header)
+            print(block_header)
+            predecessors.append(block_header.previous_block_id)
             heads.append(block.header_signature)
         if len(set(predecessors) - set(heads)) > 1:
             raise MissingPredecessorInBranch("Missing predecessor")
@@ -102,7 +105,8 @@ class BlockManager():
         while len(branch) != 0:
             prev_len = len(branch)
             for (i, block) in enumerate(branch):
-                if block.header.previous_block_id == tail:
+                block_header = BlockHeader().FromString(block.header)
+                if block_header.previous_block_id == tail:
                     ordered_branch.append(block)
                     tail = block.header_signature
                     del branch[i]
@@ -113,20 +117,38 @@ class BlockManager():
 
     def put(self, branch):
         ordered_branch = self.check_predecessors(branch)
-        block_iter = self._block_store.get_block_iter(reverse=True)
-        traversed_blocks = []
-        while True:
-            block = next(block_iter)
-            traversed_blocks.append(block)
-            if block.header_signature == ordered_branch[0].header.previous_block_id:
-                self._block_store.update_chain(ordered_branch, traversed_blocks)
-                break
-        LOGGER.debug("BlockManager: put branch=%s",ordered_branch)
+        wrapped_ordered_branch = [BlockWrapper(block) for block in ordered_branch]
+        head_block_header = BlockHeader().FromString(ordered_branch[0].header)
 
+        chain_head = self._block_store.chain_head
+        if chain_head is not None and chain_head.block.header_signature != head_block_header.previous_block_id:
+            raise MissingPredecessor()
+        self._block_store.update_chain(wrapped_ordered_branch)
+
+        # Works with next logic
+        # If A(prev: 0) <- B(prev: A) <- C(prev: B)
+        # And branch to put is A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
+        # Then after update chain will be A(prev: 0) <- B(prev: A) <- A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
+        # Note block C2(prev: B2) will be removed
+        # predecessor_found = False
+        # block_store_has_blocks = False
+        # traversed_blocks = []
+        # for wrapped_block in self._block_store.get_block_iter(reverse=True):
+        #     block = wrapped_block.block
+        #     block_store_has_blocks = True
+        #     if block.header_signature == head_block_header.previous_block_id:
+        #         predecessor_found = True
+        #         break
+        #     traversed_blocks.append(block)
+        # if predecessor_found or (not block_store_has_blocks):
+        #     self._block_store.update_chain(wrapped_ordered_branch, traversed_blocks)
+        # else:
+        #     raise MissingPredecessor()
+        LOGGER.debug("BlockManager: put branch=%s", ordered_branch)
 
     # Raises UnknownBlock if the block is not found
     def ref_block(self, block_id):
-        LOGGER.debug("BlockManager: ref_block block_id=%s",block_id)
+        LOGGER.debug("BlockManager: ref_block block_id=%s", block_id)
         """
         _libexec(
             "block_manager_ref_block",
@@ -134,26 +156,29 @@ class BlockManager():
             ctypes.c_char_p(block_id.encode()))
         """
         self._block = self._block_store._get_block(block_id)
-        LOGGER.debug("BlockManager: ref_block block=(%s)",self._block) 
-    # Raises UnknownBlock if the block is not found
+        LOGGER.debug("BlockManager: ref_block block=(%s)", self._block)
+        # Raises UnknownBlock if the block is not found
+
     def unref_block(self, block_id):
-        LOGGER.debug("BlockManager: unref_block block_id=%s",block_id)
+        LOGGER.debug("BlockManager: unref_block block_id=%s", block_id)
         """
         _libexec(
             "block_manager_unref_block",
             self.pointer,
             ctypes.c_char_p(block_id.encode()))
         """
+
     def persist(self, block_id, store_name):
-        LOGGER.debug("BlockManager: persist block_id=%s  store_name=%s",block_id,store_name)
+        LOGGER.debug("BlockManager: persist block_id=%s  store_name=%s", block_id, store_name)
         """
         _libexec("block_manager_persist",
                  self.pointer,
                  ctypes.c_char_p(block_id.encode()),
                  ctypes.c_char_p(store_name.encode()))
         """
+
     def __contains__(self, block_id):
-        LOGGER.debug("BlockManager: __contains__ block_id=%s",block_id)
+        LOGGER.debug("BlockManager: __contains__ block_id=%s", block_id)
         contains = ctypes.c_bool(False)
         """
         _libexec(
@@ -165,16 +190,17 @@ class BlockManager():
         return contains
 
     def get(self, block_ids):
-        LOGGER.debug("BlockManager: get block_ids=%s",block_ids)
-        return _GetBlockIterator(self.pointer, block_ids,self._block_store)
+        LOGGER.debug("BlockManager: get block_ids=%s", block_ids)
+        return _GetBlockIterator(self.pointer, block_ids, self._block_store)
 
     def branch(self, tip):
-        LOGGER.debug("BlockManager: branch tip=%s",tip)
+        LOGGER.debug("BlockManager: branch tip=%s", tip)
         return _BranchIterator(self.pointer, tip)
 
     def branch_diff(self, tip, exclude):
-        LOGGER.debug("BlockManager: branch_diff tip=%s",tip)
+        LOGGER.debug("BlockManager: branch_diff tip=%s", tip)
         return _BranchDiffIterator(self.pointer, tip, exclude)
+
 
 """
 def _libexec(name, *args):
@@ -208,23 +234,24 @@ def _exec(library, name, *args):
         raise Exception("There was an unknown error: {}".format(res))
 """
 
+
 class _BlockIterator:
 
     def __del__(self):
         if self._c_iter_ptr:
-            LOGGER.debug("_BlockIterator: __del__ ptr=%s",self._c_iter_ptr)
+            LOGGER.debug("_BlockIterator: __del__ ptr=%s", self._c_iter_ptr)
             """
             _libexec("{}_drop".format(self.name), self._c_iter_ptr)
             """
 
     def __iter__(self):
-        LOGGER.debug("_BlockIterator: __iter__ ptr=%s ....",self)
+        LOGGER.debug("_BlockIterator: __iter__ ptr=%s ....", self)
         return self
 
     def __next__(self):
         if not self._c_iter_ptr:
             raise StopIteration()
-        LOGGER.debug("_BlockIterator: __next__ ptr=%s",self._c_iter_ptr)
+        LOGGER.debug("_BlockIterator: __next__ ptr=%s", self._c_iter_ptr)
         """
         (vec_ptr, vec_len, vec_cap) = ffi.prepare_vec_result()
 
@@ -241,25 +268,24 @@ class _BlockIterator:
         payload = ffi.from_rust_vec(vec_ptr, vec_len, vec_cap)
         """
         payload = next(self._c_iter_ptr)
-        LOGGER.debug("_BlockIterator: next=%s",payload)
+        LOGGER.debug("_BlockIterator: next=%s", payload)
         block = Block()
-        #block.ParseFromString(payload)
+        # block.ParseFromString(payload)
 
         return block
 
 
 class _GetBlockIterator(_BlockIterator):
-
     name = "block_manager_get_iterator"
 
-    def __init__(self, block_manager_ptr, block_ids,block_store = None):
-
+    def __init__(self, block_manager_ptr, block_ids, block_store=None):
         c_block_ids = (ctypes.c_char_p * len(block_ids))()
         for i, block_id in enumerate(block_ids):
             c_block_ids[i] = ctypes.c_char_p(block_id.encode())
 
-        #self._c_iter_ptr = 1 #fake
-        self._c_iter_ptr = block_store.get_block_iter(start_block=None) if block_store else None #start_block=block_ids[0]
+        # self._c_iter_ptr = 1 #fake
+        self._c_iter_ptr = block_store.get_block_iter(
+            start_block=None) if block_store else None  # start_block=block_ids[0]
         """
         self._c_iter_ptr = ctypes.c_void_p()
         _libexec("{}_new".format(self.name),
@@ -268,14 +294,15 @@ class _GetBlockIterator(_BlockIterator):
                  ctypes.c_size_t(len(block_ids)),
                  ctypes.byref(self._c_iter_ptr))
         """
-        LOGGER.debug("_GetBlockIterator: __init__ block_manager_ptr=%s block_ids=%s iter=%s",block_manager_ptr,block_ids,self._c_iter_ptr)
+        LOGGER.debug("_GetBlockIterator: __init__ block_manager_ptr=%s block_ids=%s iter=%s", block_manager_ptr,
+                     block_ids, self._c_iter_ptr)
+
 
 class _BranchDiffIterator(_BlockIterator):
-
     name = "block_manager_branch_diff_iterator"
 
     def __init__(self, block_manager_ptr, tip, exclude):
-        LOGGER.debug("_BranchDiffIterator: __init__ block_manager_ptr=%s tip=%s",block_manager_ptr,tip)
+        LOGGER.debug("_BranchDiffIterator: __init__ block_manager_ptr=%s tip=%s", block_manager_ptr, tip)
         c_tip = ctypes.c_char_p(tip.encode())
         c_exclude = ctypes.c_char_p(exclude.encode())
 
@@ -288,16 +315,15 @@ class _BranchDiffIterator(_BlockIterator):
                  ctypes.byref(self._c_iter_ptr))
         """
 
-class _BranchIterator(_BlockIterator):
 
+class _BranchIterator(_BlockIterator):
     name = "block_manager_branch_iterator"
 
     def __init__(self, block_manager_ptr, tip):
-
         c_tip = ctypes.c_char_p(tip.encode())
 
         self._c_iter_ptr = ctypes.c_void_p()
-        LOGGER.debug("_BranchIterator: __init__ block_manager_ptr=%s tip=%s",block_manager_ptr,tip)
+        LOGGER.debug("_BranchIterator: __init__ block_manager_ptr=%s tip=%s", block_manager_ptr, tip)
         """
         _libexec("{}_new".format(self.name),
                  block_manager_ptr,
