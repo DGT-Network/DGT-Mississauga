@@ -86,18 +86,43 @@ class BlockManager():
         self._block_store = block_store if block_store is not None else {}
         LOGGER.debug("BlockManager: add_store name=%s",name)
 
+    @staticmethod
+    def check_predecessors(branch):
+        predecessors = []
+        heads = []
+        tail = ''
+        for block in branch:
+            predecessors.append(block.header.previous_block_id)
+            heads.append(block.header_signature)
+        if len(set(predecessors) - set(heads)) > 1:
+            raise MissingPredecessorInBranch("Missing predecessor")
+        else:
+            tail = list(set(predecessors) - set(heads))[0]
+        ordered_branch = []
+        while len(branch) != 0:
+            prev_len = len(branch)
+            for (i, block) in enumerate(branch):
+                if block.header.previous_block_id == tail:
+                    ordered_branch.append(block)
+                    tail = block.header_signature
+                    del branch[i]
+                    break
+            if len(branch) == prev_len:
+                raise MissingPredecessorInBranch("Missing predecessor")
+        return ordered_branch
+
     def put(self, branch):
-        c_put_items = (ctypes.POINTER(_PutEntry) * len(branch))()
-        for (i, block) in enumerate(branch):
-            c_put_items[i] = ctypes.pointer(_PutEntry.new(
-                block.SerializeToString(),
-            ))
-        LOGGER.debug("BlockManager: put branch=%s",branch)
-        """
-        _libexec("block_manager_put",
-                 self.pointer,
-                 c_put_items, ctypes.c_size_t(len(branch)))
-        """
+        ordered_branch = self.check_predecessors(branch)
+        block_iter = self._block_store.get_block_iter(reverse=True)
+        traversed_blocks = []
+        while True:
+            block = next(block_iter)
+            traversed_blocks.append(block)
+            if block.header_signature == ordered_branch[0].header.previous_block_id:
+                self._block_store.update_chain(ordered_branch, traversed_blocks)
+                break
+        LOGGER.debug("BlockManager: put branch=%s",ordered_branch)
+
 
     # Raises UnknownBlock if the block is not found
     def ref_block(self, block_id):
