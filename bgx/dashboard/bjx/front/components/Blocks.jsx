@@ -125,16 +125,16 @@ class Blocks extends React.Component {
 
   render() {
     const that = this;
-    const {graph_blocks, columns, blocks_data, className, id, role} = this.props;
+    const {graph_blocks, columns, blocks_data} = this.props;
 
     if (graph_blocks == null)
     return (
-      <div className={className} id={id} role={role}>
+      <div>
         <strong> No Blocks</strong>
       </div>)
     else
       return (
-        <div className={className} id={id} role={role}>
+        <div >
           <div className='row'>
             <div className='col-12'>
               <div className='container'>

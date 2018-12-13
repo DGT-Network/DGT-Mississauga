@@ -23,9 +23,9 @@ class Peers extends React.Component {
   }
 
   render() {
-    const {peers, columns, className, id, role} = this.props
+    const {peers, columns} = this.props
     return (
-    <div className={classNames('row', className)} id={id} role={role}>
+    <div>
       <Graph/>
       {peers.length &&
         <div className={classNames('tab-offset')}>

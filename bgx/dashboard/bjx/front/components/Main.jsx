@@ -1,10 +1,15 @@
 import React from 'react'
 import classNames from 'classnames/bind'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import packageJson from '../../package.json'
 
 import Transactions from './Transactions'
 import Blocks from './Blocks'
 import State from './State'
 import Peers from './Peers'
+import Network from './Network'
+import Wallet from './Wallet'
 import LogoSvg from '../assets/logo.svg'
 
 import { getTransactions, getPeers, getStates, getBlocks } from '../actions/actions';
@@ -14,6 +19,11 @@ class Main extends React.Component {
     super(props)
 
     this.handleClick = this.handleClick.bind(this);
+
+    console.log('123213', packageJson)
+
+    this.state= {name: packageJson.name,
+      version: packageJson.version}
   }
   handleClick() {
     store.dispatch(getTransactions());
@@ -23,6 +33,9 @@ class Main extends React.Component {
   }
 
   render() {
+
+    const {name, version} = packageJson;
+
     return (
       <div>
         <nav className={classNames('navbar', 'navbar-light', 'navbar-expand-lg', 'bg-light')}>
@@ -35,12 +48,21 @@ class Main extends React.Component {
           <div className={classNames('collapse', 'navbar-collapse')} id="navbarNav">
             <ul className={classNames('nav', 'navbar-nav')}>
               <li className="nav-item">
+                <a className={classNames('nav-link')}
+                   id="network-tab"
+                   data-toggle="tab"
+                   href="#network"
+                   role="tab">
+                  Network
+                </a>
+              </li>
+              <li className="nav-item">
                 <a className={classNames('nav-link active')}
                    id="peers-tab"
                    data-toggle="tab"
                    href="#peers"
                    role="tab">
-                  Peers
+                  Nodes
                 </a>
               </li>
               <li className="nav-item">
@@ -54,37 +76,72 @@ class Main extends React.Component {
               </li>
               <li className="nav-item">
                  <a className={classNames('nav-link')}
-                   id="blocks-tab"
+                   id="wallet-tab"
                    data-toggle="tab"
-                   href="#blocks"
+                   href="#wallet"
                    role="tab">
-                  Blocks
+                  Wallet
                 </a>
               </li>
-              <li className="nav-item">
-                 <a className={classNames('nav-link')}
-                   id="state-tab"
-                   data-toggle="tab"
-                   href="#state"
-                   role="tab">
-                  State
+
+              <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Dev
                 </a>
-              </li>
+                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a className={classNames('dropdown-item')}
+                       id="state-tab"
+                       data-toggle="tab"
+                       href="#state"
+                       role="tab">
+                      State
+                    </a>
+                    <a className={classNames('dropdown-item')}
+                       id="blocks-tab"
+                       data-toggle="tab"
+                       href="#blocks"
+                       role="tab">
+                      Blocks
+                    </a>
+                </div>
+                </li>
+
             </ul>
           </div>
 
           <span className='navbar-text'>
-            BGX Web viewer [ALPHA]
+            {`${name} ${version} [ALPHA]`}
           </span>
-          <a to="#" onClick={this.handleClick} className="btn btn-outline-success">Update</a>
+          <span className='navbar-text'>
+            <a href="mailto:info@bgx.ai?subject=Dashboard" className="btn btn-sm btn-outline-info">
+            <FontAwesomeIcon icon="envelope" />
+            &nbsp;Submit feedback</a>
+          </span>
+          {
+          //<a to="#" onClick={this.handleClick} className="btn btn-outline-success">Update</a>
+        }
         </nav>
 
 
         <div className={classNames("tab-content", 'tab-offset')} id="btcontent">
-          <Peers className={classNames("tab-pane", "fade", "show", "active")} id="peers" role="tabpanel"/>
-          <Transactions className={classNames("tab-pane", "fade")} id="transactions" role="tabpanel"/>
-          <Blocks className={classNames("tab-pane", "fade")} id="blocks" role="tabpanel"/>
-          <State className={classNames("tab-pane", "fade")} id="state" role="tabpanel"/>
+          <div className={classNames('row', "tab-pane", "fade", "show", "active")} id="peers" role="tabpanel">
+            <Peers />
+          </div>
+          <div className={classNames('row', "tab-pane", "fade")} id="transactions" role="tabpanel">
+            <Transactions/>
+          </div>
+          <div className={classNames('row',"tab-pane", "fade")} id="blocks" role="tabpanel">
+            <Blocks/>
+          </div>
+          <div className={classNames('row', "tab-pane", "fade")} id="state" role="tabpanel">
+            <State/>
+          </div>
+          <div className={classNames('row', "tab-pane", "fade")} id="network" role="tabpanel">
+            <Network/>
+          </div>
+          <div className={classNames('row', "tab-pane", "fade")} id="wallet" role="tabpanel">
+            <Wallet/>
+          </div>
         </div>
       </div>);
   }

@@ -8,9 +8,9 @@ import ReactTable from 'react-table'
 
 class Transactions extends React.Component {
   render() {
-    const {transactions, columns, className, id, role} = this.props
+    const {transactions, columns} = this.props
     return (
-      <div className={classNames('row', className)} id={id} role={role}>
+      <div>
         <div className='col-12'>
           {!transactions.length ? (
           <strong> No transactions</strong>

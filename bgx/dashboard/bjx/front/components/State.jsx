@@ -21,8 +21,8 @@ class State extends React.Component {
   }
 
   render() {
-    const {state, columns, className, id, role} = this.props;
-    return (<div className={className} id={id} role={role}>
+    const {state, columns} = this.props;
+    return (<div>
       {!state.length  ? (
         <strong> No State</strong>
       ) : (
