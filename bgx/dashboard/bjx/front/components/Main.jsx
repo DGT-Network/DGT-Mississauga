@@ -9,6 +9,7 @@ import Blocks from './Blocks'
 import State from './State'
 import Peers from './Peers'
 import Network from './Network'
+import Stat from './Stat'
 import Wallet from './Wallet'
 import LogoSvg from '../assets/logo.svg'
 
@@ -122,6 +123,7 @@ class Main extends React.Component {
         }
         </nav>
 
+        <Stat/>
 
         <div className={classNames("tab-content", 'tab-offset')} id="btcontent">
           <div className={classNames('row', "tab-pane", "fade", "show", "active")} id="peers" role="tabpanel">
@@ -136,7 +138,7 @@ class Main extends React.Component {
           <div className={classNames('row', "tab-pane", "fade")} id="state" role="tabpanel">
             <State/>
           </div>
-          <div className={classNames('row', "tab-pane", "fade")} id="network" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="network" role="tabpanel">
             <Network/>
           </div>
           <div className={classNames('row', "tab-pane", "fade")} id="wallet" role="tabpanel">
