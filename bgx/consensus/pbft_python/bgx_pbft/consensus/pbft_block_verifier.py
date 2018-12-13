@@ -20,8 +20,7 @@ from bgx_pbft.journal.consensus.consensus import BlockVerifierInterface
 
 from bgx_pbft.consensus.consensus_state import ConsensusState
 from bgx_pbft.consensus.consensus_state_store import ConsensusStateStore
-from bgx_pbft.consensus.bgt_settings_view import PbftSettingsView
-#from bgx_pbft.consensus import pbft_enclave_factory as factory
+from bgx_pbft.consensus.pbft_settings_view import PbftSettingsView
 from bgx_pbft.consensus import utils
 
 from bgx_pbft_common.validator_registry_view.validator_registry_view import ValidatorRegistryView
@@ -95,24 +94,23 @@ class PbftBlockVerifier(BlockVerifierInterface):
                 state_view_factory=self._state_view_factory)
         if _VREG_:
             validator_registry_view = ValidatorRegistryView(state_view)
-        # Grab the validator info based upon the block signer's public
-        # key
-        try:
-            validator_info = validator_registry_view.get_validator_info(
-                    block_wrapper.header.signer_public_key)
+            # Grab the validator info based upon the block signer's public
+            # key
+            try:
+                validator_info = validator_registry_view.get_validator_info(block_wrapper.header.signer_public_key)
                 LOGGER.debug('Block Signer Name=%s, ID=%s...%s PBFT',validator_info.name,validator_info.id[:8],validator_info.id[-8:])
-        except KeyError:
-            LOGGER.error(
-                'Block %s rejected: Received block from an unregistered validator %s...%s num_transactions=%s',
-                block_wrapper.identifier[:8],
-                block_wrapper.header.signer_public_key[:8],
-                block_wrapper.header.signer_public_key[-8:],
-                    block_wrapper.num_transactions)
-                #return False
+            except KeyError:
+                LOGGER.error(
+                    'Block %s rejected: Received block from an unregistered validator %s...%s num_transactions=%s',
+                    block_wrapper.identifier[:8],
+                    block_wrapper.header.signer_public_key[:8],
+                    block_wrapper.header.signer_public_key[-8:],
+                        block_wrapper.num_transactions)
+                    #return False
 
         
 
-         # Get the consensus state and PBFT configuration view for the block
+        # Get the consensus state and PBFT configuration view for the block
         # that is being built upon
         consensus_state = ConsensusState.consensus_state_for_block_id(
                 block_id=block_wrapper.previous_block_id,
@@ -125,10 +123,4 @@ class PbftBlockVerifier(BlockVerifierInterface):
         LOGGER.debug('PbftBlockVerifier:: pbft_settings_view=%s',pbft_settings_view)
         return block_wrapper.header.consensus == b"pbft"
     
-        # Reject the block if the validator has not waited the required number
-        # of blocks between when the block containing its validator registry
-        # transaction was committed to the chain and trying to claim this
-        # block
-        # Reject the block if the validator is claiming blocks at a rate that
-        # is more frequent than is statistically allowed (i.e., zTest)
         

@@ -146,8 +146,8 @@ class PbftBlockPublisher(BlockPublisherInterface):
         self._data_dir = data_dir
         self._config_dir = config_dir
         self._validator_id = validator_id
-        self._node = 'plink'
-        LOGGER.debug('PbftBlockPublisher:: ConsensusStateStore')
+        self._node = node if node else 'plink'
+        LOGGER.debug('PbftBlockPublisher:: CREATE ConsensusStateStore')
         self._consensus_state_store = ConsensusStateStore(data_dir=self._data_dir,validator_id=self._validator_id)
         self._pbft_key_state_store = PbftKeyStateStore(data_dir=self._data_dir,validator_id=self._validator_id)
         self._wait_timer = None
@@ -243,9 +243,9 @@ class PbftBlockPublisher(BlockPublisherInterface):
         # send out.
         output_addresses = [validator_entry_address,PbftBlockPublisher._validator_map_address]
         input_addresses = output_addresses + \
-            [SettingsView.setting_address('sawtooth.bgt.report_public_key_pem'),
-             SettingsView.setting_address('sawtooth.bgt.valid_enclave_measurements'),
-             SettingsView.setting_address('sawtooth.bgt.valid_enclave_basenames')
+            [SettingsView.setting_address('sawtooth.pbft.report_public_key_pem'),
+             SettingsView.setting_address('sawtooth.pbft.valid_enclave_measurements'),
+             SettingsView.setting_address('sawtooth.pbft.valid_enclave_basenames')
             ]
 
         header = txn_pb.TransactionHeader(
@@ -337,20 +337,23 @@ class PbftBlockPublisher(BlockPublisherInterface):
         PbftBlockPublisher._previous_block_id = block_header.previous_block_id
         # Using the current chain head, we need to create a state view so we
         # can create a PBFT enclave.
-        state_view = BlockWrapper.state_view_for_block(
-                block_wrapper=self._block_cache.block_store.chain_head,
-                state_view_factory=self._state_view_factory)
+        if False:
+            state_view = BlockWrapper.state_view_for_block(
+                    block_wrapper=self._block_cache.block_store.chain_head,
+                    state_view_factory=self._state_view_factory)
 
-        pbft_settings_view = PbftSettingsView(state_view)
-        LOGGER.debug("PbftBlockPublisher::pbft_settings_view node=%s",pbft_settings_view.pbft_node)
-        self._node = pbft_settings_view.pbft_node
+            pbft_settings_view = PbftSettingsView(state_view)
+            LOGGER.debug("PbftBlockPublisher::pbft_settings_view node=%s",pbft_settings_view.pbft_node)
+        #self._node = pbft_settings_view.pbft_node
         
         consensus_state = ConsensusState.consensus_state_for_block_id(
                 block_id=block_header.previous_block_id,
                 block_cache=self._block_cache,
                 state_view_factory=self._state_view_factory,
-                consensus_state_store=self._consensus_state_store
+                consensus_state_store=self._consensus_state_store,
+                node=self._node
                 )
+        #consensus_state.set_node(self._node)
         LOGGER.debug("PbftBlockPublisher::initialize_block GET CONSENSUS_STATE=%s for block_id=%s ",consensus_state,block_header.previous_block_id)
         # start 
         # Get our validator registry entry to see what PBFT public key
@@ -507,7 +510,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
         PbftBlockPublisher._previous_block_id = None
         block_header.consensus = b"pbft"
         LOGGER.debug('PbftBlockPublisher::initialize_block DONE..')
-
+        self._block_header = block_header
         return True
 
     def check_publish_block(self, block_header):
@@ -520,18 +523,19 @@ class PbftBlockPublisher(BlockPublisherInterface):
             Boolean: True if the candidate block should be claimed. False if
             the block is not ready to be claimed.
         """
-        #LOGGER.debug("PbftBlockPublisher::check_publish_block block_header=(%s)",block_header)
-        """
-        consensus_state = ConsensusState.consensus_state_for_block_id(
-                block_id=block_header.previous_block_id,
-                block_cache=self._block_cache,
-                state_view_factory=self._state_view_factory,
-                consensus_state_store=self._consensus_state_store
-                )
-        LOGGER.debug("PbftBlockPublisher::check_publish_block state=%s block_header=(%s)",consensus_state,block_header)
-        if consensus_state.is_step_NotStarted :
-            return False
-        """
+        if False and   block_header is not None:
+            LOGGER.debug("PbftBlockPublisher::check_publish_block block_header=(%s)",type(block_header))
+        
+            consensus_state = ConsensusState.consensus_state_for_block_id(
+                    block_id=block_header.previous_block_id,
+                    block_cache=self._block_cache,
+                    state_view_factory=self._state_view_factory,
+                    consensus_state_store=self._consensus_state_store
+                    )
+            if not consensus_state.is_step_NotStarted:
+                LOGGER.debug("PbftBlockPublisher::check_publish_block state=%s",consensus_state)
+            return not consensus_state.is_step_NotStarted
+        
         # Only claim readiness if the wait timer has expired
         return True #self._wait_timer.has_expired(now=time.time())
 
@@ -547,13 +551,15 @@ class PbftBlockPublisher(BlockPublisherInterface):
             Boolean: True if the candidate block good and should be generated.
             False if the block should be abandoned.
         """
-        LOGGER.debug('PbftBlockPublisher::finalize_block: block_header[%s]=(%s)',type(block_header),block_header)
+        LOGGER.debug('PbftBlockPublisher::FINALIZE BLOCK: block_header[%s]=(%s)',type(block_header),block_header)
         if isinstance(block_header, bytes):
             # Using the current chain head, we need to create a state
             # view so we can create a PBFT enclave.
+            """
             state_view = BlockWrapper.state_view_for_block(
                     block_wrapper=self._block_cache.block_store.chain_head,
                     state_view_factory=self._state_view_factory)
+            """
             # We need to create a wait certificate for the block and
             # then serialize that into the block header consensus field.
             if _VREG_:
