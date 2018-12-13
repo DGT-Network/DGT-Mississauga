@@ -126,7 +126,7 @@ class Main extends React.Component {
         <Stat/>
 
         <div className={classNames("tab-content", 'tab-offset')} id="btcontent">
-          <div className={classNames('row', "tab-pane", "fade", "show", "active")} id="peers" role="tabpanel">
+          <div className={classNames("tab-pane", "fade", "show", "active")} id="peers" role="tabpanel">
             <Peers />
           </div>
           <div className={classNames('row', "tab-pane", "fade")} id="transactions" role="tabpanel">

@@ -26,38 +26,28 @@ class Filters extends React.Component {
     const {filters, selectedFilters} = this.props
 
 
-   return (<div className='filters'>
+   return (<div className='tab-offset filters'>
       {filters.length &&
        <div className='card'>
        <div className='card-header'>
-        <button className={classNames('btn btn-sm  btn-link')}
-          data-toggle='collapse'
-          data-target='#ffilters'>
           Filters
-        </button>
        </div>
 
-      <ul id='ffilters' className={classNames('list-group show')}>
+      <ul className={classNames('list-inline')}>
 
         {filters.map((f) => {
-          return (<>
-            <li className={classNames('list-group-item', 'disabled')}>
-            {humanize(f.field)}</li>
-              {
-                Object.keys(f.list).map((key) => {
+                return Object.keys(f.list).map((key) => {
                   let value = f.list[key]
                   let selected = {}
                   selected[f.field] = key
-                return (<li className='list-group-item'
+                  return (<li className='list-inline-item'
                             style={ {backgroundColor: selectedFilters[f.field] !== undefined &&
                                                       selectedFilters[f.field] === key ? value : false } }>
 
                   <div onClick={() => this.clickFilter(selected)}>
                   <span className='marker' style={ {backgroundColor: value} } ></span>{humanize(key)}</div>
                 </li>)
-              })}
-          </>
-          )
+              })
         })}
       </ul>
       </div>

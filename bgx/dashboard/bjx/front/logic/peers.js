@@ -93,9 +93,16 @@ function convertNode(r, node, parent_node = null){
   let legend = []
 
   legend.push({"Main": {
+    'Public Key': node.public_key,
     'Address': `${node.IP}:${node.port}`,
     'State': node.node_state,
     'Type': node.node_type,
+    'Date Created': '15.04.2018',
+    'Date Updated': '17.08.2018',
+    'KYCKey': '0ABD7E',
+    'SLA': 'blocked',
+    'Claster': 'eea98-0ABD7E-ff7ea-0BCDA',
+    'Transactions Count' : 42,
   }})
 
   let keys_for_legend = Object.keys(node).filter((k) => {

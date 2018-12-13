@@ -11,39 +11,55 @@ class Legend extends React.Component {
   render() {
     const {peer} = this.props;
     let t = -1;
+    let tt = -1;
 
     if (peer == null)
       return '';
 
     else
       return (
-        <div id='accordion' className='legend'>
-          {peer.legend.map((i) => {
+        <div className='tab-offset card'>
+          <div className='card-header'>
+            <ul class="nav nav-tabs card-header-tabs">
+            {
+              peer.legend.map((i) => {
+                t++;
+                const key = Object.keys(i)[0]
+                return (
+                <li className="nav-item">
+                   <a className={classNames('nav-link', t == 0 ? 'active' : '' )}
+                     id={`${key}-tab`}
+                     data-toggle="tab"
+                     href={`#${trimSpaces(key)}`}
+                     role="tab">
+                    {key}
+                  </a>
+                </li>)
+              })
+            }
+            </ul>
+          </div>
 
-            t++;
-
-            const key = Object.keys(i)[0]
-            return (
-               <div className="card">
-                  <div className="card-header" id={`heading${trimSpaces(key)}`}>
-                    <button className={classNames('btn btn-sm  btn-link')}
-                      data-toggle='collapse'
-                      data-target={`#part${trimSpaces(key)}`}>
-                      {key}
-                    </button>
-                  </div>
-                  <div id={`part${trimSpaces(key)}`} className={classNames('collapse', t == 0 ? 'show' : '' )}
-                    data-parent='#accordion'>
-                    <div className="card-body">
-                      {Object.keys(i[key]).map((j) => {
+          <div className="card-body">
+            <div className="tab-content" id="filtercontent">
+            {
+              peer.legend.map((i) => {
+                tt++;
+                const key = Object.keys(i)[0]
+                return (
+                  <div className={classNames("tab-pane", "fade",  tt == 0 ? 'show active' : '' )} id={trimSpaces(key)} role="tabpanel">
+                    {
+                      Object.keys(i[key]).map((j) => {
                         return (<div>{`${j}: ${humanize(i[key][j])}`}</div>)
-                      })}
-                    </div>
-                  </div>
-                </div>
-            );
-          })}
-        </div>
+                      })
+                    }
+                  </div>)
+
+              })
+            }
+            </div>
+          </div>
+       </div>
       );
   }
 }

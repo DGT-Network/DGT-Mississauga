@@ -892,15 +892,18 @@ componentDidUpdate(prevProps, prevState) {
 
   render() {
     return(
-        <div className='col-12'>
-            <div className='graphLayer'>
-                <div  id='graph-container'>
-                    <div  id='graph'>
-                    <div className='tooltip'/>
+        <div className='row-offset card'>
+            <div className='card-header'>
+                Node Graph
+            </div>
+            <div className='card-body'>
+                <div className='graphLayer'>
+                    <div  id='graph-container'>
+                        <div  id='graph'>
+                        <div className='tooltip'/>
+                        </div>
                     </div>
                 </div>
-                <Legend/>
-                <Filters/>
             </div>
         </div>);
   }
