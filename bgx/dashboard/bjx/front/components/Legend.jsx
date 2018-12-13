@@ -50,7 +50,10 @@ class Legend extends React.Component {
                   <div className={classNames("tab-pane", "fade",  tt == 0 ? 'show active' : '' )} id={trimSpaces(key)} role="tabpanel">
                     {
                       Object.keys(i[key]).map((j) => {
-                        return (<div>{`${j}: ${humanize(i[key][j])}`}</div>)
+                        return (<div>
+                          <strong>{`${j}: `}</strong>
+                          <span>{humanize(i[key][j])}</span>
+                          </div>)
                       })
                     }
                   </div>)

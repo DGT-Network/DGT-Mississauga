@@ -76,12 +76,12 @@ class Main extends React.Component {
                 </a>
               </li>
               <li className="nav-item">
-                 <a className={classNames('nav-link')}
-                   id="wallet-tab"
+                <a className={classNames('nav-link')}
+                   id="blocks-tab"
                    data-toggle="tab"
-                   href="#wallet"
+                   href="#blocks"
                    role="tab">
-                  Wallet
+                  Ledger
                 </a>
               </li>
 
@@ -97,13 +97,7 @@ class Main extends React.Component {
                        role="tab">
                       State
                     </a>
-                    <a className={classNames('dropdown-item')}
-                       id="blocks-tab"
-                       data-toggle="tab"
-                       href="#blocks"
-                       role="tab">
-                      Blocks
-                    </a>
+
                 </div>
                 </li>
 
