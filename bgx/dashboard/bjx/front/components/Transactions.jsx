@@ -38,18 +38,49 @@ Transactions.defaultProps = {
     Header: 'Family name (version)',
     accessor: t => `${t.header.family_name} ${t.header.family_version}`,
   },
+  {
+    id: 'type',
+    Header: 'Type',
+    filterable: false,
+    accessor: d => {
+      if (d.decoded_data == undefined ||
+          d.decoded_data.Verb == undefined )
+        return <i>No data</i>
+
+      return d.decoded_data.Verb
+    },
+  },
   { id: 'from',
     Header: 'From',
-    accessor: d => <i>wallet key</i>,
+    accessor: d => {
+      if (d.decoded_data == undefined ||
+          d.decoded_data.Name == undefined )
+        return <i>No data</i>
+
+      return d.decoded_data.Name
+    },
   },
   { id: 'to',
     Header: 'To',
-    accessor: d => <i>wallet key</i>,
+    accessor: d => {
+      if (d.decoded_data == undefined ||
+          d.decoded_data.to_addr == undefined )
+        return <i>No data</i>
+
+      return d.decoded_data.to_addr
+    },
   },
   { id: 'amount',
     Header: 'Amount',
     filterable: false,
-    accessor: d => <i>amount</i>,
+    accessor: d => {
+      if (d.decoded_data == undefined ||
+          d.decoded_data.num_bgt == undefined ||
+          d.decoded_data.group_id == undefined )
+        return <i>No data</i>
+
+      return `${d.decoded_data.num_bgt} ${d.decoded_data.group_id}`
+    },
   },
 ]
 };
