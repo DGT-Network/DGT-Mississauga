@@ -10,8 +10,11 @@ class Transactions extends React.Component {
   render() {
     const {transactions, columns} = this.props
     return (
-      <div>
-        <div className='col-12'>
+      <div className='card'>
+
+      <div className='card-header'>
+      Transactions
+      </div>
           {!transactions.length ? (
           <strong> No transactions</strong>
           ) : (
@@ -20,9 +23,8 @@ class Transactions extends React.Component {
             filterable
             minRows={0}
             columns={columns}
-            className='-striped'/>
+            className='tab-offset -striped'/>
             )}
-        </div>
       </div>
     )
   }
@@ -36,47 +38,20 @@ Transactions.defaultProps = {
     Header: 'Family name (version)',
     accessor: t => `${t.header.family_name} ${t.header.family_version}`,
   },
-  { id: 'inputs',
-    Header: 'Inputs',
-    filterable: false,
-    accessor: t =>{
-      let index = 0;
-      return t.header.inputs.map((i) => {
-          return (  <Hash key={index++} hash={i}/> )
-        })
-    }
-  },
-  {
-    id: 'outputs',
-    Header: 'Outputs',
-    filterable: false,
-    accessor: t => {
-      let index = 0;
-      return t.header.outputs.map((i) => {
-          return (  <Hash key={index++} hash={i}/> )
-        })
-   }
-  },
   { id: 'from',
     Header: 'From',
-    filterable: false,
     accessor: d => <i>wallet key</i>,
   },
   { id: 'to',
     Header: 'To',
-    filterable: false,
     accessor: d => <i>wallet key</i>,
   },
-  { id: 'transaction_hash',
-    Header: 'Transaction Hash',
+  { id: 'amount',
+    Header: 'Amount',
     filterable: false,
-    accessor: d => <i>transaction hash</i>,
+    accessor: d => <i>amount</i>,
   },
-  { id: 'signerPublicKey',
-    Header: 'Signer Public Key',
-    filterable: false,
-    accessor: d => <Hash hash={d.header.signer_public_key}/>,
-  }]
+]
 };
 
 function mapStateToProps(store) {

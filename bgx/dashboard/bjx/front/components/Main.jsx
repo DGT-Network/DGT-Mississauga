@@ -129,7 +129,7 @@ class Main extends React.Component {
           <div className={classNames("tab-pane", "fade", "show", "active")} id="peers" role="tabpanel">
             <Peers />
           </div>
-          <div className={classNames('row', "tab-pane", "fade")} id="transactions" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="transactions" role="tabpanel">
             <Transactions/>
           </div>
           <div className={classNames('row',"tab-pane", "fade")} id="blocks" role="tabpanel">
