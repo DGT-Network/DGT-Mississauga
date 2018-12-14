@@ -431,7 +431,7 @@ class BlockPublisher(object):
                  batch_observers,
                  batch_injector_factory=None,
                  metrics_registry=None,
-                 block_manager):
+                 block_manager=None):
         """
         Initialize the BlockPublisher object
 

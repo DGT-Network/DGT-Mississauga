@@ -24,6 +24,7 @@ from sawtooth_validator.protobuf.block_pb2 import Block, BlockHeader
 from sawtooth_validator.journal.block_wrapper import BlockWrapper
 #from sawtooth_validator import ffi
 
+NULL_BLOCK_IDENTIFIER = "0000000000000000"
 
 class MissingPredecessor(Exception):
     pass
@@ -66,26 +67,54 @@ class _PutEntry(ctypes.Structure):
         )
 
 
+class RefCount:
+    def __init__(self, block_id, previous_block_id, reffed):
+        self.block_id = block_id
+        self.previous_block_id = previous_block_id
+        if reffed:
+            self.internal_ref_count = 1
+            self.external_ref_count = 0
+        else:
+            self.internal_ref_count = 0
+            self.external_ref_count = 1
+
+    def get_counters(self):
+        return self.internal_ref_count, self.external_ref_count
+
+    def increase_internal_ref_count(self):
+        self.internal_ref_count += 1
+
+    def decrease_internal_ref_count(self):
+        if self.internal_ref_count <= 1:
+            LOGGER.debug("BlockManager: The internal ref-count fell below zero, its lowest possible value")
+        self.internal_ref_count -= 1
+
+    def increase_external_ref_count(self):
+        self.external_ref_count += 1
+
+    def decrease_external_ref_count(self):
+        if self.internal_ref_count <= 1:
+            LOGGER.debug("BlockManager: The external ref-count fell below zero, its lowest possible value")
+        self.external_ref_count -= 1
+
+
 class BlockManager():
 
     def __init__(self):
-        """
-        super(BlockManager, self).__init__('block_manager_drop')
-        _libexec("block_manager_new",ctypes.byref(self.pointer))
-        """
-        self.pointer = 1 # this is fake pointer
         LOGGER.debug("BlockManager: __init__")
+        self.block_by_block_id = {}
+        self.blockstore_by_name = {}
+        self.references_by_block_id = {}
+        self.pointer = 1 # this is fake pointer
 
     def add_store(self, name, block_store):
-        """
-        _pylibexec("block_manager_add_store",
-                   self.pointer,
-                   ctypes.c_char_p(name.encode()),
-                   ctypes.py_object(block_store))
-        """
-        self._name = name
-        self._block_store = block_store if block_store is not None else {}
         LOGGER.debug("BlockManager: add_store name=%s", name)
+        for block in block_store.get_block_iter():
+            if block.header_signature not in self.references_by_block_id:
+                block_header = BlockHeader().FromString(block.header)
+                self.references_by_block_id[block.header_signature] = \
+                    RefCount(block.header_signature, block_header.previous_block_id, False)
+        self.blockstore_by_name[name] = block_store
 
     @staticmethod
     def check_predecessors(branch):
@@ -115,7 +144,9 @@ class BlockManager():
                 raise MissingPredecessorInBranch("Missing predecessor")
         return ordered_branch
 
+    # TODO: implement filling of self.block_by_block_id
     def put(self, branch):
+        LOGGER.debug("BlockManager: put branch=%s", branch)
         ordered_branch = self.check_predecessors(branch)
         wrapped_ordered_branch = [BlockWrapper(block) for block in ordered_branch]
         head_block_header = BlockHeader().FromString(ordered_branch[0].header)
@@ -144,29 +175,71 @@ class BlockManager():
         #     self._block_store.update_chain(wrapped_ordered_branch, traversed_blocks)
         # else:
         #     raise MissingPredecessor()
-        LOGGER.debug("BlockManager: put branch=%s", ordered_branch)
 
-    # Raises UnknownBlock if the block is not found
     def ref_block(self, block_id):
         LOGGER.debug("BlockManager: ref_block block_id=%s", block_id)
-        """
-        _libexec(
-            "block_manager_ref_block",
-            self.pointer,
-            ctypes.c_char_p(block_id.encode()))
-        """
-        self._block = self._block_store._get_block(block_id)
-        LOGGER.debug("BlockManager: ref_block block=(%s)", self._block)
-        # Raises UnknownBlock if the block is not found
+        if self.references_by_block_id[block_id]:
+            self.references_by_block_id[block_id].increase_external_ref_count()
+            return
+
+        for store in self.blockstore_by_name.values():
+            try:
+                wrapped_block = store.__getitem__(block_id)
+                break
+            except KeyError:
+                pass
+
+        if not wrapped_block:
+            raise UnknownBlock()
+        block = wrapped_block.block
+        block_header = BlockHeader().FromString(block.header)
+        rc = RefCount(block_id, block_header.previous_block_id, True)
+        rc.increase_external_ref_count()
+        self.references_by_block_id[block_id] = rc
+        LOGGER.debug("BlockManager: ref_block block=(%s)", block_id)
 
     def unref_block(self, block_id):
         LOGGER.debug("BlockManager: unref_block block_id=%s", block_id)
-        """
-        _libexec(
-            "block_manager_unref_block",
-            self.pointer,
-            ctypes.c_char_p(block_id.encode()))
-        """
+        if block_id not in self.references_by_block_id:
+            raise UnknownBlock()
+
+        rc = self.references_by_block_id[block_id]
+        rc.decrease_external_ref_count()
+
+        (internal_ref_count, external_ref_count) = rc.get_counters()
+        blocks_to_remove = []
+        optional_new_tip = None
+        dropped = False
+
+        if internal_ref_count + external_ref_count == 0:
+            # Starting from block_id, walk back until finding a block that has a
+            # internal ref_count >= 2 or an external_ref_count > 0.
+            tmp_block_id = block_id
+            while True:
+                ref_block = self.references_by_block_id[tmp_block_id]
+                if ref_block.internal_ref_count >= 2 or ref_block.external_ref_count >= 1:
+                    pointed_to = tmp_block_id
+                    break
+                elif ref_block.previous_block_id == NULL_BLOCK_IDENTIFIER:
+                    blocks_to_remove.append(tmp_block_id)
+                    pointed_to = None
+                    break
+                else:
+                    blocks_to_remove.append(tmp_block_id)
+            del self.references_by_block_id[block_id]
+            del self.block_by_block_id[block_id]
+            dropped = True
+            optional_new_tip = pointed_to
+
+        for tmp_block_id in blocks_to_remove:
+            del self.references_by_block_id[tmp_block_id]
+            del self.block_by_block_id[tmp_block_id]
+
+        if optional_new_tip:
+            self.references_by_block_id[optional_new_tip].decrease_internal_ref_count()
+
+        if dropped:
+            LOGGER.debug("BlockManager: unref_block dropped block")
 
     def persist(self, block_id, store_name):
         LOGGER.debug("BlockManager: persist block_id=%s  store_name=%s", block_id, store_name)
