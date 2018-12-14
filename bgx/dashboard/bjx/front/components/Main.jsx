@@ -3,6 +3,7 @@ import classNames from 'classnames/bind'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import packageJson from '../../package.json'
+import $ from 'jquery';
 
 import Transactions from './Transactions'
 import Blocks from './Blocks'
@@ -11,6 +12,7 @@ import Peers from './Peers'
 import Network from './Network'
 import Stat from './Stat'
 import Wallet from './Wallet'
+import Feedback from './Feedback'
 import LogoSvg from '../assets/logo.svg'
 
 import { getTransactions, getPeers, getStates, getBlocks } from '../actions/actions';
@@ -108,9 +110,10 @@ class Main extends React.Component {
             {`${name} ${version} [ALPHA]`}
           </span>
           <span className='navbar-text'>
-            <a href="mailto:info@bgx.ai?subject=Dashboard" className="btn btn-sm btn-outline-info">
+
+            <button className="btn btn-sm btn-info" onClick={() => { $('#feedbackForm').modal('show')}}>
             <FontAwesomeIcon icon="envelope" />
-            &nbsp;Submit feedback</a>
+            &nbsp;Submit feedback</button>
           </span>
           {
           //<a to="#" onClick={this.handleClick} className="btn btn-outline-success">Update</a>
@@ -139,6 +142,8 @@ class Main extends React.Component {
             <Wallet/>
           </div>
         </div>
+
+        <Feedback/>
       </div>);
   }
 }
