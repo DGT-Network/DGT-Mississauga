@@ -95,7 +95,7 @@ class PbftEngine(Engine):
         if self._oracle.check_consensus(self._block):
             LOGGER.info('PbftEngine:Passed consensus check: %s', self._block.block_id.hex())
             self._check = False # stop checking
-            self._check_block(block.block_id)
+            #self._check_block(block.block_id)
         else:
             #LOGGER.info('PbftEngine: Failed consensus check: %s', self._block.block_id.hex())
             #self._fail_block(self._block.block_id)
@@ -137,7 +137,7 @@ class PbftEngine(Engine):
         return PbftBlock(self._service.get_chain_head())
 
     def _get_block(self, block_id):
-        LOGGER.debug('PbftEngine: _get_block id=%s',block_id.hex())
+        #LOGGER.debug('PbftEngine: _get_block id=%s',block_id.hex())
         return PbftBlock(self._service.get_blocks([block_id])[block_id])
 
     def _commit_block(self, block_id):
@@ -331,19 +331,21 @@ class PbftEngine(Engine):
 
     def _handle_new_block(self, block):
         LOGGER.info('PbftEngine: handle NEW_BLOCK:Received id=%s block_num=%s payload=%s', block.block_id.hex(),block.block_num,block.payload)
+        """
         if self._block_id is not None:
             LOGGER.info('PbftEngine:handle NEW_BLOCK: check consensus for =%s', self._block_id.hex())
             if self._block_num == 0:
                 LOGGER.info('PbftEngine:Passed consensus check: %s', self._block_id.hex())
                 self._check_block(self._block_id)
                 self._block_id = None
-
+        """
         block = PbftBlock(block)
         if block.block_num != 0:
             self._start_consensus(block)
         else: # genesis
             # we can start consensus at this point
-            LOGGER.info('PbftEngine: _handle_new_block make _check_block')
+            LOGGER.info('PbftEngine: _handle_new_block Genesis')
+            self._start_consensus(block)
             #self._check_block(block.block_id)
             """
             if self._check_consensus(block):
@@ -375,22 +377,20 @@ class PbftEngine(Engine):
     def _resolve_fork(self, block):
         chain_head = self._get_chain_head()
 
-        LOGGER.info(
-            'Choosing between chain heads -- current: %s -- new: %s',
-            chain_head.block_id.hex(),
-            block.block_id.hex())
+        LOGGER.info('Choosing between chain heads -- current: %s -- new: %s',chain_head.block_id.hex(),block.block_id.hex())
 
         if self._switch_forks(chain_head, block):
-            LOGGER.info('Committing %s', block.block_id.hex())
-            self._commit_block(block.block_id)
+            LOGGER.info('Committing block=%s', block.block_id.hex())
+            #self._commit_block(block.block_id)
             self._committing = True
         else:
-            LOGGER.info('Ignoring %s', block.block_id.hex())
+            LOGGER.info('Ignoring block=%s', block.block_id.hex())
             self._ignore_block(block.block_id)
 
     def _handle_committed_block(self, block_id):
         LOGGER.info('handle COMMITTED_BLOCK:Chain head updated to %s, abandoning block in progress',block_id.hex())
-
+        block = self._get_block(block_id)
+        self._oracle.message_consensus_handler(Message.CONSENSUS_NOTIFY_BLOCK_COMMIT,block)
         self._cancel_block()
 
         self._building = False
@@ -404,8 +404,9 @@ class PbftEngine(Engine):
         Messages about new peers
         """
         #block = PbftBlock(block)
-        LOGGER.info('handle PEER_CONNECTED: Received %s', type(block))
-        self._is_peer_connected = True
+        if not self._is_peer_connected:
+            LOGGER.info('handle PEER_CONNECTED: Received %s', type(block))
+            self._is_peer_connected = True
 
     def _handle_peer_message(self, block):
         """

@@ -138,10 +138,11 @@ class ConsensusState:
         # either get to the root or we get a block for which we have already
         # created consensus state
         current_id = block_id
-        LOGGER.debug("ConsensusState: ASK STATE for block_id=%s",current_id)
+        #LOGGER.debug("ConsensusState: ASK STATE for block_id=%s",current_id)
         consensus_state = consensus_state_store.get(block_id=current_id)
         if consensus_state is not None:
-            LOGGER.debug("ConsensusState: FOUND CONSENSUS_STATE=%s for block_id=%s",consensus_state,current_id)
+            #LOGGER.debug("ConsensusState: FOUND CONSENSUS_STATE=%s for block_id=%s",consensus_state,current_id)
+            pass
         elif force :
             LOGGER.debug("ConsensusState: CREATE CONSENSUS_STATE node=%s for block_id=%s",node,current_id)
             consensus_state = ConsensusState(node)
@@ -198,7 +199,10 @@ class ConsensusState:
         self._mode = "Normal"     # Normal, ViewChanging, Checkpointing
         self._sequence_number = 0
         self._node = node if node else 'plink'
-        LOGGER.debug("ConsensusState: __init__ node=%s",self._node)
+        #LOGGER.debug("ConsensusState: __init__ node=%s",self._node)
+
+    def set_consensus_state_for_block_id(self,block_id,consensus_state_store):
+        consensus_state_store[block_id] = self
 
     @property
     def aggregate_local_mean(self):

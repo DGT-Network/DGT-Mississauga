@@ -28,7 +28,7 @@ except TypeError:
 from bgx_pbft.journal.block_wrapper import BlockWrapper
 from bgx_pbft.journal.consensus.consensus import BlockPublisherInterface
 from bgx_pbft.state.settings_view import SettingsView
-from bgx_pbft.consensus import pbft_enclave_factory as factory
+#from bgx_pbft.consensus import pbft_enclave_factory as factory
 from bgx_pbft.consensus.consensus_state import ConsensusState
 from bgx_pbft.consensus.consensus_state_store import ConsensusStateStore
 from bgx_pbft.consensus.pbft_settings_view import PbftSettingsView
@@ -353,6 +353,9 @@ class PbftBlockPublisher(BlockPublisherInterface):
                 consensus_state_store=self._consensus_state_store,
                 node=self._node
                 )
+        # shift into PrePrepare state
+        consensus_state.next_step()
+        consensus_state.set_consensus_state_for_block_id(block_header.previous_block_id,self._consensus_state_store)
         #consensus_state.set_node(self._node)
         LOGGER.debug("PbftBlockPublisher::initialize_block GET CONSENSUS_STATE=%s for block_id=%s ",consensus_state,block_header.previous_block_id)
         # start 
