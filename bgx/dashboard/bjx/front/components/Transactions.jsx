@@ -6,6 +6,8 @@ import Hash from './Hash'
 import $ from 'jquery';
 import JSONPretty from 'react-json-pretty'
 
+import humanize from '../helpers/humanize';
+
 import ReactTable from 'react-table'
 
 class Transactions extends React.Component {
@@ -98,7 +100,7 @@ Transactions.defaultProps = {
           d.decoded_data.Verb == undefined )
         return <i>No data</i>
 
-      return d.decoded_data.Verb
+      return humanize(d.decoded_data.Verb)
     },
   },
   { id: 'from',

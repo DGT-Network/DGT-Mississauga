@@ -9,7 +9,7 @@ import cloneDeep from 'lodash/cloneDeep';
 
 import { connect } from 'react-redux'
 
-import { humanize } from '../logic/peers'
+import humanize from '../helpers/humanize';
 
 import LineSegment from '../helpers/LineSegment'
 

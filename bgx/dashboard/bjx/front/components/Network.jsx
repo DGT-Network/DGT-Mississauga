@@ -71,13 +71,13 @@ class Network extends React.Component {
         </div>
         <div className='card-body'>
           <p>
-            <strong>Claster:</strong>&nbsp;<span className='text-secondary'>eea98-0ABD7E-ff7ea-0BCDA </span>
+            <strong>Cluster:</strong>&nbsp;<span className='text-secondary'>eea98-0ABD7E-ff7ea-0BCDA </span>
           </p>
           <p>
-            <strong>Nodes count:</strong>&nbsp;<span className='text-secondary'>{nodes_count}</span>
+            <strong>Node count:</strong>&nbsp;<span className='text-secondary'>{nodes_count}</span>
           </p>
           <p>
-            <strong>Transactions count:</strong>&nbsp;
+            <strong>Transaction count:</strong>&nbsp;
             <span className='text-secondary'>{transactions_count}&nbsp;(</span>
             <span className='text-success'>{success_transactions}</span>/
             <span className='text-warning'>{failed_transactions}</span>

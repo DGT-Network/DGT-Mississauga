@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
-import { humanize } from '../logic/peers'
+import humanize from '../helpers/humanize';
 import {selectPeer} from '../actions/actions'
 
 import Graph from './Graph'

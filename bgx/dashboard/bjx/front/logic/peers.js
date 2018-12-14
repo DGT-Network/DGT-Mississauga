@@ -1,24 +1,5 @@
 import colorbrewer from 'colorbrewer';
 
-export const NODETYPE = {
-  inactive: 'Inactive',
-  active: 'Active',
-  plink: 'Permalink',
-  aux: 'Secondary',
-  arbiter: 'Arbiter',
-  leader: 'Leader',
-  //------------------------
-  node_type: 'Type',
-  node_state: 'Activity',
-}
-
-export function humanize(string) {
-  if (!Object.keys(NODETYPE).includes(string))
-    return string
-  else
-    return NODETYPE[string]
-}
-
 export function convertPeers(data) {
   //console.log('data',data)
   let parent_node = data.data.net_structure.parent_node
@@ -101,7 +82,7 @@ function convertNode(r, node, parent_node = null){
     'Date Updated': '17.08.2018',
     'KYCKey': '0ABD7E',
     'SLA': 'blocked',
-    'Claster': 'eea98-0ABD7E-ff7ea-0BCDA',
+    'Cluster': 'eea98-0ABD7E-ff7ea-0BCDA',
     'Transactions Count' : 42,
   }})
 

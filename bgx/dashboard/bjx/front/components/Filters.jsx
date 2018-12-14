@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import {trimSpaces} from '../helpers/helper'
 import { filterPeers } from '../actions/actions';
-import { humanize } from '../logic/peers';
+import humanize from '../helpers/humanize';
 
 import Hash from './Hash'
 

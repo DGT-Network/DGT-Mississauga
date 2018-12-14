@@ -186,7 +186,7 @@ Blocks.defaultProps = {
     width: 100,
   },
   { id: 'batchIds',
-    Header: 'Batch Ids',
+    Header: 'Batch ID',
     accessor: d => d.header.batch_ids.map((i) => {
           return (  <Hash key={i} hash={i}/> )
         })
