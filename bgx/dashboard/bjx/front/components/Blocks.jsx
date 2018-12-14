@@ -128,7 +128,7 @@ class Blocks extends React.Component {
     const that = this;
     const {graph_blocks, columns, blocks_data} = this.props;
     return (
-      <Card id='ladger' title='Ladger'>
+      <Card id='ledger' title='Ledger'>
         {
         graph_blocks == null ?
         (
