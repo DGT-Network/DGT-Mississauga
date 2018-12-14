@@ -28,9 +28,15 @@ class Peers extends React.Component {
     const {peers, columns} = this.props
     return (
     <div>
-      <Graph/>
+      <div className='row'>
+        <div className='col-9'>
+          <Graph/>
+        </div>
+        <div className='col-3'>
+          <Legend/>
+        </div>
+      </div>
       <Filters/>
-      <Legend/>
     </div>
     )
   }

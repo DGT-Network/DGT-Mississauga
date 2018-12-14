@@ -18,7 +18,7 @@ class Legend extends React.Component {
 
     else
       return (
-        <div className='tab-offset card'>
+        <div className='card'>
           <div className='card-header'>
             <ul class="nav nav-tabs card-header-tabs">
             {
