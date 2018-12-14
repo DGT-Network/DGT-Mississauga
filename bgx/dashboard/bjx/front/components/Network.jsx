@@ -114,8 +114,8 @@ class Network extends React.Component {
 
     const doughData = {
       labels: [
-        'Success Transactions',
-        'Failed Transactions',
+        'Success Transactions ',
+        'Failed Transactions     ',
       ],
       datasets: [{
         data: [success_transactions, failed_transactions],
