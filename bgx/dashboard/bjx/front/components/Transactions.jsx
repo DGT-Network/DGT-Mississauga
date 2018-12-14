@@ -9,6 +9,7 @@ import JSONPretty from 'react-json-pretty'
 import humanize from '../helpers/humanize';
 
 import ReactTable from 'react-table'
+import Card from './Card'
 
 class Transactions extends React.Component {
   constructor(props){
@@ -18,7 +19,6 @@ class Transactions extends React.Component {
   }
 
   showDetails(info) {
-    console.log('12213213', info)
     this.setState({selectedTr: info.original})
     $('#myModal').modal('show')
 
@@ -27,58 +27,53 @@ class Transactions extends React.Component {
   render() {
     const {transactions, columns} = this.props
     return (
-      <div className='card'>
-
-      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLongTitle">Transactions raw details</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <JSONPretty json={this.state.selectedTr}/>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <Card id='transactions_card' title='Transactions'>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Transactions raw details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <JSONPretty json={this.state.selectedTr}/>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        {!transactions.length ? (
+        <strong> No transactions</strong>
+        ) : (
+        <ReactTable data={transactions}
+          defaultPageSize={10}
+          filterable
+          minRows={0}
+          columns={columns}
+          className='tab-offset -striped'
+          getTdProps={(state, rowInfo, column, instance) => {
+            return {
+              onClick: (e, handleOriginal) => {
+                this.showDetails(rowInfo)
 
-        <div className='card-header'>
-          Transactions
-        </div>
-          {!transactions.length ? (
-          <strong> No transactions</strong>
-          ) : (
-          <ReactTable data={transactions}
-            defaultPageSize={10}
-            filterable
-            minRows={0}
-            columns={columns}
-            className='tab-offset -striped'
-            getTdProps={(state, rowInfo, column, instance) => {
-              return {
-                onClick: (e, handleOriginal) => {
-                  this.showDetails(rowInfo)
-
-                  // IMPORTANT! React-Table uses onClick internally to trigger
-                  // events like expanding SubComponents and pivots.
-                  // By default a custom 'onClick' handler will override this functionality.
-                  // If you want to fire the original onClick handler, call the
-                  // 'handleOriginal' function.
-                  if (handleOriginal) {
-                    handleOriginal();
-                  }
+                // IMPORTANT! React-Table uses onClick internally to trigger
+                // events like expanding SubComponents and pivots.
+                // By default a custom 'onClick' handler will override this functionality.
+                // If you want to fire the original onClick handler, call the
+                // 'handleOriginal' function.
+                if (handleOriginal) {
+                  handleOriginal();
                 }
-              };
-            }}
-           />
-            )}
-      </div>
+              }
+            };
+          }}
+         />
+          )}
+      </Card>
     )
   }
 }

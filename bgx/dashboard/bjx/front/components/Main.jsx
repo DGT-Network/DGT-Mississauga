@@ -22,9 +22,6 @@ class Main extends React.Component {
     super(props)
 
     this.handleClick = this.handleClick.bind(this);
-
-    console.log('123213', packageJson)
-
     this.state= {name: packageJson.name,
       version: packageJson.version}
   }
@@ -129,16 +126,16 @@ class Main extends React.Component {
           <div className={classNames("tab-pane", "fade")} id="transactions" role="tabpanel">
             <Transactions/>
           </div>
-          <div className={classNames('row',"tab-pane", "fade")} id="blocks" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="blocks" role="tabpanel">
             <Blocks/>
           </div>
-          <div className={classNames('row', "tab-pane", "fade")} id="state" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="state" role="tabpanel">
             <State/>
           </div>
           <div className={classNames("tab-pane", "fade")} id="network" role="tabpanel">
             <Network/>
           </div>
-          <div className={classNames('row', "tab-pane", "fade")} id="wallet" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="wallet" role="tabpanel">
             <Wallet/>
           </div>
         </div>

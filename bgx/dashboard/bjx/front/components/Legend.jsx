@@ -2,12 +2,19 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import {trimSpaces} from '../helpers/helper'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import humanize from '../helpers/humanize';
 
 import Hash from './Hash'
 
 class Legend extends React.Component {
+  constructor(props){
+    super(props)
+
+    this.state = {collapsed: false}
+  }
+
   render() {
     const {peer} = this.props;
     let t = -1;
@@ -19,7 +26,7 @@ class Legend extends React.Component {
     else
       return (
         <div className='card'>
-          <div className='card-header'>
+          <div className='card-header' onClick={() => this.setState({collapsed: !this.state.collapsed})} data-toggle="collapse" data-target='#legend' aria-expanded="false" aria-controls="collapseExample">
             <ul class="nav nav-tabs card-header-tabs">
             {
               peer.legend.map((i) => {
@@ -38,9 +45,12 @@ class Legend extends React.Component {
               })
             }
             </ul>
+            <div className='close-icon'>
+              <FontAwesomeIcon icon={this.state.collapsed ? "plus" : "minus"} />
+            </div>
           </div>
 
-          <div className="card-body">
+          <div id='legend' className="card-body collapse show">
             <div className="tab-content" id="filtercontent">
             {
               peer.legend.map((i) => {

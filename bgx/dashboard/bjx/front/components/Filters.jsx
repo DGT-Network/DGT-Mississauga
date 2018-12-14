@@ -6,6 +6,7 @@ import { filterPeers } from '../actions/actions';
 import humanize from '../helpers/humanize';
 
 import Hash from './Hash'
+import Card from './Card'
 
 class Filters extends React.Component {
   constructor(props) {
@@ -28,29 +29,26 @@ class Filters extends React.Component {
 
    return (<div className='tab-offset filters'>
       {filters.length &&
-       <div className='card'>
-       <div className='card-header'>
-          Filters
-       </div>
+        <Card id='filters' title='Filters'>
 
-      <ul className={classNames('list-inline')}>
+          <ul className={classNames('list-inline')}>
 
-        {filters.map((f) => {
-                return Object.keys(f.list).map((key) => {
-                  let value = f.list[key]
-                  let selected = {}
-                  selected[f.field] = key
-                  return (<li className='list-inline-item'
-                            style={ {backgroundColor: selectedFilters[f.field] !== undefined &&
-                                                      selectedFilters[f.field] === key ? value : false } }>
+            {filters.map((f) => {
+                    return Object.keys(f.list).map((key) => {
+                      let value = f.list[key]
+                      let selected = {}
+                      selected[f.field] = key
+                      return (<li className='list-inline-item'
+                                style={ {backgroundColor: selectedFilters[f.field] !== undefined &&
+                                                          selectedFilters[f.field] === key ? value : false } }>
 
-                  <div onClick={() => this.clickFilter(selected)}>
-                  <span className='marker' style={ {backgroundColor: value} } ></span>{humanize(key)}</div>
-                </li>)
-              })
-        })}
-      </ul>
-      </div>
+                      <div onClick={() => this.clickFilter(selected)}>
+                      <span className='marker' style={ {backgroundColor: value} } ></span>{humanize(key)}</div>
+                    </li>)
+                  })
+            })}
+          </ul>
+        </Card>
       }
     </div>)
   }

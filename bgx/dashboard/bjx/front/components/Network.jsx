@@ -1,6 +1,8 @@
 import React from 'react'
 import {Line, Bar, Doughnut} from 'react-chartjs-2';
 
+import Card from './Card'
+
 
 import { connect } from 'react-redux'
 
@@ -129,11 +131,7 @@ class Network extends React.Component {
     };
 
     return (<div className="tab-offset">
-      <div className="card">
-        <div className='card-header'>
-        Network
-        </div>
-        <div className='card-body'>
+      <Card id="network_card" title='Network'>
           <div className='row'>
             <div className='col-8'>
               <p>
@@ -159,24 +157,18 @@ class Network extends React.Component {
               <Doughnut data={doughData} />
             </div>
           </div>
-        </div>
-      </div>
-      <div className="tab-offset card">
-        <div className='card-header'>
-        Network Load
-        </div>
-        <div className='card-body'>
-        <Line data={data}/>
-        </div>
+      </Card>
+
+      <div className="tab-offset">
+       <Card id="network_load" title='Network Load'>
+          <Line data={data}/>
+        </Card>
       </div>
 
-       <div className="tab-offset card">
-        <div className='card-header'>
-        Transaction Count
-        </div>
-        <div className='card-body'>
-        <Bar data={data2}/>
-        </div>
+       <div className="tab-offset">
+        <Card id="transaction_count" title='Transaction Count'>
+          <Bar data={data2}/>
+        </Card>
       </div>
     </div>);
   }

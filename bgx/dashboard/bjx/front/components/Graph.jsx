@@ -16,6 +16,7 @@ import LineSegment from '../helpers/LineSegment'
 import { selectPeer as selectP, filterPeers} from '../actions/actions';
 import Legend from './Legend'
 import Filters from './Filters'
+import Card from './Card'
 
 
 class Graph extends React.Component {
@@ -892,11 +893,7 @@ componentDidUpdate(prevProps, prevState) {
 
   render() {
     return(
-        <div className='row-offset card'>
-            <div className='card-header'>
-                Node Graph
-            </div>
-            <div className='card-body'>
+            <Card id='node_graph' title='Node Graph'>
                 <div className='graphLayer'>
                     <div  id='graph-container'>
                         <div  id='graph'>
@@ -904,8 +901,7 @@ componentDidUpdate(prevProps, prevState) {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>);
+            </Card>);
   }
 }
 
