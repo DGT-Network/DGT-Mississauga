@@ -45,7 +45,7 @@ class Legend extends React.Component {
               })
             }
             </ul>
-            <div className='close-icon'>
+            <div className='close-icon text-secondary'>
               <FontAwesomeIcon icon={this.state.collapsed ? "plus" : "minus"} />
             </div>
           </div>

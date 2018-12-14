@@ -15,7 +15,7 @@ class Card extends React.Component {
     <div className="card">
       <div className='card-header' onClick={() => this.setState({collapsed: !this.state.collapsed})} data-toggle="collapse" data-target={`#${id}`} aria-expanded="false" aria-controls="collapseExample">
         {title}
-        <div className='float-right close-icon'>
+        <div className='float-right close-icon text-secondary'>
           <FontAwesomeIcon icon={this.state.collapsed ? "plus" : "minus"} />
         </div>
       </div>
