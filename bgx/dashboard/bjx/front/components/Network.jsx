@@ -166,7 +166,7 @@ class Network extends React.Component {
       </div>
 
        <div className="tab-offset">
-        <Card id="transaction_count" title='Transaction Count'>
+        <Card id="transaction_count" title='Transaction Amount'>
           <Bar data={data2}/>
         </Card>
       </div>
