@@ -42,7 +42,7 @@ from sawtooth_validator.metrics.wrappers import GaugeWrapper
 from sawtooth_validator.protobuf.block_pb2 import BlockHeader
 from sawtooth_validator.protobuf.transaction_pb2 import TransactionHeader
 
-from signing.sawtooth_signing.core import ParseError
+from sawtooth_signing.core import ParseError
 
 LOGGER = logging.getLogger(__name__)
 
