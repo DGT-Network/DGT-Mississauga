@@ -207,6 +207,9 @@ opacity: 0;
 
 
 .filters {
+  .card-body {
+    padding: 0;
+  }
   .list-inline {
     margin-bottom: 0;
   }
@@ -225,4 +228,12 @@ opacity: 0;
 
 .modal-dialog {
   max-width: 900px;
+}
+
+.card {
+  .close-icon {
+    position: absolute;
+    right: 20px;
+    top: 13px;
+  }
 }

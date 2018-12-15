@@ -1,5 +1,7 @@
 import React from 'react'
 
+import Card from './Card'
+
 class Stat extends React.Component {
   render() {
     const data = [
@@ -21,32 +23,29 @@ class Stat extends React.Component {
     ]
 
     return (
-    <div className="card tab-offset">
-      <div className='card-header' data-toggle="collapse" data-target="#collapseStat" aria-expanded="false" aria-controls="collapseExample">
-        Identity
-      </div>
-      <div id="collapseStat" className='card-body collapse show'>
-        <div className='row'>
-          { data.map((dd) => {
-              return (
-                <div className='col-4'>
-                  {
-                    dd.map((d) => {
-                      return (
-                        <p key={d[0]}>
-                          <strong>{d[0]}:</strong>
-                          <span className='text-secondary'>{` ${d[1]}`}</span>
-                        </p>
-                      )
-                    })
-                  }
-                </div>
-              )
-            })
-          }
-        </div>
-      </div>
-    </div>);
+      <div className='tab-offset'>
+        <Card id="Identity" title='Identity'>
+            <div className='row'>
+              { data.map((dd) => {
+                  return (
+                    <div className='col-4'>
+                      {
+                        dd.map((d) => {
+                          return (
+                            <p key={d[0]}>
+                              <strong>{d[0]}:</strong>
+                              <span className='text-secondary'>{` ${d[1]}`}</span>
+                            </p>
+                          )
+                        })
+                      }
+                    </div>
+                  )
+                })
+              }
+            </div>
+        </Card>
+      </div>);
   }
 }
 

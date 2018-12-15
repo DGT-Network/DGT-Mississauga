@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import Hash from './Hash'
 import DecodedData from './DecodedData'
+import Card from './Card'
 
 import ReactTable from "react-table"
 
@@ -22,7 +23,7 @@ class State extends React.Component {
 
   render() {
     const {state, columns} = this.props;
-    return (<div>
+    return (<Card id='card_state' title='State'>
       {!state.length  ? (
         <strong> No State</strong>
       ) : (
@@ -48,7 +49,7 @@ class State extends React.Component {
             };
           }}/>
       )}
-      </div>
+      </Card>
     )
   }
 }

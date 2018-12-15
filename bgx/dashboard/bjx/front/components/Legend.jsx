@@ -2,47 +2,61 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import {trimSpaces} from '../helpers/helper'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { humanize } from '../logic/peers'
+import humanize from '../helpers/humanize';
 
 import Hash from './Hash'
 
 class Legend extends React.Component {
+  constructor(props){
+    super(props)
+
+    this.state = {collapsed: false}
+  }
+
   render() {
     const {peer} = this.props;
     let t = -1;
     let tt = -1;
 
-    if (peer == null)
-      return '';
-
-    else
       return (
-        <div className='tab-offset card'>
-          <div className='card-header'>
-            <ul class="nav nav-tabs card-header-tabs">
-            {
-              peer.legend.map((i) => {
-                t++;
-                const key = Object.keys(i)[0]
-                return (
-                <li className="nav-item">
-                   <a className={classNames('nav-link', t == 0 ? 'active' : '' )}
-                     id={`${key}-tab`}
-                     data-toggle="tab"
-                     href={`#${trimSpaces(key)}`}
-                     role="tab">
-                    {key}
-                  </a>
-                </li>)
-              })
+        <div className='card'>
+          <div className='card-header' onClick={() => this.setState({collapsed: !this.state.collapsed})} data-toggle="collapse" data-target='#legend' aria-expanded="false" aria-controls="collapseExample">
+            { peer == undefined || peer == null ?
+              (
+                'Legend'
+              ) : (
+                <ul class="nav nav-tabs card-header-tabs">
+                {
+
+                  peer.legend.map((i) => {
+                    t++;
+                    const key = Object.keys(i)[0]
+                    return (
+                    <li className="nav-item">
+                       <a className={classNames('nav-link', t == 0 ? 'active' : '' )}
+                         id={`${key}-tab`}
+                         data-toggle="tab"
+                         href={`#${trimSpaces(key)}`}
+                         role="tab">
+                        {key}
+                      </a>
+                    </li>)
+                  })
+                }
+                </ul>
+                )
             }
-            </ul>
+            <div className='close-icon text-secondary'>
+              <FontAwesomeIcon icon={this.state.collapsed ? "chevron-down" : "chevron-up"} />
+            </div>
           </div>
 
-          <div className="card-body">
+          <div id='legend' className="card-body collapse show">
             <div className="tab-content" id="filtercontent">
             {
+              peer != null &&
               peer.legend.map((i) => {
                 tt++;
                 const key = Object.keys(i)[0]

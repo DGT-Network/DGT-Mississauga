@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
 import Hash from './Hash'
+import Card from './Card'
 
 import ReactTable from "react-table"
 
@@ -126,52 +127,56 @@ class Blocks extends React.Component {
   render() {
     const that = this;
     const {graph_blocks, columns, blocks_data} = this.props;
-
-    if (graph_blocks == null)
     return (
-      <div>
-        <strong> No Blocks</strong>
-      </div>)
-    else
-      return (
-        <div >
-          <div className='row'>
-            <div className='col-12'>
-              <div className='container'>
-                <div className='chartContainer'>
-                  <svg className='chart-block'/>
+      <Card id='ledger' title='Ledger'>
+        {
+        graph_blocks == null ?
+        (
+          <div>
+            <strong> No Blocks</strong>
+          </div>
+        ) : (
+            <div >
+              <div className='row'>
+                <div className='col-12'>
+                  <div className='container'>
+                    <div className='chartContainer'>
+                      <svg className='chart-block'/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className='row'>
+                <div className='col-12'>
+                  <ReactTable data={blocks_data}
+                  defaultPageSize={10}
+                  minRows={0}
+                  columns={columns}
+                  className='-striped'
+                  getTrProps={(state, rowInfo) => {
+                    if (rowInfo && rowInfo.row) {
+                      return {
+                        onClick: (e) => {
+                          that.setState({
+                            selectedBlockNum: rowInfo.row.blockNum,
+                          })
+                        },
+                        style: {
+                          background: rowInfo.index === this.state.selectedBlockNum ? '#b8daff' :
+                           rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+                        }
+                      }
+                    }else{
+                      return {}
+                    }
+                  }} />
                 </div>
               </div>
             </div>
-          </div>
-          <div className='row'>
-            <div className='col-12'>
-              <ReactTable data={blocks_data}
-              defaultPageSize={10}
-              minRows={0}
-              columns={columns}
-              className='-striped'
-              getTrProps={(state, rowInfo) => {
-                if (rowInfo && rowInfo.row) {
-                  return {
-                    onClick: (e) => {
-                      that.setState({
-                        selectedBlockNum: rowInfo.row.blockNum,
-                      })
-                    },
-                    style: {
-                      background: rowInfo.index === this.state.selectedBlockNum ? '#b8daff' :
-                       rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
-                    }
-                  }
-                }else{
-                  return {}
-                }
-              }} />
-            </div>
-          </div>
-        </div>
-      )
+          )
+        }
+      </Card>
+    )
   }
 }
 
@@ -186,7 +191,7 @@ Blocks.defaultProps = {
     width: 100,
   },
   { id: 'batchIds',
-    Header: 'Batch Ids',
+    Header: 'Batch ID',
     accessor: d => d.header.batch_ids.map((i) => {
           return (  <Hash key={i} hash={i}/> )
         })

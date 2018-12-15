@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
-import { humanize } from '../logic/peers'
+import humanize from '../helpers/humanize';
 import {selectPeer} from '../actions/actions'
 
 import Graph from './Graph'
@@ -28,9 +28,15 @@ class Peers extends React.Component {
     const {peers, columns} = this.props
     return (
     <div>
-      <Graph/>
+      <div className='row'>
+        <div className='col-9'>
+          <Graph/>
+        </div>
+        <div className='col-3'>
+          <Legend/>
+        </div>
+      </div>
       <Filters/>
-      <Legend/>
     </div>
     )
   }

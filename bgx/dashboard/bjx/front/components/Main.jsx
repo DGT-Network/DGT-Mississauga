@@ -3,6 +3,7 @@ import classNames from 'classnames/bind'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import packageJson from '../../package.json'
+import $ from 'jquery';
 
 import Transactions from './Transactions'
 import Blocks from './Blocks'
@@ -11,6 +12,7 @@ import Peers from './Peers'
 import Network from './Network'
 import Stat from './Stat'
 import Wallet from './Wallet'
+import Feedback from './Feedback'
 import LogoSvg from '../assets/logo.svg'
 
 import { getTransactions, getPeers, getStates, getBlocks } from '../actions/actions';
@@ -20,9 +22,6 @@ class Main extends React.Component {
     super(props)
 
     this.handleClick = this.handleClick.bind(this);
-
-    console.log('123213', packageJson)
-
     this.state= {name: packageJson.name,
       version: packageJson.version}
   }
@@ -108,9 +107,10 @@ class Main extends React.Component {
             {`${name} ${version} [ALPHA]`}
           </span>
           <span className='navbar-text'>
-            <a href="mailto:info@bgx.ai?subject=Dashboard" className="btn btn-sm btn-outline-info">
+
+            <button className="btn btn-sm btn-info" onClick={() => { $('#feedbackForm').modal('show')}}>
             <FontAwesomeIcon icon="envelope" />
-            &nbsp;Submit feedback</a>
+            &nbsp;Submit feedback</button>
           </span>
           {
           //<a to="#" onClick={this.handleClick} className="btn btn-outline-success">Update</a>
@@ -126,19 +126,21 @@ class Main extends React.Component {
           <div className={classNames("tab-pane", "fade")} id="transactions" role="tabpanel">
             <Transactions/>
           </div>
-          <div className={classNames('row',"tab-pane", "fade")} id="blocks" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="blocks" role="tabpanel">
             <Blocks/>
           </div>
-          <div className={classNames('row', "tab-pane", "fade")} id="state" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="state" role="tabpanel">
             <State/>
           </div>
           <div className={classNames("tab-pane", "fade")} id="network" role="tabpanel">
             <Network/>
           </div>
-          <div className={classNames('row', "tab-pane", "fade")} id="wallet" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="wallet" role="tabpanel">
             <Wallet/>
           </div>
         </div>
+
+        <Feedback/>
       </div>);
   }
 }
