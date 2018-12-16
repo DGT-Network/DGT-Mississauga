@@ -176,6 +176,7 @@ class BlockManager():
         # else:
         #     raise MissingPredecessor()
 
+    # Adds block to referenced dict
     def ref_block(self, block_id):
         LOGGER.debug("BlockManager: ref_block block_id=%s", block_id)
         if self.references_by_block_id[block_id]:
@@ -198,6 +199,8 @@ class BlockManager():
         self.references_by_block_id[block_id] = rc
         LOGGER.debug("BlockManager: ref_block block=(%s)", block_id)
 
+    # Removes references of block with block_id
+    # If references if block will be less than 1 it will be removed from MainCache
     def unref_block(self, block_id):
         LOGGER.debug("BlockManager: unref_block block_id=%s", block_id)
         if block_id not in self.references_by_block_id:
@@ -262,13 +265,37 @@ class BlockManager():
         """
         return contains
 
+    # Returns set of (Location, data)
+    # If found in MainCache -> ('MainCache', block)
+    # If found in BlockStore -> ('BlockStore', store_name)
+    # Else ('BlockNotFound', None)
+    def get_block_from_main_cache_or_blockstore_name(self, block_id):
+        if block_id in self.block_by_block_id:
+            return 'MainCache', self.block_by_block_id[block_id]
+        else:
+            for store_name in self.blockstore_by_name:
+                block = self.get_block_from_blockstore(block_id, store_name)
+                if block:
+                    return 'BlockStore', block
+        return 'BlockNotFound', None
+
+    # Returns wrapped block from store with specified store_name or None
+    def get_block_from_blockstore(self, block_id, store_name):
+        blockstore = self.blockstore_by_name[store_name]
+        for wrapped_block in blockstore.get_block_iter():
+            block = wrapped_block.block
+            if block.header_signature == block_id:
+                return wrapped_block
+        return None
+
+    # Returns iterator for list of block ids
     def get(self, block_ids):
         LOGGER.debug("BlockManager: get block_ids=%s", block_ids)
-        return _GetBlockIterator(self.pointer, block_ids, self._block_store)
+        return _GetBlockIterator(self, block_ids)
 
     def branch(self, tip):
         LOGGER.debug("BlockManager: branch tip=%s", tip)
-        return _BranchIterator(self.pointer, tip)
+        return _BranchIterator(self, tip)
 
     def branch_diff(self, tip, exclude):
         LOGGER.debug("BlockManager: branch_diff tip=%s", tip)
@@ -311,8 +338,8 @@ def _exec(library, name, *args):
 class _BlockIterator:
 
     def __del__(self):
-        if self._c_iter_ptr:
-            LOGGER.debug("_BlockIterator: __del__ ptr=%s", self._c_iter_ptr)
+        if self._index:
+            LOGGER.debug("_BlockIterator: __del__ ptr=%s", self._index)
             """
             _libexec("{}_drop".format(self.name), self._c_iter_ptr)
             """
@@ -322,53 +349,30 @@ class _BlockIterator:
         return self
 
     def __next__(self):
-        if not self._c_iter_ptr:
-            raise StopIteration()
-        LOGGER.debug("_BlockIterator: __next__ ptr=%s", self._c_iter_ptr)
-        """
-        (vec_ptr, vec_len, vec_cap) = ffi.prepare_vec_result()
-
-        _libexec("{}_next".format(self.name),
-                 self._c_iter_ptr,
-                 ctypes.byref(vec_ptr),
-                 ctypes.byref(vec_len),
-                 ctypes.byref(vec_cap))
-
-        # Check if NULL
-        if not vec_ptr:
+        if self._index >= self._block_ids:
             raise StopIteration()
 
-        payload = ffi.from_rust_vec(vec_ptr, vec_len, vec_cap)
-        """
-        payload = next(self._c_iter_ptr)
-        LOGGER.debug("_BlockIterator: next=%s", payload)
-        block = Block()
-        # block.ParseFromString(payload)
-
-        return block
+        LOGGER.debug("_BlockIterator: __next__ index=%s", self._index)
+        block_id = self._block_ids[self._index]
+        (location, data) = self._block_manager.get_block_from_main_cache_or_blockstore_name(block_id)
+        if location == 'BlockNotFound' :
+            result = None
+        else:
+            result = data.block
+        LOGGER.debug("_BlockIterator: next=%s", result)
+        self._index += 1
+        return result
 
 
 class _GetBlockIterator(_BlockIterator):
     name = "block_manager_get_iterator"
 
-    def __init__(self, block_manager_ptr, block_ids, block_store=None):
-        c_block_ids = (ctypes.c_char_p * len(block_ids))()
-        for i, block_id in enumerate(block_ids):
-            c_block_ids[i] = ctypes.c_char_p(block_id.encode())
-
-        # self._c_iter_ptr = 1 #fake
-        self._c_iter_ptr = block_store.get_block_iter(
-            start_block=None) if block_store else None  # start_block=block_ids[0]
-        """
-        self._c_iter_ptr = ctypes.c_void_p()
-        _libexec("{}_new".format(self.name),
-                 block_manager_ptr,
-                 c_block_ids,
-                 ctypes.c_size_t(len(block_ids)),
-                 ctypes.byref(self._c_iter_ptr))
-        """
-        LOGGER.debug("_GetBlockIterator: __init__ block_manager_ptr=%s block_ids=%s iter=%s", block_manager_ptr,
-                     block_ids, self._c_iter_ptr)
+    def __init__(self, block_manager, block_ids):
+        self._block_ids = block_ids
+        self._block_manager = block_manager
+        self._index = 0
+        LOGGER.debug("_GetBlockIterator: __init__ block_manager=%s block_ids=%s iter=%s", block_manager,
+                     block_ids, self._index)
 
 
 class _BranchDiffIterator(_BlockIterator):
