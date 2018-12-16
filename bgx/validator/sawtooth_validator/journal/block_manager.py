@@ -123,7 +123,6 @@ class BlockManager():
         tail = ''
         for block in branch:
             block_header = BlockHeader().FromString(block.header)
-            print(block_header)
             predecessors.append(block_header.previous_block_id)
             heads.append(block.header_signature)
         if len(set(predecessors) - set(heads)) > 1:
@@ -144,18 +143,66 @@ class BlockManager():
                 raise MissingPredecessorInBranch("Missing predecessor")
         return ordered_branch
 
+    # Checks if block with block_id is in any self.blockstore_by_name or self.references_by_block_id
+    def contains_block(self, block_id):
+        if block_id in self.references_by_block_id:
+            return True
+        for store_name in self.blockstore_by_name:
+            blockstore = self.blockstore_by_name[store_name]
+            for wrapped_block in blockstore.get_block_iter():
+                block = wrapped_block.block
+                if block.header_signature == block_id:
+                    return True
+        return False
+
     # TODO: implement filling of self.block_by_block_id
     def put(self, branch):
         LOGGER.debug("BlockManager: put branch=%s", branch)
         ordered_branch = self.check_predecessors(branch)
-        wrapped_ordered_branch = [BlockWrapper(block) for block in ordered_branch]
         head_block_header = BlockHeader().FromString(ordered_branch[0].header)
 
-        chain_head = self._block_store.chain_head
-        if chain_head is not None and chain_head.block.header_signature != head_block_header.previous_block_id:
-            raise MissingPredecessor()
-        self._block_store.update_chain(wrapped_ordered_branch)
+        if not self.contains_block(head_block_header.previous_block_id):
+            raise MissingPredecessor("During Put, missing predecessor of block {}: {}"
+                                     .format(
+                                         ordered_branch[0].header_signature,
+                                         head_block_header.previous_block_id
+                                     ))
 
+        if not self.contains_block(ordered_branch[0].header_signature):
+            rc = self.references_by_block_id[head_block_header.previous_block_id]
+            rc.increase_internal_ref_count()
+
+        blocks_not_added_yet = []
+        for block in branch:
+            if not self.contains_block(block.header_signature):
+                blocks_not_added_yet.append(block)
+
+        last_block = ordered_branch[-1]
+        blocks_with_references = ordered_branch[:-1]
+        self.references_by_block_id[last_block.block.header_signature] = \
+            RefCount(
+                last_block.header_signature,
+                BlockHeader().FromString(last_block.header).previous_block_id,
+                False
+            )
+        self.block_by_block_id[last_block.block.header_signature] = last_block
+        for block in blocks_with_references:
+            self.block_by_block_id[block.header_signature] = block
+            self.references_by_block_id[block.header_signature] = \
+                RefCount(
+                    block.header_signature,
+                    BlockHeader().FromString(block.header).previous_block_id,
+                    True
+                )
+
+        # Old logic
+        # wrapped_ordered_branch = [BlockWrapper(block) for block in ordered_branch]
+        # chain_head = self._block_store.chain_head
+        # if chain_head is not None and chain_head.block.header_signature != head_block_header.previous_block_id:
+        #     raise MissingPredecessor()
+        # self._block_store.update_chain(wrapped_ordered_branch)
+
+        # Older logic
         # Works with next logic
         # If A(prev: 0) <- B(prev: A) <- C(prev: B)
         # And branch to put is A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
