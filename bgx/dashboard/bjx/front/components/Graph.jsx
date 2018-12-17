@@ -461,12 +461,11 @@ graph.data = cloneDeep(this.props.data);
         .attr('class', 'link');
 
     graph.node = graph.svg.selectAll('.node')
-        .data(graph.force.nodes())
+      .data(graph.force.nodes())
       .enter().append('g')
-        .attr('class', 'node')
-        .call(graph.drag)
-        .on('mouseover', function(d) {
-
+      .attr('class', 'node')
+      .call(graph.drag)
+      .on('mouseover', function(d) {
             if (!that.selected.obj) {
                 if (graph.mouseoutTimeout) {
                     clearTimeout(graph.mouseoutTimeout);
@@ -476,34 +475,42 @@ graph.data = cloneDeep(this.props.data);
                 that.highlightObject(d);
             }
         })
-        .on('mouseout', function() {
-
-            if (!that.selected.obj) {
-                if (graph.mouseoutTimeout) {
-                    clearTimeout(graph.mouseoutTimeout);
-                    graph.mouseoutTimeout = null;
-                }
-                graph.mouseoutTimeout = setTimeout(function() {
-                    that.hideTooltip();
-                    that.highlightObject(null);
-                }, 100);
-            }
-        })
-        .on('click', function(d) {
-            store.dispatch(selectP(d.IP));
-        })
-        .on('dblclick', function(d) {
-            that.highlightObject2(d);
-        })
+      .on('mouseout', function() {
+          if (!that.selected.obj) {
+              if (graph.mouseoutTimeout) {
+                  clearTimeout(graph.mouseoutTimeout);
+                  graph.mouseoutTimeout = null;
+              }
+              graph.mouseoutTimeout = setTimeout(function() {
+                  that.hideTooltip();
+                  that.highlightObject(null);
+              }, 100);
+          }
+      })
+      .on('click', function(d) {
+          store.dispatch(selectP(d.IP));
+      })
+      .on('dblclick', function(d) {
+          that.highlightObject2(d);
+      })
 
         //add line to graph object
 
 
-        graph.nodeRect = graph.node.append('rect')
+      graph.nodeRect = graph.node.append('rect')
         .attr('rx', 5)
         .attr('ry', 5)
         .attr('width' , 2)
         .attr('height', 2);
+
+        for (let i = 0; i < 3; i++){
+          graph.nodeRect = graph.node.append('circle')
+            .attr('cx', 25 + i*4)
+            .attr('cy', 14)
+            .attr('r' , 1)
+            .attr('fill', '#212529')
+        }
+
 
         graph.node.each(function(d) {
         if (that.state.hiddenNodes.includes(d.IP))
@@ -586,6 +593,7 @@ updateGraph(){
             var node   = d3.select(this),
                 rect  = node.select('rect'),
                 text   = node.selectAll('text'),
+                collapsePoints = node.selectAll('circle'),
                 bounds = {}
 
             if (!text[0].length) return;
@@ -654,6 +662,11 @@ updateGraph(){
                   return that.checkNodeFiltered(d) ? 20 : 26
               });
 
+            collapsePoints
+             .attr('display',  function(d){
+                return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
+              })
+
 
 
             var padding  = 10,
@@ -686,8 +699,12 @@ updateGraph(){
 
 
 }
+checkNodeIsCollapsed(ip){
+  return this.state.collapsedNodes.indexOf(ip) == -1
+}
+
 checkNodeHidden(ip){
-return this.state.hiddenNodes.includes(ip)
+  return this.state.hiddenNodes.includes(ip)
 }
 
 checkNodeFiltered(d){
