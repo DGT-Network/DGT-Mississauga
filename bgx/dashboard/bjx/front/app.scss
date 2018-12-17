@@ -126,14 +126,6 @@ marker#end {
     transition: opacity 250ms;
     -webkit-transition: opacity 250ms;
     -moz-transition: opacity 250ms;
-
-    &.filter-disable {
-    }
-
-    &.filter-enable {
-      stroke-width: 3px;
-
-    }
 }
 
 .node {
@@ -149,6 +141,15 @@ marker#end {
       fill: #333;
       font-size: 8px;
       font-style: italic;
+    }
+
+    &.filter-disable {
+    }
+
+    &.filter-enable {
+      stroke-width: 3px;
+      font-size: 10px;
+
     }
   }
 

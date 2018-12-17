@@ -455,6 +455,10 @@ graph.data = cloneDeep(this.props.data);
             d.fixed &= ~6;
         });
 
+    graph.line = graph.svg.append('g').selectAll('.link')
+        .data(graph.force.links())
+        .enter().append('line')
+        .attr('class', 'link');
 
     graph.node = graph.svg.selectAll('.node')
         .data(graph.force.nodes())
@@ -493,10 +497,7 @@ graph.data = cloneDeep(this.props.data);
         })
 
         //add line to graph object
-        graph.line = graph.svg.append('g').selectAll('.link')
-            .data(graph.force.links())
-            .enter().append('line')
-            .attr('class', 'link');
+
 
         graph.nodeRect = graph.node.append('rect')
         .attr('rx', 5)
@@ -608,32 +609,38 @@ updateGraph(){
                     bounds.y2 = box.y + box.height;
             }).attr('text-anchor', 'middle');
 
-            text.classed('inactive', d.node_state !== 'active');
+            text.classed('inactive', d.node_state !== 'active')
+              .classed('filter-disable', function(d){
+                return that.checkNodeFiltered(d)
+              })
+              .classed('filter-enable', function(d){
+              return !that.checkNodeFiltered(d)
+              })
 
             rect.classed('filter-disable', function(d){
-              return that.checkNodeFiltered(d)
-            })
-            rect.classed('filter-enable', function(d){
-              return !that.checkNodeFiltered(d)
-            })
-            .attr('stroke', function(d) {
-                return  that.colorForDarker(d)
-            })
-            .attr('fill', function(d) {
-                return that.colorFor(d);
-            })
-            .attr('x', function(d) {
-                return that.checkNodeFiltered(d) ? -40 : -43
-            })
-            .attr('y', function(d) {
-                return that.checkNodeFiltered(d) ? -13 : -16
-            })
-            .attr('width' , function(d) {
-                return that.checkNodeFiltered(d) ? 80 : 86
-            })
-            .attr('height', function(d) {
-                return that.checkNodeFiltered(d) ? 20 : 26
-            });
+                return that.checkNodeFiltered(d)
+              })
+              .classed('filter-enable', function(d){
+                return !that.checkNodeFiltered(d)
+              })
+              .attr('stroke', function(d) {
+                  return  that.colorForDarker(d)
+              })
+              .attr('fill', function(d) {
+                  return that.colorFor(d);
+              })
+              .attr('x', function(d) {
+                  return that.checkNodeFiltered(d) ? -40 : -43
+              })
+              .attr('y', function(d) {
+                  return that.checkNodeFiltered(d) ? -13 : -16
+              })
+              .attr('width' , function(d) {
+                  return that.checkNodeFiltered(d) ? 80 : 86
+              })
+              .attr('height', function(d) {
+                  return that.checkNodeFiltered(d) ? 20 : 26
+              });
 
 
 
@@ -648,8 +655,6 @@ updateGraph(){
              bounds.y1 -= padding.top;
             bounds.x2 += padding.left + padding.right;
              bounds.y2 += padding.top  + padding.bottom;
-
-            node.select('rect')
 
 
             d.extent = {
