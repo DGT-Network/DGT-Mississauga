@@ -492,6 +492,51 @@ graph.data = cloneDeep(this.props.data);
             that.highlightObject2(d);
         })
 
+        //add line to graph object
+        graph.line = graph.svg.append('g').selectAll('.link')
+            .data(graph.force.links())
+            .enter().append('line')
+            .attr('class', 'link');
+
+        graph.nodeRect = graph.node.append('rect')
+        .attr('rx', 5)
+        .attr('ry', 5)
+        .attr('width' , 2)
+        .attr('height', 2);
+
+        graph.node.each(function(d) {
+        if (that.state.hiddenNodes.includes(d.IP))
+          return;
+
+        if (d.IP == that.props.selectedPeerIP)
+            that.selectObject(d)
+
+        var node  = d3.select(this),
+            rect  = node.select('rect'),
+            lines = [d.name],
+            ddy   = 1.1,
+            dy    = -ddy * lines.length / 2 + .5;
+
+        lines.forEach(function(line) {
+            var text = node.append('text')
+                .text(function(d) {
+                   return that.state.collapsedNodes.indexOf(d.IP) == -1 ? d.IP : `${d.IP}...`;
+                })
+                .attr('dy', dy + 'em');
+            dy += ddy;
+        });
+      });
+
+      graph.numTicks = 0;
+      graph.preventCollisions = false;
+      graph.force.start();
+
+        for (var i = 0; i < 50; i++) {
+            graph.force.tick();
+        }
+        graph.preventCollisions = true;
+
+        $('#graph-container').css('visibility', 'visible');
 
     setTimeout(this.updateGraph());
 }
@@ -529,36 +574,10 @@ updateGraph(){
         }
     });
 
-        if (graph.line !== undefined)
-            graph.line.selectAll("*").remove();
-        graph.svg.selectAll('.link').remove()
-
-        graph.line = graph.svg.append('g').selectAll('.link')
-        .data(graph.force.links())
-      .enter().append('line')
-        .attr('class', 'link');
-
-        // console.log('node', graph.node)
-        graph.node.selectAll("*").remove();
-
-        graph.nodeRect = graph.node.append('rect')
-        .attr('rx', 5)
-        .attr('ry', 5)
-        .attr('stroke', function(d) {
-            return that.colorForDarker(d);
-        })
-        .attr('fill', function(d) {
-            return that.colorFor(d);
-        })
-        .attr('width' , 2)
-        .attr('height', 2);
-
-         // console.log('nodeRect', graph.nodeRect)
 
     graph.nodeRect.each(function(d) {
-        if (that.state.hiddenNodes.includes(d.IP))
-          d3.select(this).attr('display', 'none')
-
+      if (that.state.hiddenNodes.includes(d.IP))
+        d3.select(this).attr('display', 'none')
     });
 
     graph.line.each(function(d) {
@@ -567,28 +586,7 @@ updateGraph(){
 
     });
 
-    graph.node.each(function(d) {
-        if (that.state.hiddenNodes.includes(d.IP))
-          return;
 
-        if (d.IP == that.props.selectedPeerIP)
-            that.selectObject(d)
-
-        var node  = d3.select(this),
-            rect  = node.select('rect'),
-            lines = [d.name],
-            ddy   = 1.1,
-            dy    = -ddy * lines.length / 2 + .5;
-
-        lines.forEach(function(line) {
-            var text = node.append('text')
-                .text(function(d) {
-                   return that.state.collapsedNodes.indexOf(d.IP) == -1 ? d.IP : `${d.IP}...`;
-                })
-                .attr('dy', dy + 'em');
-            dy += ddy;
-        });
-      });
 
         graph.node.each(function(d) {
             var node   = d3.select(this),
@@ -612,17 +610,31 @@ updateGraph(){
 
             text.classed('inactive', d.node_state !== 'active');
 
-            rect.classed('filtered', function(d){
-
-              const { selectedFilters, filters } = that.props;
-
-              if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
-                  return false;
-
-              const key = Object.keys(selectedFilters)[0]
-
-              return d[key] != selectedFilters[key];
+            rect.classed('filter-disable', function(d){
+              return that.checkNodeFiltered(d)
+            })
+            rect.classed('filter-enable', function(d){
+              return !that.checkNodeFiltered(d)
+            })
+            .attr('stroke', function(d) {
+                return  that.colorForDarker(d)
+            })
+            .attr('fill', function(d) {
+                return that.colorFor(d);
+            })
+            .attr('x', function(d) {
+                return that.checkNodeFiltered(d) ? -40 : -43
+            })
+            .attr('y', function(d) {
+                return that.checkNodeFiltered(d) ? -13 : -16
+            })
+            .attr('width' , function(d) {
+                return that.checkNodeFiltered(d) ? 80 : 86
+            })
+            .attr('height', function(d) {
+                return that.checkNodeFiltered(d) ? 20 : 26
             });
+
 
 
             var padding  = 10,
@@ -638,10 +650,7 @@ updateGraph(){
              bounds.y2 += padding.top  + padding.bottom;
 
             node.select('rect')
-                .attr('x', -40)
-                .attr('y', -12)
-                .attr('width' , 80)
-                .attr('height', 20);
+
 
             d.extent = {
                 left   : bounds.x1 - margin.left,
@@ -658,16 +667,18 @@ updateGraph(){
             };
         });
 
-        graph.numTicks = 0;
-        graph.preventCollisions = false;
-        graph.force.start();
 
-        for (var i = 0; i < 50; i++) {
-            graph.force.tick();
-        }
-        graph.preventCollisions = true;
+}
 
-        $('#graph-container').css('visibility', 'visible');
+checkNodeFiltered(d){
+  const { selectedFilters, filters } = this.props;
+
+  if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
+      return true;
+
+  const key = Object.keys(selectedFilters)[0]
+
+  return d[key] != selectedFilters[key];
 }
 
 preventCollisions() {
@@ -730,7 +741,11 @@ colorFor(d){
 }
 
 colorForDarker(d){
-    this.colorFor(d)
+    const color = this.colorFor(d)
+    const percent = -0.3
+
+    var f=parseInt(color.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=f>>8&0x00FF,B=f&0x0000FF;
+    return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
 }
 
 hideChildren(array, IP){

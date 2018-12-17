@@ -127,8 +127,12 @@ marker#end {
     -webkit-transition: opacity 250ms;
     -moz-transition: opacity 250ms;
 
-    &.filtered {
-      opacity: 0.6;
+    &.filter-disable {
+    }
+
+    &.filter-enable {
+      stroke-width: 3px;
+
     }
 }
 
