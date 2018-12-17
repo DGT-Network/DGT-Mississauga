@@ -532,7 +532,7 @@ class BlockPublisher(object):
     def chain_head_lock(self):
         return self._lock
 
-    def _build_candidate_block(self, chain_head):
+    def _build_candidate_block(self, chain_head, block_id=None):
         """ Build a candidate block and construct the consensus object to
         validate it.
         :param chain_head: The block to build on top of.
@@ -574,6 +574,8 @@ class BlockPublisher(object):
             previous_block_id=chain_head.header_signature,
             signer_public_key=public_key)
         block_builder = BlockBuilder(block_header)
+        if block_id is not None:
+            block_builder.set_signature(block_id)
         if not consensus.initialize_block(block_builder.block_header):
             LOGGER.debug("Consensus not ready to build candidate block.")
             return None
@@ -770,8 +772,23 @@ class BlockPublisher(object):
     """
     for proxy consensus interface
     """
-    def initialize_block(self, block):
-        LOGGER.debug('BlockPublisher: initialize_block %s', block)
+    def initialize_block(self, block_id):
+        """Build new candidate block.
+        :param block_id: id of block to build.
+        :return: None
+        """
+        LOGGER.debug('BlockPublisher: initialize_block %s', block_id)
+        try:
+            with self._lock:
+                if self._candidate_block is None:
+                    self._build_candidate_block(self._chain_head, block_id)
+                else:
+                    LOGGER.debug('BlockPublisher, initialize_block: _candidate_block is not None, initialize_block \
+                                 = %s failed', block_id)
+        except Exception as exc:
+            LOGGER.critical("initialize_block exception.")
+            LOGGER.exception(exc)
+
         """
         self._py_call('initialize_block', ctypes.py_object(block))
         """
@@ -793,7 +810,29 @@ class BlockPublisher(object):
         #raise BlockEmpty()
 
     def finalize_block(self, consensus=None, force=False):
-        LOGGER.debug('BlockPublisher: finalize_block consensus=%s',consensus)
+        """Finalize current candidate block, build new one.
+        :param block: consensus for _candidate_block, force for on_check_publish_block.
+        :return: (BlockBuilder) - New candidate block in a BlockBuilder wrapper.
+        """
+        LOGGER.debug('BlockPublisher: finalize_block with consensus=%s', consensus)
+        new_candidate_block = None
+        try:
+            with self._lock:
+                if self._candidate_block is None:
+                    LOGGER.debug('BlockPublisher, finalize_block: _candidate_block is None, nothing to finalize')
+                else:
+                    self.on_check_publish_block(force)
+
+                    if consensus is not None:
+                        self._candidate_block._consensus = consensus
+                    new_candidate_block = self._candidate_block.finalize_block(self.identity_signer, \
+                                                                               self._pending_batches)
+        except Exception as exc:
+            LOGGER.critical("finalize_block exception.")
+            LOGGER.exception(exc)
+
+        return new_candidate_block
+
         """
         (vec_ptr, vec_len, vec_cap) = ffi.prepare_vec_result()
         self._call(
@@ -806,10 +845,11 @@ class BlockPublisher(object):
 
         return ffi.from_rust_vec(vec_ptr, vec_len, vec_cap).decode('utf-8')
         """
-        return b'\xdb\x8c\xdc\x84\xfb]\xab\xca2\x1b\x18|J\x1d{\xee\xd9hd\xaf\xe2;N\xa4d\xf0\xb3\xc0\xe2\xf3\x97/S\x14~\x18My\xfd\xd2\x96Z\xbb\x858\x1f\x81\x86c\x85\x1b\xf7[s\xc5\xf1\x97\x94\xab\x89\x04^\x8e\xd4'.decode('utf-8')
+        #return b'\xdb\x8c\xdc\x84\xfb]\xab\xca2\x1b\x18|J\x1d{\xee\xd9hd\xaf\xe2;N\xa4d\xf0\xb3\xc0\xe2\xf3\x97/S\x14~\x18My\xfd\xd2\x96Z\xbb\x858\x1f\x81\x86c\x85\x1b\xf7[s\xc5\xf1\x97\x94\xab\x89\x04^\x8e\xd4'.decode('utf-8')
 
     def cancel_block(self):
         LOGGER.debug('BlockPublisher: cancel_block')
+        self._candidate_block = None
         """
         self._call("cancel_block")
         """
