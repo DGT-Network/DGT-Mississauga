@@ -34,7 +34,7 @@ class Blocks extends React.Component {
                 selectedPeerIP={selectedBlock}/>
 
               <div className="tab-offset">
-                <Card id='ladger' title='Ladger Data'>
+                <Card id='ledger' title='Ledger Data'>
                   <ReactTable data={blocks_data}
                   defaultPageSize={10}
                   minRows={0}
