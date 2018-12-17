@@ -11,12 +11,13 @@ import ReactTable from "react-table"
 class Blocks extends React.Component {
   constructor(props){
     super(props)
-    this.state= { selectedBlockNum: null}
+    this.state= { selectedBlock: null}
   }
 
   render() {
     const that = this;
     const {graph_blocks, columns, blocks_data} = this.props;
+    const {selectedBlock} = this.state;
     return (
       <div>
         {
@@ -28,7 +29,9 @@ class Blocks extends React.Component {
         ) : (
             <div >
 
-              <Graph data={graph_blocks} id='blocks_graph' title='Ladger'/>
+              <Graph data={graph_blocks} id='blocks_graph' title='Ladger'
+                size={{width: 1000, height: 800}}
+                selectedPeerIP={selectedBlock}/>
 
               <div className="tab-offset">
                 <Card id='ladger' title='Ladger Data'>
@@ -37,23 +40,29 @@ class Blocks extends React.Component {
                   minRows={0}
                   columns={columns}
                   className='-striped'
-                  getTrProps={(state, rowInfo) => {
-                    if (rowInfo && rowInfo.row) {
-                      return {
-                        onClick: (e) => {
-                          that.setState({
-                            selectedBlockNum: rowInfo.row.blockNum,
-                          })
-                        },
-                        style: {
-                          background: rowInfo.index === this.state.selectedBlockNum ? '#b8daff' :
-                           rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+
+                  getTdProps={(state, rowInfo, column, instance) => {
+                    return {
+                      onClick: (e, handleOriginal) => {
+                        that.setState({
+                          selectedBlock : rowInfo.row._original.header_signature,
+                        })
+
+                        // IMPORTANT! React-Table uses onClick internally to trigger
+                        // events like expanding SubComponents and pivots.
+                        // By default a custom 'onClick' handler will override this functionality.
+                        // If you want to fire the original onClick handler, call the
+                        // 'handleOriginal' function.
+                        if (handleOriginal) {
+                          handleOriginal();
                         }
-                      }
-                    }else{
-                      return {}
-                    }
-                  }} />
+                      },
+                      style: {
+                          background: rowInfo.row._original.header_signature === selectedBlock ? '#b8daff' :
+                           rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+                    },
+                  }}}
+                />
                 </Card>
               </div>
             </div>

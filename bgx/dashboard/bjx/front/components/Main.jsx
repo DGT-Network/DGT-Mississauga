@@ -48,7 +48,7 @@ class Main extends React.Component {
           <div className={classNames('collapse', 'navbar-collapse')} id="navbarNav">
             <ul className={classNames('nav', 'navbar-nav')}>
               <li className="nav-item">
-                <a className={classNames('nav-link')}
+                <a className={classNames('nav-link active')}
                    id="network-tab"
                    data-toggle="tab"
                    href="#network"
@@ -57,7 +57,7 @@ class Main extends React.Component {
                 </a>
               </li>
               <li className="nav-item">
-                <a className={classNames('nav-link active')}
+                <a className={classNames('nav-link')}
                    id="peers-tab"
                    data-toggle="tab"
                    href="#peers"
@@ -120,7 +120,7 @@ class Main extends React.Component {
         <Stat/>
 
         <div className={classNames("tab-content", 'tab-offset')} id="btcontent">
-          <div className={classNames("tab-pane", "fade", "show", "active")} id="peers" role="tabpanel">
+          <div className={classNames("tab-pane", "fade")} id="peers" role="tabpanel">
             <Peers />
           </div>
           <div className={classNames("tab-pane", "fade")} id="transactions" role="tabpanel">
@@ -132,7 +132,7 @@ class Main extends React.Component {
           <div className={classNames("tab-pane", "fade")} id="state" role="tabpanel">
             <State/>
           </div>
-          <div className={classNames("tab-pane", "fade")} id="network" role="tabpanel">
+          <div className={classNames("tab-pane", "fade", "show", "active")} id="network" role="tabpanel">
             <Network/>
           </div>
           <div className={classNames("tab-pane", "fade")} id="wallet" role="tabpanel">

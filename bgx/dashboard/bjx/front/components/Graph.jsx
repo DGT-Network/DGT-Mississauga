@@ -164,14 +164,15 @@ console.log('GRAPH DATA', graph.data)
     var display = $(`#${this.props.id}`).css('display');
     $(`#${this.props.id}`)
         .css('display', 'block')
-        .css('height', config.graph.height + 'px');
-    graph.width  = $(`#${this.props.id}`).width()  - graph.margin.left - graph.margin.right;
-    graph.height = $(`#${this.props.id}`).height() - graph.margin.top  - graph.margin.bottom;
+        .css('height', this.props.size.height + 'px');
+    graph.width  = this.props.size.width  - graph.margin.left - graph.margin.right;
+    graph.height = this.props.size.height - graph.margin.top  - graph.margin.bottom;
     $(`#${this.props.id}`).css('display', display);
 
 
     var div = d3.select(`#${this.props.id}`).append("div")
     .attr("class", "tooltip")
+    .attr("id", `${this.props.id}-tooltip`)
     .style("opacity", 0)
     .style("position", "absolute");
 
@@ -321,8 +322,8 @@ console.log('GRAPH DATA', graph.data)
     }
 
     graph.svg = d3.select(`#${this.props.id}`).append('svg')
-        .attr('width' , '100%')
-        .attr('height', graph.height + graph.margin.top  + graph.margin.bottom)
+        .attr('width' , this.props.size.width)//graph.width + graph.margin.right  + graph.margin.left)
+        .attr('height', this.props.size.height)//graph.height + graph.margin.top  + graph.margin.bottom)
       .append('g')
         .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
 
@@ -516,8 +517,10 @@ console.log('GRAPH DATA', graph.data)
           .attr('fill', '#212529')
       }
 
+
       let extradata = graph.node.append('g')
         .attr('class', 'extra-data')
+        .attr('display', 'none')
 
       extradata.append('circle')
         .attr('class', 'extra-active')
@@ -544,7 +547,7 @@ console.log('GRAPH DATA', graph.data)
         lines.forEach(function(line) {
             var text = node.append('text')
                 .text(function(d) {
-                   return that.state.collapsedNodes.indexOf(d.IP) == -1 ? d.IP : `${d.IP}...`;
+                   return that.state.collapsedNodes.indexOf(d.IP) == -1 ? d.name : `${d.name}...`;
                 })
                 .attr('dy', dy + 'em');
             dy += ddy;
@@ -683,7 +686,7 @@ updateGraph(){
 
             extra
              .attr('display',  function(d){
-                return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+                return d.node_state != undefined && !that.checkNodeHidden(d.IP) ?  'block' : 'none'
               })
              .each(function(d) {
                 d3.select(this).selectAll('.extra-active')
@@ -788,10 +791,10 @@ preventCollisions() {
 }
 
 colorFor(d){
-  const { selectedFilters, filters } = this.props;
+  const { selectedFilters, filters, selectedPeerIP } = this.props;
 
   if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
-    return '#007bff';
+    return d.IP == selectedPeerIP ? '#ffc107' : '#17a2b8';
 
   const key = Object.keys(selectedFilters)[0]
 
@@ -864,79 +867,81 @@ highlightObject(obj) {
 }
 
 hideTooltip(){
-    var div = d3.select(".tooltip")
+    var div = d3.select(`#${this.props.id}-tooltip`)
     div.style("opacity", 0)
         .style("left", "-100px")
         .style("top", "-100px");
   }
 
 showTooltip(d){
-  var div = d3.select(".tooltip")
+  var div = d3.select(`#${this.props.id}-tooltip`)
   div.style("opacity", .9)
     .html("IP: "+d.IP + "<br/>"+
             humanize(d.node_state) +"<br/>"+
             humanize(d.node_type))
-   .style("left", (d.x + 30) + "px")
-   .style("top", (d.y - 75) + "px")
+   .style("left", (d.x + 0) + "px")
+   .style("top", (d.y - 30) + "px")
 }
 
 selectObject(obj, el) {
-  let graph = this.graphh;
-    var node;
-    if (el) {
-        node = d3.select(el);
-    } else {
-        graph.node.each(function(d) {
-            if (d === obj) {
-                node = d3.select(el = this);
-            }
-        });
-    }
-    if (!node) return;
 
-    if (node.classed('selected')) {
-        this.deselectObject();
-        return;
-    }
+  store.dispatch(selectP(obj.IP))
+  // let graph = this.graphh;
+  //   var node;
+  //   if (el) {
+  //       node = d3.select(el);
+  //   } else {
+  //       graph.node.each(function(d) {
+  //           if (d === obj) {
+  //               node = d3.select(el = this);
+  //           }
+  //       });
+  //   }
+  //   if (!node) return;
 
-    this.selected = {
-        obj : obj,
-        el  : el
-    };
+  //   if (node.classed('selected')) {
+  //       this.deselectObject();
+  //       return;
+  //   }
 
-    this.highlightObject(obj);
+  //   this.selected = {
+  //       obj : obj,
+  //       el  : el
+  //   };
 
-    node.classed('selected', true);
-    $('#docs').html(obj.docs);
-    $('#docs-container').scrollTop(0);
+  //   this.highlightObject(obj);
 
-    var $graph   = $(`#${this.props.id}-container`),
-        nodeRect = {
-            left   : obj.x + obj.extent.left + graph.margin.left,
-            top    : obj.y + obj.extent.top  + graph.margin.top,
-            width  : obj.extent.right  - obj.extent.left,
-            height : obj.extent.bottom - obj.extent.top
-        },
-        graphRect = {
-            left   : $graph.scrollLeft(),
-            top    : $graph.scrollTop(),
-            width  : $graph.width(),
-            height : $graph.height()
-        };
+  //   node.classed('selected', true);
+  //   $('#docs').html(obj.docs);
+  //   $('#docs-container').scrollTop(0);
 
-    const offset = 20;
+  //   var $graph   = $(`#${this.props.id}-container`),
+  //       nodeRect = {
+  //           left   : obj.x + obj.extent.left + graph.margin.left,
+  //           top    : obj.y + obj.extent.top  + graph.margin.top,
+  //           width  : obj.extent.right  - obj.extent.left,
+  //           height : obj.extent.bottom - obj.extent.top
+  //       },
+  //       graphRect = {
+  //           left   : $graph.scrollLeft(),
+  //           top    : $graph.scrollTop(),
+  //           width  : $graph.width(),
+  //           height : $graph.height()
+  //       };
 
-    if (nodeRect.left + nodeRect.width/2 < graphRect.left + graphRect.width/2 - offset ||
-        nodeRect.left + nodeRect.width/2 > graphRect.left + graphRect.width/2 + offset ||
-        nodeRect.top + nodeRect.height/2 < graphRect.top + graphRect.height/2 - offset ||
-        nodeRect.top + nodeRect.height/2 > graphRect.top + graphRect.height/2 + offset) {
+  //   const offset = 20;
+
+  //   if (nodeRect.left + nodeRect.width/2 < graphRect.left + graphRect.width/2 - offset ||
+  //       nodeRect.left + nodeRect.width/2 > graphRect.left + graphRect.width/2 + offset ||
+  //       nodeRect.top + nodeRect.height/2 < graphRect.top + graphRect.height/2 - offset ||
+  //       nodeRect.top + nodeRect.height/2 > graphRect.top + graphRect.height/2 + offset) {
 
 
-        $graph.animate({
-            scrollLeft : nodeRect.left + nodeRect.width  / 2 - graphRect.width  / 2,
-            scrollTop  : nodeRect.top  + nodeRect.height / 2 - graphRect.height / 2
-        }, 500);
-    }
+  //       $graph.animate({
+  //           scrollLeft : nodeRect.left + nodeRect.width  / 2 - graphRect.width  / 2,
+  //           scrollTop  : nodeRect.top  + nodeRect.height / 2 - graphRect.height / 2
+  //       }, 500);
+  //   }
 }
 
 deselectObject(doResize) {
@@ -955,27 +960,30 @@ componentDidMount() {
 }
 
 componentDidUpdate(prevProps, prevState) {
-
     if (JSON.stringify(this.props.data) !== JSON.stringify(prevProps.data)) {
         this.drawGraph();
     }
     this.updateGraph();
 }
 
-
-
   render() {
     return(
-            <Card id='node_graph' title={`${this.props.title} Graph`}>
-                <div className='graphLayer'>
-                    <div id={`${this.props.id}-container`}>
-                        <div  id={this.props.id}>
-                        <div className='tooltip'/>
-                        </div>
-                    </div>
-                </div>
-            </Card>);
+      <Card id='node_graph' title={`${this.props.title} Graph`}>
+          <div className='graphLayer'>
+              <div id={`${this.props.id}-container`}>
+                  <div  id={this.props.id}>
+                  <div id={`{${this.props.id}-tooltip}`} />
+                  </div>
+              </div>
+          </div>
+      </Card>
+    );
   }
+}
+
+Graph.defaultProps = {
+  size: {width: 780,
+          height: 350,},
 }
 
 function mapStateToProps(store) {
