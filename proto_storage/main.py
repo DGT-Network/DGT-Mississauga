@@ -4,7 +4,7 @@ import os
 from indexed_database import IndexedDatabase
 from block_store import BlockStore
 from block_manager import BlockManager, MissingPredecessor, MissingPredecessorInBranch
-from block_wrapper import NULL_BLOCK_IDENTIFIER
+from block_wrapper import NULL_BLOCK_IDENTIFIER, BlockWrapper
 
 import block_pb2
 import unittest
@@ -26,8 +26,9 @@ class TestBlockManager(unittest.TestCase):
 
     def setUp(self):
         block_db_filename = 'filename'
-        os.remove(block_db_filename)
-        os.remove(block_db_filename+'-lock')
+        if os.path.exists(block_db_filename):
+            os.remove(block_db_filename)
+            os.remove(block_db_filename+'-lock')
         block_db = IndexedDatabase(
             block_db_filename,
             BlockStore.serialize_block,
@@ -35,6 +36,8 @@ class TestBlockManager(unittest.TestCase):
             flag='c',
             indexes=BlockStore.create_index_configuration())
         self.block_store = BlockStore(block_db)
+        init_block = _build_block(0, NULL_BLOCK_IDENTIFIER, None)
+        self.block_store.update_chain([BlockWrapper(init_block)])
         self.block_manager = BlockManager()
         self.block_manager.add_store('my_store', self.block_store)
 
@@ -60,8 +63,10 @@ class TestBlockManager(unittest.TestCase):
 
         block_e2 = _build_block(5, "E2", "D2")
 
-        with self.assertRaises(MissingPredecessor):
-            self.block_manager.put([block_c2, block_e2, block_d2])
+        # with self.assertRaises(MissingPredecessor):
+        self.block_manager.put([block_c2, block_e2, block_d2])
+
+        self.block_manager.persist('E2', 'my_store')
 
         block_id = "D"
         for block in self.block_manager.branch("D"):

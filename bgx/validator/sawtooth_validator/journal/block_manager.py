@@ -114,7 +114,8 @@ class BlockManager():
     def add_store(self, name, block_store):
         LOGGER.debug("BlockManager: add_store name=%s", name)
         for block in block_store.get_block_iter():
-            if block.header_signature not in self.references_by_block_id:
+            if block.header_signature not in self.references_by_block_id and \
+                    block.header_signature != NULL_BLOCK_IDENTIFIER:
                 block_header = BlockHeader().FromString(block.header)
                 self.references_by_block_id[block.header_signature] = \
                     RefCount(block.header_signature, block_header.previous_block_id, False)
@@ -165,31 +166,33 @@ class BlockManager():
         ordered_branch = self.check_predecessors(branch)
         head_block_header = BlockHeader().FromString(ordered_branch[0].header)
 
-        if not self.contains_block(head_block_header.previous_block_id):
+        if not self.contains_block(head_block_header.previous_block_id) and \
+                head_block_header.previous_block_id != NULL_BLOCK_IDENTIFIER:
             raise MissingPredecessor("During Put, missing predecessor of block {}: {}"
                                      .format(
                                          ordered_branch[0].header_signature,
                                          head_block_header.previous_block_id
                                      ))
 
-        if not self.contains_block(ordered_branch[0].header_signature):
+        if not self.contains_block(ordered_branch[0].header_signature) and \
+                ordered_branch[0].header_signature in self.references_by_block_id:
             rc = self.references_by_block_id[head_block_header.previous_block_id]
             rc.increase_internal_ref_count()
 
         blocks_not_added_yet = []
-        for block in branch:
+        for block in ordered_branch:
             if not self.contains_block(block.header_signature):
                 blocks_not_added_yet.append(block)
 
         last_block = ordered_branch[-1]
         blocks_with_references = ordered_branch[:-1]
-        self.references_by_block_id[last_block.block.header_signature] = \
+        self.references_by_block_id[last_block.header_signature] = \
             RefCount(
                 last_block.header_signature,
                 BlockHeader().FromString(last_block.header).previous_block_id,
                 False
             )
-        self.block_by_block_id[last_block.block.header_signature] = last_block
+        self.block_by_block_id[last_block.header_signature] = last_block
         for block in blocks_with_references:
             self.block_by_block_id[block.header_signature] = block
             self.references_by_block_id[block.header_signature] = \
@@ -317,7 +320,7 @@ class BlockManager():
             raise UnknownBlockStore()
 
         blockstore = self.blockstore_by_name[store_name]
-        head_block = blockstore.chain_head()
+        head_block = blockstore.chain_head.block.header_signature
         to_be_inserted = []
         to_be_removed = []
 
@@ -329,7 +332,6 @@ class BlockManager():
 
         self.remove_blocks_from_blockstore(to_be_removed, store_name)
         self.insert_blocks_in_blockstore(to_be_inserted, store_name)
-
 
     def __contains__(self, block_id):
         LOGGER.debug("BlockManager: __contains__ block_id=%s", block_id)
@@ -370,7 +372,7 @@ class BlockManager():
 
     def branch_diff(self, tip, exclude):
         LOGGER.debug("BlockManager: branch_diff tip=%s", tip)
-        return _BranchDiffIterator(self.pointer, tip, exclude)
+        return _BranchDiffIterator(self, tip, exclude)
 
 
 class _BlockIterator:
@@ -421,8 +423,18 @@ class _BranchDiffIterator(_BlockIterator):
         self.left_iterator = _BranchIterator(block_manager_ptr, tip)
         self.right_iterator = _BranchIterator(block_manager_ptr, exclude)
 
-        left = next(self.left_iterator).block_num
-        right = next(self.right_iterator).block_num
+        left_block = next(self.left_iterator)
+        if not left_block:
+            left = 0
+        else:
+            left_block_header = BlockHeader().FromString(left_block.header)
+            left = left_block_header.block_num
+        right_block = next(self.right_iterator)
+        if not right_block:
+            right = 0
+        else:
+            right_block_header = BlockHeader().FromString(right_block.header)
+            right = right_block_header.block_num
         difference = left - right
 
         if difference < 0:
@@ -460,7 +472,8 @@ class _BranchIterator(_BlockIterator):
     def __init__(self, block_manager_ptr, tip):
         LOGGER.debug("_BranchIterator: __init__ block_manager_ptr=%s tip=%s", block_manager_ptr, tip)
         try:
-            block_manager_ptr.ref_block(tip)
+            if tip != NULL_BLOCK_IDENTIFIER:
+                block_manager_ptr.ref_block(tip)
         except UnknownBlock as err:
             raise UnknownBlock("During constructing branch iterator: {}".format(err))
 
@@ -476,9 +489,9 @@ class _BranchIterator(_BlockIterator):
         elif not self.blockstore:
             (location, data) = self.block_manager.get_block_from_main_cache_or_blockstore_name(self.next_block_id)
             if location == 'MainCache':
-                block_header = BlockHeader().FromString(data.block.header)
+                block_header = BlockHeader().FromString(data.header)
                 self.next_block_id = block_header.previous_block_id
-                return data.block
+                return data
             elif location == 'BlockStore':
                 self.blockstore = data
                 wrapped_block = self.block_manager.get_block_from_blockstore(self.next_block_id, data)
