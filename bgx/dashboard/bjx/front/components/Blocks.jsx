@@ -4,6 +4,7 @@ import classNames from 'classnames/bind'
 
 import Hash from './Hash'
 import Card from './Card'
+import Graph from './Graph'
 
 import ReactTable from "react-table"
 
@@ -13,122 +14,11 @@ class Blocks extends React.Component {
     this.state= { selectedBlockNum: null}
   }
 
-  componentDidUpdate() {
-    const data = Object.assign({}, this.props.graph_blocks);
-
-    const { selectedBlockNum } = this.state;
-    const that = this;
-
-    var width = 680,
-        height = 600,
-        root;
-
-    var force = d3.layout.force()
-        .linkDistance(50)
-        .charge(-120)
-        .gravity(.05)
-        .size([width, height])
-        .on("tick", tick);
-
-    var svg = d3.select(".chart-block")
-        .attr("width", width)
-        .attr("height", height);
-
-    var link = svg.selectAll(".link"),
-        node = svg.selectAll(".node");
-
-    // d3.json("graph.json", function(error, json) {
-    //   if (error) throw error;
-
-      root = data;
-      update();
-    // });
-
-    function update() {
-      var nodes = flatten(root),
-          links = d3.layout.tree().links(nodes);
-
-      // Restart the force layout.
-      force
-          .nodes(nodes)
-          .links(links)
-          .start();
-
-      // Update links.
-      link = link.data(links, function(d) { return d.target.id; });
-
-      link.exit().remove();
-
-      link.enter().insert("line", ".node")
-          .attr("class", "link");
-
-      // Update nodes.
-      node = node.data(nodes, function(d) { return d.id; });
-
-      node.exit().remove();
-
-      var nodeEnter = node.enter().append("g")
-          .attr("class", "node")
-          .on("click", click)
-          .call(force.drag);
-
-      nodeEnter.append("circle")
-          .attr("r", function(d) { return d.number == 0 ? 6 : 4 });
-
-      nodeEnter.append("text")
-          .attr("dy", ".35em")
-          .text(function(d) { return d.name; });
-
-      node.select("circle")
-          .style("fill", color);
-    }
-
-    function tick() {
-      link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-
-      node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-    }
-
-    function color(d) {
-      //return d.number == 0 ? "#fd8d3c" : "#c6dbef" // collapsed package
-
-      return d.number == selectedBlockNum ? "#00FF00" :
-      (d.number == 0 ? "#fd8d3c" : "#c6dbef") // collapsed package
-    }
-
-    // Toggle children on click.
-    function click(d) {
-      if (d3.event.defaultPrevented) return; // ignore drag
-
-      that.setState({
-        selectedBlockNum: d.number,
-      });
-      update();
-    }
-
-    // Returns a list of all nodes under the root.
-    function flatten(root) {
-      var nodes = [], i = 0;
-
-      function recurse(node) {
-        if (node.children) node.children.forEach(recurse);
-        if (!node.id) node.id = ++i;
-        nodes.push(node);
-      }
-
-      recurse(root);
-      return nodes;
-    }
-  }
-
   render() {
     const that = this;
     const {graph_blocks, columns, blocks_data} = this.props;
     return (
-      <Card id='ladger' title='Ladger'>
+      <div>
         {
         graph_blocks == null ?
         (
@@ -137,17 +27,11 @@ class Blocks extends React.Component {
           </div>
         ) : (
             <div >
-              <div className='row'>
-                <div className='col-12'>
-                  <div className='container'>
-                    <div className='chartContainer'>
-                      <svg className='chart-block'/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className='row'>
-                <div className='col-12'>
+
+              <Graph data={graph_blocks} id='blocks_graph' title='Ladger'/>
+
+              <div className="tab-offset">
+                <Card id='ladger' title='Ladger Data'>
                   <ReactTable data={blocks_data}
                   defaultPageSize={10}
                   minRows={0}
@@ -170,12 +54,12 @@ class Blocks extends React.Component {
                       return {}
                     }
                   }} />
-                </div>
+                </Card>
               </div>
             </div>
           )
         }
-      </Card>
+      </div>
     )
   }
 }

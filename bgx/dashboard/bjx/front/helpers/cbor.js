@@ -183,7 +183,6 @@ export function encode(value) {
 }
 
 export function decode(data, tagger, simpleValue) {
-  console.log('453453241511531515',data)
   var dataView = new DataView(data);
   var offset = 0;
 

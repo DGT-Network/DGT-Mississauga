@@ -33,8 +33,7 @@ class Graph extends React.Component {
   }
 
   drawGraph() {
-    console.log('start draw graph')
-    $('#graph').empty();
+    $(`#${this.props.id}`).empty();
 
     let that = this;
 
@@ -153,6 +152,8 @@ class Graph extends React.Component {
 //graph.data = {"Fauchelevent": {"name":"Fauchelevent","type":"group0","depends":[],"dependedOnBy":[],},}
 graph.data = cloneDeep(this.props.data);
 
+console.log('GRAPH DATA', graph.data)
+
     graph.margin = {
         top    : 20,
         right  : 20,
@@ -160,16 +161,16 @@ graph.data = cloneDeep(this.props.data);
         left   : 20
     };
 
-    var display = $('#graph').css('display');
-    $('#graph')
+    var display = $(`#${this.props.id}`).css('display');
+    $(`#${this.props.id}`)
         .css('display', 'block')
         .css('height', config.graph.height + 'px');
-    graph.width  = $('#graph').width()  - graph.margin.left - graph.margin.right;
-    graph.height = $('#graph').height() - graph.margin.top  - graph.margin.bottom;
-    $('#graph').css('display', display);
+    graph.width  = $(`#${this.props.id}`).width()  - graph.margin.left - graph.margin.right;
+    graph.height = $(`#${this.props.id}`).height() - graph.margin.top  - graph.margin.bottom;
+    $(`#${this.props.id}`).css('display', display);
 
 
-    var div = d3.select("#graph").append("div")
+    var div = d3.select(`#${this.props.id}`).append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "absolute");
@@ -319,8 +320,8 @@ graph.data = cloneDeep(this.props.data);
 });
     }
 
-    graph.svg = d3.select('#graph').append('svg')
-        .attr('width' , graph.width  + graph.margin.left + graph.margin.right)
+    graph.svg = d3.select(`#${this.props.id}`).append('svg')
+        .attr('width' , '100%')
         .attr('height', graph.height + graph.margin.top  + graph.margin.bottom)
       .append('g')
         .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
@@ -559,7 +560,6 @@ graph.data = cloneDeep(this.props.data);
         }
         graph.preventCollisions = true;
 
-        $('#graph-container').css('visibility', 'visible');
 
     setTimeout(this.updateGraph());
 }
@@ -585,12 +585,10 @@ graph.data = cloneDeep(this.props.data);
 }
 
 updateGraph(){
-    console.log('updategraph', this.state.hiddenNodes)
     let graph = this.graphh;
     let that = this;
 
-        $('#graph-container').off('click').on('click', function(e) {
-        console.log('container', $(e.target))
+        $(`#${this.props.id}-container`).off('click').on('click', function(e) {
         if (!$(e.target).closest('.node').length) {
 
             that.deselectObject();
@@ -688,7 +686,6 @@ updateGraph(){
                 return that.checkNodeHidden(d.IP) ? 'none' : 'block'
               })
              .each(function(d) {
-                console.log('rrrrrrrrrrrrrrrrr',d)
                 d3.select(this).selectAll('.extra-active')
                   .attr('fill',  d.node_state == 'active' ? '#ffffb3' : '#8dd3c7' )
                   .attr('stroke',  d.node_state == 'active' ? '#b3b37d' : '#63948b' )
@@ -822,7 +819,6 @@ hideChildren(array, IP){
 
 
 highlightObject2(obj) {
-    console.log('highlightObject2')
   let graph = this.graphh;
 
   if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
@@ -914,7 +910,7 @@ selectObject(obj, el) {
     $('#docs').html(obj.docs);
     $('#docs-container').scrollTop(0);
 
-    var $graph   = $('#graph-container'),
+    var $graph   = $(`#${this.props.id}-container`),
         nodeRect = {
             left   : obj.x + obj.extent.left + graph.margin.left,
             top    : obj.y + obj.extent.top  + graph.margin.top,
@@ -970,10 +966,10 @@ componentDidUpdate(prevProps, prevState) {
 
   render() {
     return(
-            <Card id='node_graph' title='Node Graph'>
+            <Card id='node_graph' title={`${this.props.title} Graph`}>
                 <div className='graphLayer'>
-                    <div  id='graph-container'>
-                        <div  id='graph'>
+                    <div id={`${this.props.id}-container`}>
+                        <div  id={this.props.id}>
                         <div className='tooltip'/>
                         </div>
                     </div>
@@ -992,4 +988,4 @@ function mapStateToProps(store) {
   };
 }
 
-export default connect (mapStateToProps, null)(Graph);
+export default Graph;

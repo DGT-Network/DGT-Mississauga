@@ -19,7 +19,6 @@ class Filters extends React.Component {
   }
 
   isSelected(t) {
-    console.log(t.f)
     return false
 }
 

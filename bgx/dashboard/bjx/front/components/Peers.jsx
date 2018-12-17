@@ -25,12 +25,17 @@ class Peers extends React.Component {
   }
 
   render() {
-    const {peers, columns} = this.props
+    const {data, filters, selectedPeerIP, selectedFilters} = this.props
     return (
     <div>
       <div className='row'>
         <div className='col-9'>
-          <Graph/>
+          <Graph data={data}
+            filters={filters}
+            selectedPeerIP={selectedPeerIP}
+            selectedFilters={selectedFilters}
+            id='peers_graph'
+            title='Node'/>
         </div>
         <div className='col-3'>
           <Legend/>
@@ -48,7 +53,11 @@ Peers.defaultProps = {
 
 function mapStateToProps(store) {
   return {
-    peers: store.peersReducer.data.data,
+    data: store.peersReducer.data.data,
+    filters:  store.peersReducer.data.length == 0 ?
+      [] : store.peersReducer.data.filters.filters,
+    selectedPeerIP:store.peersReducer.selectedPeerIP,
+    selectedFilters: store.peersReducer.selected,
   };
 }
 
