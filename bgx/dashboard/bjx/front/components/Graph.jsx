@@ -576,18 +576,11 @@ updateGraph(){
     });
 
 
-    graph.nodeRect.each(function(d) {
-      if (that.state.hiddenNodes.includes(d.IP))
-        d3.select(this).attr('display', 'none')
-    });
-
     graph.line.each(function(d) {
-        if (that.state.hiddenNodes.includes(d.target.IP))
-          d3.select(this).attr('display', 'none')
-
+      d3.select(this).attr('display', function(d){
+        return that.checkNodeHidden(d.target.IP) ? 'none' : 'block'
+      })
     });
-
-
 
         graph.node.each(function(d) {
             var node   = d3.select(this),
@@ -598,7 +591,20 @@ updateGraph(){
             if (!text[0].length) return;
 
             text.each(function() {
-                var box = this.getBBox();
+
+                var box
+
+                try {
+                  box = this.getBBox();
+                }
+                catch(e){
+                  box = {
+                    x : 0,
+                    y: 0,
+                    width: 0,
+                    height:0
+                  }
+                }
 
                     bounds.x1 = box.x;
 
@@ -607,7 +613,10 @@ updateGraph(){
                     bounds.x2 = box.x + box.width;
 
                     bounds.y2 = box.y + box.height;
-            }).attr('text-anchor', 'middle');
+            }).attr('text-anchor', 'middle')
+              .attr('display',  function(d){
+                return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+              })
 
             text.classed('inactive', d.node_state !== 'active')
               .classed('filter-disable', function(d){
@@ -622,6 +631,9 @@ updateGraph(){
               })
               .classed('filter-enable', function(d){
                 return !that.checkNodeFiltered(d)
+              })
+             .attr('display',  function(d){
+                return that.checkNodeHidden(d.IP) ? 'none' : 'block'
               })
               .attr('stroke', function(d) {
                   return  that.colorForDarker(d)
@@ -673,6 +685,9 @@ updateGraph(){
         });
 
 
+}
+checkNodeHidden(ip){
+return this.state.hiddenNodes.includes(ip)
 }
 
 checkNodeFiltered(d){
