@@ -293,8 +293,7 @@ class Validator(object):
             check_publish_block_frequency=0.1,
             batch_observers=[batch_tracker],
             batch_injector_factory=batch_injector_factory,
-            metrics_registry=metrics_registry,
-            block_manager=block_manager)
+            metrics_registry=metrics_registry)
 
         chain_controller = ChainController(
             block_sender=block_sender,
