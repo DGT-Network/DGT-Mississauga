@@ -63,17 +63,22 @@ class TestBlockManager(unittest.TestCase):
 
         block_e2 = _build_block(5, "E2", "D2")
 
-        # with self.assertRaises(MissingPredecessor):
         self.block_manager.put([block_c2, block_e2, block_d2])
 
         self.block_manager.persist('E2', 'my_store')
 
-        block_id = "D"
-        for block in self.block_manager.branch("D"):
+        self.assertEqual(self.block_store.chain_head.header_signature, 'E2')
+
+        block_id = "E2"
+        for block in self.block_manager.branch("E2"):
             self.assertEqual(block.header_signature, block_id)
             header = block_pb2.BlockHeader()
             header.ParseFromString(block.header)
             block_id = header.previous_block_id
+            if block_id == NULL_BLOCK_IDENTIFIER:
+                break
+
+        self.block_manager.persist('D', 'my_store')
 
         self.block_manager.put([block_c2, block_d2, block_e2])
 

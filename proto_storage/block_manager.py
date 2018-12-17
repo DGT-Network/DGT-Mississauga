@@ -23,8 +23,6 @@ LOGGER = logging.getLogger(__name__)
 
 # from sawtooth_validator.ffi import OwnedPointer
 from block_pb2 import Block, BlockHeader
-
-
 # from sawtooth_validator import ffi
 
 NULL_BLOCK_IDENTIFIER = "0000000000000000"
@@ -352,7 +350,7 @@ class BlockManager():
             for store_name in self.blockstore_by_name:
                 block = self.get_block_from_blockstore(block_id, store_name)
                 if block:
-                    return 'BlockStore', block
+                    return 'BlockStore', store_name
         return 'BlockNotFound', None
 
     # Returns wrapped block from store with specified store_name or None
@@ -444,8 +442,8 @@ class _BranchDiffIterator(_BlockIterator):
 
         if difference < 0:
             # seek to the same height on the exclude side
-            for i in range((difference * (-1)) - 1):
-                next(self.right_iterator)
+            for i in range((difference * (-1))):
+                self.right = next(self.right_iterator)
 
         self.has_reached_common_ancestor = False
 
@@ -461,15 +459,19 @@ class _BranchDiffIterator(_BlockIterator):
             self.has_reached_common_ancestor = True
             raise StopIteration()
 
-        if right and right.block.header_signature == left.block.header_signature:
-            self.has_reached_common_ancestor = True
-            raise StopIteration()
+        advance_left = False
+        if right:
+            if right.header_signature == left.header_signature:
+                self.has_reached_common_ancestor = True
+                raise StopIteration()
+            right_block_header = BlockHeader().FromString(right.header)
+            left_block_header = BlockHeader().FromString(left.header)
+            if right_block_header.block_num < left_block_header.block_num:
+                advance_left = True
 
-        if right and right.block.block_num == left.block.block_num:
-            return right
-
+        if not advance_left:
+            self.right = next(self.right_iterator)
         self.left = next(self.left_iterator)
-        self.right = next(self.right_iterator)
         return left
 
 
