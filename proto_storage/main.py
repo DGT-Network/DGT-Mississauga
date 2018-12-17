@@ -3,7 +3,7 @@ import os
 
 from indexed_database import IndexedDatabase
 from block_store import BlockStore
-from block_manager import BlockManager, MissingPredecessor, MissingPredecessorInBranch
+from block_manager import BlockManager, MissingPredecessor, MissingPredecessorInBranch,UnknownBlock
 from block_wrapper import NULL_BLOCK_IDENTIFIER, BlockWrapper
 
 import block_pb2
@@ -80,17 +80,19 @@ class TestBlockManager(unittest.TestCase):
 
         self.block_manager.persist('D', 'my_store')
 
-        self.block_manager.put([block_c2, block_d2, block_e2])
+        block_f2 = _build_block(5, "F2", "E2")
 
-        block_id = "D"
-        for block in self.block_manager.branch_diff("D", "E2"):
-            self.assertEqual(block.header_signature, block_id)
-            header = block_pb2.BlockHeader()
-            header.ParseFromString(block.header)
-            block_id = header.previous_block_id
+        with self.assertRaises(UnknownBlock):
+            self.block_manager.ref_block(block_f2.header_signature)
 
-        for block in self.block_manager.get("C"):
-            self.assertEqual(block.header_signature, "C")
+        self.block_manager.ref_block(block_e.header_signature)
+
+        self.block_manager.ref_block(block_d.header_signature)
+        self.block_manager.unref_block(block_d.header_signature)
+
+        block_ids = ['A', 'D', 'B', 'C1']
+        for block in self.block_manager.get(block_ids):
+            print(block)
 
 
 if __name__ == '__main__':

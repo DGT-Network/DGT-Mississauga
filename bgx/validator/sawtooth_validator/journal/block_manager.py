@@ -202,38 +202,11 @@ class BlockManager():
                     True
                 )
 
-        # Old logic
-        # wrapped_ordered_branch = [BlockWrapper(block) for block in ordered_branch]
-        # chain_head = self._block_store.chain_head
-        # if chain_head is not None and chain_head.block.header_signature != head_block_header.previous_block_id:
-        #     raise MissingPredecessor()
-        # self._block_store.update_chain(wrapped_ordered_branch)
-
-        # Older logic
-        # Works with next logic
-        # If A(prev: 0) <- B(prev: A) <- C(prev: B)
-        # And branch to put is A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
-        # Then after update chain will be A(prev: 0) <- B(prev: A) <- A2(prev: B) <- B2(prev: A2) <- C2(prev: B2)
-        # Note block C2(prev: B2) will be removed
-        # predecessor_found = False
-        # block_store_has_blocks = False
-        # traversed_blocks = []
-        # for wrapped_block in self._block_store.get_block_iter(reverse=True):
-        #     block = wrapped_block.block
-        #     block_store_has_blocks = True
-        #     if block.header_signature == head_block_header.previous_block_id:
-        #         predecessor_found = True
-        #         break
-        #     traversed_blocks.append(block)
-        # if predecessor_found or (not block_store_has_blocks):
-        #     self._block_store.update_chain(wrapped_ordered_branch, traversed_blocks)
-        # else:
-        #     raise MissingPredecessor()
 
     # Adds block to referenced dict
     def ref_block(self, block_id):
         LOGGER.debug("BlockManager: ref_block block_id=%s", block_id)
-        if self.references_by_block_id[block_id]:
+        if block_id in self.references_by_block_id:
             self.references_by_block_id[block_id].increase_external_ref_count()
             return
 
@@ -246,7 +219,7 @@ class BlockManager():
             except KeyError:
                 pass
 
-        if not wrapped_block:
+        if not wrapped_block or wrapped_block.block.header_signature == NULL_BLOCK_IDENTIFIER:
             raise UnknownBlock()
         block = wrapped_block.block
         block_header = BlockHeader().FromString(block.header)
@@ -378,30 +351,14 @@ class BlockManager():
 class _BlockIterator:
 
     def __del__(self):
-        if self._index:
-            LOGGER.debug("_BlockIterator: __del__ ptr=%s", self._index)
-            """
-            _libexec("{}_drop".format(self.name), self._c_iter_ptr)
-            """
+        LOGGER.debug("_BlockIterator: __del__ ")
 
     def __iter__(self):
-        LOGGER.debug("_BlockIterator: __iter__ ptr=%s ....", self)
+        LOGGER.debug("_BlockIterator: __iter__")
         return self
 
     def __next__(self):
-        if self._index >= self._block_ids:
-            raise StopIteration()
-
-        LOGGER.debug("_BlockIterator: __next__ index=%s", self._index)
-        block_id = self._block_ids[self._index]
-        (location, data) = self._block_manager.get_block_from_main_cache_or_blockstore_name(block_id)
-        if location == 'BlockNotFound' :
-            result = None
-        else:
-            result = data.block
-        LOGGER.debug("_BlockIterator: next=%s", result)
-        self._index += 1
-        return result
+        LOGGER.debug("_BlockIterator: next")
 
 
 class _GetBlockIterator(_BlockIterator):
@@ -413,6 +370,24 @@ class _GetBlockIterator(_BlockIterator):
         self._index = 0
         LOGGER.debug("_GetBlockIterator: __init__ block_manager=%s block_ids=%s iter=%s",
                      block_manager_ptr, block_ids, self._index)
+
+    def __next__(self):
+        if self._index >= len(self._block_ids):
+            raise StopIteration()
+
+        LOGGER.debug("_BlockIterator: __next__ index=%s", self._index)
+        block_id = self._block_ids[self._index]
+        (location, data) = self._block_manager.get_block_from_main_cache_or_blockstore_name(block_id)
+        if location == 'MainCache':
+            result = data
+        elif location == 'BlockStore':
+            wrapped_block = self._block_manager.get_block_from_blockstore(block_id, data)
+            result = wrapped_block.block
+        else:
+            result = None
+        LOGGER.debug("_BlockIterator: next=%s", result)
+        self._index += 1
+        return result
 
 
 class _BranchDiffIterator(_BlockIterator):
