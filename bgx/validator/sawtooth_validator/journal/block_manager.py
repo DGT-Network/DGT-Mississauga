@@ -103,14 +103,18 @@ class RefCount:
 
 
 class BlockManager():
-
+    # Initializes instance of BlockManager class
     def __init__(self):
         LOGGER.debug("BlockManager: __init__")
+        # MainCahce
         self.block_by_block_id = {}
+        # BlockStore instances
         self.blockstore_by_name = {}
+        # Dict with counters of blocks references
         self.references_by_block_id = {}
         self.pointer = 1 # this is fake pointer
 
+    # Adds Block Store and inserts it's blocks in MainCache and creates references for them(blocks)
     def add_store(self, name, block_store):
         LOGGER.debug("BlockManager: add_store name=%s", name)
         for block in block_store.get_block_iter():

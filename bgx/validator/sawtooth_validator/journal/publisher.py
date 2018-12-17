@@ -21,6 +21,7 @@ import logging
 import queue
 from threading import RLock
 import time
+import hashlib
 
 from sawtooth_validator.concurrent.thread import InstrumentedThread
 from sawtooth_validator.execution.scheduler_exceptions import SchedulerError
@@ -134,6 +135,7 @@ class _CandidateBlock(object):
         self._block_builder = block_builder
         self._max_batches = max_batches
         self._batch_injectors = batch_injectors
+        self._summary = None
 
     def __del__(self):
         # Cancel the scheduler if it is not complete
@@ -404,6 +406,110 @@ class _CandidateBlock(object):
         self._sign_block(builder, identity_signer)
         return builder.build_block()
 
+    def summarize(self, force):
+        if self._summary:
+            return self._summary
+
+        if not force and len(self._pending_batches) == 0:
+            raise BlockEmpty()
+
+        self._scheduler.unschedule_incomplete_batches()
+        self._scheduler.finalize()
+
+        self._scheduler.complete(True)
+
+        results = []
+        batch_ids = self._scheduler._batch_by_id.keys()
+        for id in batch_ids:
+            batch_result = self._scheduler.get_batch_execution_result(id)
+            if batch_result:
+                txn_results = self._scheduler.get_transaction_execution_results(id)
+                results.append([txn_results, batch_result, id])
+            else:
+                results.append([[], None, id])
+
+        committed_txn_cache = self._committed_txn_cache
+
+        ending_state_hash = None
+        for result in results:
+            batch_result = result[1]
+            if not batch_result or not batch_result.state_hash:
+                continue
+            else:
+                ending_state_hash = batch_result.state_hash
+                break
+
+        # Array of (batch_id, transactions)
+        batch_txn_results = []
+        for result in results:
+            if result[1]:
+                batch_txn_results.append([result[2], result[0]])
+            else:
+                batch_txn_results.append([result[2], None])
+
+        batches_w_no_results = []
+        valid_batch_ids = []
+        for batch_result in batch_txn_results:
+            if batch_result[1] is None:
+                batches_w_no_results.append(batch_result[0])
+                continue
+            txns_valid = True
+            for t in batch_result[1]:
+                if not t.is_valid:
+                    txns_valid = False
+                    break
+            if txns_valid:
+                valid_batch_ids.append(batch_result[0])
+
+        bad_batches = []
+        pending_batches= []
+        only_injected = True
+        if len(self._injected_batch_ids) == len(valid_batch_ids):
+            for i in range(len(self._injected_batch_ids)):
+                if self._injected_batch_ids[i] != valid_batch_ids[i]:
+                    only_injected = False
+                    break
+
+        if only_injected:
+            # There only injected batches in this block
+            return None
+
+        for batch in self._pending_batches:
+            header_signature = batch.header_signature
+
+            if header_signature in batches_w_no_results:
+                if header_signature not in self._injected_batch_ids:
+                    pending_batches.append(batch)
+                else:
+                    LOGGER.debug("Failed to inject batch {}", header_signature)
+            elif header_signature in valid_batch_ids:
+                if not self._check_batch_dependencies(batch, committed_txn_cache):
+                    # bad_batches.append(batch)
+                    # pending_batches = []
+                    # for b in self._pending_batches:
+                    #     if b in bad_batches:
+                    #         continue
+                    #     pending_batches.append(b)
+                    return None
+                else:
+                    self._block_builder.add_batch(batch)
+            else:
+                bad_batches.append(batch)
+
+        if not ending_state_hash:
+            return None
+
+        self._block_builder.set_state_hash(ending_state_hash)
+
+        batches = self._block_builder.batches
+        batch_ids = [b.header_signature for b in batches]
+
+        self._summary = [
+            hashlib.sha256(b_id.encode('utf-8')).hexdigest() for b_id in batch_ids
+        ]
+        self._remaining_batches = pending_batches
+
+        return self._summary
 
 class BlockPublisher(object):
     """
@@ -794,20 +900,12 @@ class BlockPublisher(object):
         """
 
     def summarize_block(self, force=False):
+        """Creates self._summary of Candidate Block
+        :param force: Summarize even if pending batches array of CandidateBlock is empty
+        :return: Summary of batches in block
+        """
         LOGGER.debug('BlockPublisher: summarize_block')
-        """
-        (vec_ptr, vec_len, vec_cap) = ffi.prepare_vec_result()
-        self._call(
-            'summarize_block',
-            ctypes.c_bool(force),
-            ctypes.byref(vec_ptr),
-            ctypes.byref(vec_len),
-            ctypes.byref(vec_cap))
-
-        return ffi.from_rust_vec(vec_ptr, vec_len, vec_cap)
-        """
-        return b'devmode'
-        #raise BlockEmpty()
+        return self._candidate_block.summarize(force)
 
     def finalize_block(self, consensus=None, force=False):
         """Finalize current candidate block, build new one.
