@@ -27,7 +27,6 @@ from block_pb2 import Block, BlockHeader
 
 # from sawtooth_validator import ffi
 
-
 NULL_BLOCK_IDENTIFIER = "0000000000000000"
 
 class MissingPredecessor(Exception):
@@ -315,7 +314,7 @@ class BlockManager():
                 del self.block_by_block_id[block.header_signature]
 
         blockstore = self.blockstore_by_name[store_name]
-        blockstore.update_chain(to_be_inserted)
+        blockstore.update_chain([BlockWrapper(block) for block in to_be_inserted])
 
     # Adds block to blockstore with name store_name
     def persist(self, block_id, store_name):
@@ -324,14 +323,14 @@ class BlockManager():
             raise UnknownBlockStore()
 
         blockstore = self.blockstore_by_name[store_name]
-        head_block = blockstore.chain_head.block.header_signature
+        head_block_id = blockstore.chain_head.block.header_signature
         to_be_inserted = []
         to_be_removed = []
 
-        for block in self.branch_diff(block_id, head_block):
+        for block in self.branch_diff(block_id, head_block_id):
             to_be_inserted.append(block)
 
-        for block in self.branch_diff(head_block, block_id):
+        for block in self.branch_diff(head_block_id, block_id):
             to_be_removed.append(block)
 
         self.remove_blocks_from_blockstore(to_be_removed, store_name)
@@ -433,12 +432,14 @@ class _BranchDiffIterator(_BlockIterator):
         else:
             left_block_header = BlockHeader().FromString(left_block.header)
             left = left_block_header.block_num
+        self.left = left_block
         right_block = next(self.right_iterator)
         if not right_block:
             right = 0
         else:
             right_block_header = BlockHeader().FromString(right_block.header)
             right = right_block_header.block_num
+        self.right = right_block
         difference = left - right
 
         if difference < 0:
@@ -451,23 +452,25 @@ class _BranchDiffIterator(_BlockIterator):
     def __next__(self):
         LOGGER.debug("_BranchDiffIterator: __next__")
         if self.has_reached_common_ancestor:
-            return None
+            raise StopIteration()
 
-        left = next(self.left_iterator)
-        right = next(self.right_iterator)
+        left = self.left
+        right = self.right
 
         if not left:
             self.has_reached_common_ancestor = True
-            return None
+            raise StopIteration()
 
         if right and right.block.header_signature == left.block.header_signature:
             self.has_reached_common_ancestor = True
-            return None
+            raise StopIteration()
 
         if right and right.block.block_num == left.block.block_num:
-            next(self.right_iterator)
+            return right
 
-        next(self.left_iterator)
+        self.left = next(self.left_iterator)
+        self.right = next(self.right_iterator)
+        return left
 
 
 class _BranchIterator(_BlockIterator):
