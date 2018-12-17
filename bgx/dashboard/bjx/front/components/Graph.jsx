@@ -503,13 +503,28 @@ graph.data = cloneDeep(this.props.data);
         .attr('width' , 2)
         .attr('height', 2);
 
-        for (let i = 0; i < 3; i++){
-          graph.nodeRect = graph.node.append('circle')
-            .attr('cx', 25 + i*4)
-            .attr('cy', 14)
-            .attr('r' , 1)
-            .attr('fill', '#212529')
-        }
+
+      let collapse = graph.node.append('g')
+        .attr('class', 'collapse-points')
+
+      for (let i = 0; i < 3; i++){
+        collapse.append('circle')
+          .attr('cx', 25 + i*4)
+          .attr('cy', 14)
+          .attr('r' , 1)
+          .attr('fill', '#212529')
+      }
+
+      let extradata = graph.node.append('g')
+        .attr('class', 'extra-data')
+
+      extradata.append('circle')
+        .attr('class', 'extra-active')
+        .attr('cx', -35)
+        .attr('cy', -22)
+        .attr('r' , 4)
+        .attr('fill', '#ffffb3')
+        .attr('stroke', '#b3b37d')
 
 
         graph.node.each(function(d) {
@@ -593,7 +608,8 @@ updateGraph(){
             var node   = d3.select(this),
                 rect  = node.select('rect'),
                 text   = node.selectAll('text'),
-                collapsePoints = node.selectAll('circle'),
+                collapsePoints = node.selectAll('.collapse-points'),
+                extra = node.selectAll('.extra-data'),
                 bounds = {}
 
             if (!text[0].length) return;
@@ -667,6 +683,16 @@ updateGraph(){
                 return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
               })
 
+            extra
+             .attr('display',  function(d){
+                return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+              })
+             .each(function(d) {
+                console.log('rrrrrrrrrrrrrrrrr',d)
+                d3.select(this).selectAll('.extra-active')
+                  .attr('fill',  d.node_state == 'active' ? '#ffffb3' : '#8dd3c7' )
+                  .attr('stroke',  d.node_state == 'active' ? '#b3b37d' : '#63948b' )
+             })
 
 
             var padding  = 10,
@@ -923,14 +949,13 @@ deselectObject(doResize) {
     graph.node.classed('selected', false);
     this.selected = {};
     this.highlightObject(null);
-   //store.dispatch(selectP(null))
-   //store.dispatch(filterPeers({}))
+   store.dispatch(selectP(null))
+   store.dispatch(filterPeers({}))
 }
 
 
 componentDidMount() {
     this.drawGraph();
-    this.updateGraph();
 }
 
 componentDidUpdate(prevProps, prevState) {
