@@ -931,7 +931,7 @@ class BlockPublisher(object):
 
                     if consensus is not None:
                         self._candidate_block._consensus = consensus
-                    new_candidate_block = self._candidate_block.finalize_block(self.identity_signer, \
+                    new_candidate_block = self._candidate_block.finalize_block(self._identity_signer,
                                                                                self._pending_batches)
         except Exception as exc:
             LOGGER.critical("finalize_block exception.")
