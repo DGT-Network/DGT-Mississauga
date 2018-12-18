@@ -489,7 +489,7 @@ console.log('GRAPH DATA', graph.data)
           }
       })
       .on('click', function(d) {
-          store.dispatch(selectP(d.IP));
+        that.selectObject(d)
       })
       .on('dblclick', function(d) {
           that.highlightObject2(d);
@@ -882,7 +882,7 @@ showTooltip(d){
    .style("top", (d.y - 30) + "px")
 }
 
-selectObject(obj, el) {
+selectObject(obj) {
 
   this.props.onSelect(obj.IP)
 
@@ -946,6 +946,7 @@ selectObject(obj, el) {
 }
 
 deselectObject(doResize) {
+  console.log('deselect')
   this.props.onSelect(null)
   this.props.onFilter({})
 }

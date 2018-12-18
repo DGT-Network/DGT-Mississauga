@@ -1,5 +1,4 @@
 import React from 'react'
-import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 import {trimSpaces} from '../helpers/helper'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -16,21 +15,21 @@ class Legend extends React.Component {
   }
 
   render() {
-    const {peer} = this.props;
+    const {legend} = this.props;
     let t = -1;
     let tt = -1;
 
       return (
         <div className='card'>
           <div className='card-header' onClick={() => this.setState({collapsed: !this.state.collapsed})} data-toggle="collapse" data-target='#legend' aria-expanded="false" aria-controls="collapseExample">
-            { peer == undefined || peer == null ?
+            { legend == undefined || legend == null ?
               (
                 'Legend'
               ) : (
                 <ul class="nav nav-tabs card-header-tabs">
                 {
 
-                  peer.legend.map((i) => {
+                  legend.map((i) => {
                     t++;
                     const key = Object.keys(i)[0]
                     return (
@@ -56,8 +55,8 @@ class Legend extends React.Component {
           <div id='legend' className="card-body collapse show">
             <div className="tab-content" id="filtercontent">
             {
-              peer != null &&
-              peer.legend.map((i) => {
+              legend != null &&
+              legend.map((i) => {
                 tt++;
                 const key = Object.keys(i)[0]
                 return (
@@ -80,12 +79,9 @@ class Legend extends React.Component {
       );
   }
 }
-function mapStateToProps(store) {
-  return {
-    peer: undefined ==  store.peersReducer.data.data ?
-          null :
-          store.peersReducer.data.data.find((p) => {return  p.IP == store.peersReducer.selectedPeerIP}),
-  };
+
+Legend.defaultProps = {
+  legend: [],
 }
 
-export default connect (mapStateToProps, null)(Legend);
+export default Legend;

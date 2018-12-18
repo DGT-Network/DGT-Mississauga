@@ -18,11 +18,28 @@ class Peers extends React.Component {
     this.state= {
       selectedIP: null,
       selectedFilters: {},
+      legend: [],
     }
   }
 
   selectPeer(ip) {
-    this.setState({selectedIP: ip})
+    this.setState({selectedIP: ip,
+      legend: this.legendFor(ip)})
+  }
+
+  legendFor(ip) {
+    const { data } = this.props
+    console.log('123213', data)
+
+    if (data == undefined){
+      return []
+    }
+    let f = data.find(p => {return  p.IP == ip} )
+
+    if (f == undefined)
+      return []
+    else
+      return data.find(p => {return  p.IP == ip} ).legend
   }
 
   filterPeer(filters) {
@@ -31,7 +48,7 @@ class Peers extends React.Component {
 
   render() {
     const { data, filters } = this.props
-    const { selectedIP, selectedFilters } = this.state
+    const { selectedIP, selectedFilters, legend } = this.state
 
     return (
     <div>
@@ -47,7 +64,7 @@ class Peers extends React.Component {
             onFilter={(e) => this.filterPeer(e)}/>
         </div>
         <div className='col-3'>
-          <Legend/>
+          <Legend legend= {legend}/>
         </div>
       </div>
       <Filters
@@ -60,7 +77,8 @@ class Peers extends React.Component {
 }
 
 Peers.defaultProps = {
-  peers: [],
+  data: [],
+  filters: [],
 };
 
 function mapStateToProps(store) {
