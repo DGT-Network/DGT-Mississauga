@@ -638,7 +638,7 @@ class BlockPublisher(object):
     def chain_head_lock(self):
         return self._lock
 
-    def _build_candidate_block(self, chain_head, block_id=None):
+    def _build_candidate_block(self, chain_head):
         """ Build a candidate block and construct the consensus object to
         validate it.
         :param chain_head: The block to build on top of.
@@ -680,8 +680,6 @@ class BlockPublisher(object):
             previous_block_id=chain_head.header_signature,
             signer_public_key=public_key)
         block_builder = BlockBuilder(block_header)
-        if block_id is not None:
-            block_builder.set_signature(block_id)
         if not consensus.initialize_block(block_builder.block_header):
             LOGGER.debug("Consensus not ready to build candidate block.")
             return None
@@ -887,7 +885,7 @@ class BlockPublisher(object):
         try:
             with self._lock:
                 if self._candidate_block is None:
-                    self._build_candidate_block(self._chain_head, block_id)
+                    self._build_candidate_block(block_id)
                 else:
                     LOGGER.debug('BlockPublisher, initialize_block: _candidate_block is not None, initialize_block \
                                  = %s failed', block_id)
