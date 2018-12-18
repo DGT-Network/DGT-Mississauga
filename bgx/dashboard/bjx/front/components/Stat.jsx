@@ -28,7 +28,7 @@ class Stat extends React.Component {
             <div className='row'>
               { data.map((dd) => {
                   return (
-                    <div className='col-4'>
+                    <div key={dd[0][0]} className='col-4'>
                       {
                         dd.map((d) => {
                           return (

@@ -22,18 +22,17 @@ class Legend extends React.Component {
       return (
         <div className='card'>
           <div className='card-header' onClick={() => this.setState({collapsed: !this.state.collapsed})} data-toggle="collapse" data-target='#legend' aria-expanded="false" aria-controls="collapseExample">
-            { legend == undefined || legend == null ?
+            { legend == undefined || legend == null || legend.length == 0 ?
               (
                 'Legend'
               ) : (
-                <ul class="nav nav-tabs card-header-tabs">
+                <ul className="nav nav-tabs card-header-tabs">
                 {
-
                   legend.map((i) => {
                     t++;
                     const key = Object.keys(i)[0]
                     return (
-                    <li className="nav-item">
+                    <li key={`h-${key}`} className="nav-item">
                        <a className={classNames('nav-link', t == 0 ? 'active' : '' )}
                          id={`${key}-tab`}
                          data-toggle="tab"
@@ -60,7 +59,7 @@ class Legend extends React.Component {
                 tt++;
                 const key = Object.keys(i)[0]
                 return (
-                  <div className={classNames("tab-pane", "fade",  tt == 0 ? 'show active' : '' )} id={trimSpaces(key)} role="tabpanel">
+                  <div key={`hg-${key}`} className={classNames("tab-pane", "fade",  tt == 0 ? 'show active' : '' )} id={trimSpaces(key)} role="tabpanel">
                     {
                       Object.keys(i[key]).map((j) => {
                         return (<div>

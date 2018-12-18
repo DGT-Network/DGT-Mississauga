@@ -29,7 +29,6 @@ class Peers extends React.Component {
 
   legendFor(ip) {
     const { data } = this.props
-    console.log('123213', data)
 
     if (data == undefined){
       return []

@@ -88,7 +88,7 @@ class Main extends React.Component {
                 <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Dev
                 </a>
-                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                 <div className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <a className={classNames('dropdown-item')}
                        id="state-tab"
                        data-toggle="tab"

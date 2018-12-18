@@ -22,7 +22,7 @@ class Filters extends React.Component {
                       let value = f.list[key]
                       let selected = {}
                       selected[f.field] = key
-                      return (<li className='list-inline-item'
+                      return (<li key={key} className='list-inline-item'
                                 style={ {backgroundColor: selectedFilters[f.field] !== undefined &&
                                                           selectedFilters[f.field] === key ? value : false } }>
 
