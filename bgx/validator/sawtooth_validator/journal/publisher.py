@@ -905,7 +905,15 @@ class BlockPublisher(object):
         :return: Summary of batches in block
         """
         LOGGER.debug('BlockPublisher: summarize_block')
-        return self._candidate_block.summarize(force)
+        try:
+            with self._lock:
+                if self._candidate_block is None:
+                    LOGGER.debug('BlockPublisher, summarize_block: _candidate_block is None')
+                else:
+                    self._candidate_block.summarize(force)
+        except Exception as exc:
+            LOGGER.critical("summarize_block exception.")
+            LOGGER.exception(exc)
 
     def finalize_block(self, consensus=None, force=False):
         """Finalize current candidate block, build new one.
