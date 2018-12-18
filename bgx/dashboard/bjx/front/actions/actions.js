@@ -18,6 +18,8 @@ export const GET_BLOCKS = 'GET_BLOCKS';
 
 export const GET_PEERS = 'GET_PEERS';
 
+export const SHOW_MODAL = 'SHOW_MODAL';
+
 export function getTransactions() {
     //TEMP
   //return getTransactionsSuccess(convertTransactions(transactions));
@@ -63,11 +65,15 @@ export function getState(address) {
     return axios.get(`${apiUrl}/state/${address}`)
       .then( response => {
         dispatch(getStateSuccess(convertState(response.data, address)))
+        dispatch(showModal(response.data))
       })
       .catch(error => {
         //throw(error);
         console.log(error)
         dispatch(getStateSuccess(convertState(state, address)));
+        dispatch(showModal({title: 'State raw data',
+          json: state.data
+        }))
       })
   };
 }
@@ -141,5 +147,12 @@ function getTransactionsSuccess(data) {
   return {
     type: GET_TRANSACTIONS,
     data,
+    };
+}
+
+export function showModal(json) {
+   return {
+    type: SHOW_MODAL,
+    json,
     };
 }

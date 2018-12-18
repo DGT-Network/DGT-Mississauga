@@ -14,6 +14,7 @@ import Stat from './Stat'
 import Wallet from './Wallet'
 import Feedback from './Feedback'
 import LogoSvg from '../assets/logo.svg'
+import Modal from './Modal'
 
 import { getTransactions, getPeers, getStates, getBlocks } from '../actions/actions';
 
@@ -38,6 +39,7 @@ class Main extends React.Component {
 
     return (
       <div>
+        <Modal/>
         <nav className={classNames('navbar', 'navbar-light', 'navbar-expand-lg', 'bg-light')}>
           <a className="navbar-brand" href="#">
            <span className="logo" dangerouslySetInnerHTML={{ __html: LogoSvg }}></span>

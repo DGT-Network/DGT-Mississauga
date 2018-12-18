@@ -7,17 +7,10 @@ import Card from './Card'
 
 import ReactTable from "react-table"
 
-import { getState } from '../actions/actions';
+import { getState, showModal } from '../actions/actions';
 
 class State extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {showTooltip: false}
-  }
-
   showDetails(info) {
-    this.setState({showTooltip: true})
     store.dispatch(getState(info.original.address));
   }
 
@@ -66,7 +59,7 @@ State.defaultProps = {
     id: 'data',
     Header: 'Data',
     accessor: t => {
-        return <DecodedData data={t.data} decodedData={t.decoded_data}/>;
+        return <Hash hash={t.data} /> //<DecodedData data={t.data} decodedData={t.decoded_data}/>;
     },
   }]
 };

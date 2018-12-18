@@ -3,10 +3,10 @@ import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
 
 import Hash from './Hash'
-import $ from 'jquery';
-import JSONPretty from 'react-json-pretty'
 
 import humanize from '../helpers/humanize';
+
+import { showModal } from '../actions/actions';
 
 import ReactTable from 'react-table'
 import Card from './Card'
@@ -19,33 +19,16 @@ class Transactions extends React.Component {
   }
 
   showDetails(info) {
-    this.setState({selectedTr: info.original})
-    $('#myModal').modal('show')
-
+    store.dispatch(showModal({
+      title: 'Transaction raw details',
+      json: info.original
+    }))
   }
 
   render() {
     const {transactions, columns} = this.props
     return (
       <Card id='transactions_card' title='Transactions'>
-        <div className="modal fade" id="myModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLongTitle">Transactions raw details</h5>
-                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <JSONPretty json={this.state.selectedTr}/>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
         {!transactions.length ? (
         <strong> No transactions</strong>
         ) : (
