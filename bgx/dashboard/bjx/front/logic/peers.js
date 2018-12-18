@@ -110,6 +110,11 @@ function convertNode(r, node, parent_node = null){
         }),
       depends: parentRelation,
       legend: legend,
+      tooltip: {
+        2: node.node_type,
+        1: node.node_state,
+        'IP': node.IP,
+      },
       filtered: false,
     });
 

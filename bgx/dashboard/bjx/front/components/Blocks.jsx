@@ -94,6 +94,10 @@ Blocks.defaultProps = {
           return (  <Hash key={i} hash={i}/> )
         })
   },
+  { id: 'headerSignature',
+    Header: 'Header Signature',
+    accessor: d => <Hash hash={d.header_signature}/>,
+  },
   {
     id: 'consensus',
     Header: 'Consensus',

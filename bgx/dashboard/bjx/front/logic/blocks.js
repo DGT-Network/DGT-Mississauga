@@ -28,6 +28,9 @@ export function convertBlocks(data) {
         return {
           name: trimHash(d.header_signature),
           IP: d.header_signature,
+          tooltip: {
+            1: d.header_signature,
+          },
           depends: prev == undefined ? [] : [prev.header_signature],
           dependedOnBy: data.data.filter((dd) => {
             return dd.header.previous_block_id == d.header_signature

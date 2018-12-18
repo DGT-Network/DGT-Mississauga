@@ -870,11 +870,16 @@ hideTooltip(){
 showTooltip(d){
   var div = d3.select(`#${this.props.id}-tooltip`)
   div.style("opacity", .9)
-    .html("IP: "+d.IP + "<br/>"+
-            humanize(d.node_state) +"<br/>"+
-            humanize(d.node_type))
-   .style("left", (d.x + 0) + "px")
-   .style("top", (d.y - 30) + "px")
+    .html(
+        Object.keys(d.tooltip).map(key => {
+            console.log ('213213213', typeof Number(key) )
+            let s = isNaN(Number(key))  ?  `${key}: ` : ''
+            return s + humanize(d.tooltip[key])
+        }).reverse().join('<br/>'))
+
+
+   .style("left", d.x + 15 + "px")
+   .style("top", d.y - div.node().getBoundingClientRect().height + 65 +"px")
 }
 
 selectObject(obj) {
