@@ -13,7 +13,6 @@ import humanize from '../helpers/humanize';
 
 import LineSegment from '../helpers/LineSegment'
 
-import { selectPeer as selectP, filterPeers} from '../actions/actions';
 import Legend from './Legend'
 import Filters from './Filters'
 import Card from './Card'
@@ -736,7 +735,7 @@ checkNodeHidden(ip){
 checkNodeFiltered(d){
   const { selectedFilters, filters } = this.props;
 
-  if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
+  if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
       return true;
 
   const key = Object.keys(selectedFilters)[0]
@@ -793,7 +792,7 @@ preventCollisions() {
 colorFor(d){
   const { selectedFilters, filters, selectedPeerIP } = this.props;
 
-  if (undefined === selectedFilters || Object.keys(selectedFilters).length == 0 )
+  if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
     return d.IP == selectedPeerIP ? '#ffc107' : '#17a2b8';
 
   const key = Object.keys(selectedFilters)[0]
@@ -948,8 +947,7 @@ selectObject(obj, el) {
 
 deselectObject(doResize) {
   this.props.onSelect(null)
-   // store.dispatch(selectP(null))
-   store.dispatch(filterPeers({}))
+  this.props.onFilter({})
 }
 
 
@@ -980,17 +978,12 @@ componentDidUpdate(prevProps, prevState) {
 }
 
 Graph.defaultProps = {
-  size: {width: 780,
-          height: 350,},
-}
-
-function mapStateToProps(store) {
-  return {
-    data: store.peersReducer.data.data,
-    filters:  store.peersReducer.data.length == 0 ?
-      [] : store.peersReducer.data.filters.filters,
-    selectedFilters: store.peersReducer.selected,
-  };
+  size: {
+    width: 780,
+    height: 350,
+  },
+  selectedFilters: null,
+  filters: [],
 }
 
 export default Graph;

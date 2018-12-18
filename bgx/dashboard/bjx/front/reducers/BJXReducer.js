@@ -63,16 +63,6 @@ function peersReducer(state=initialPeersState, action) {
         data: action.data
       });
 
-    case FILTER_PEERS:
-      return Object.assign({}, state, {
-        selected: action.filter
-    });
-
-    case SELECT_PEER:
-      return Object.assign({}, state, {
-        selectedPeerIP: action.IP
-      });
-
       default:
         return state;
   }
