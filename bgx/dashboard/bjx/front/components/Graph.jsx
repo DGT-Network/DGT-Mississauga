@@ -885,7 +885,9 @@ showTooltip(d){
 
 selectObject(obj, el) {
 
-  store.dispatch(selectP(obj.IP))
+  this.props.onSelect(obj.IP)
+
+  //store.dispatch(selectP(obj.IP))
   // let graph = this.graphh;
   //   var node;
   //   if (el) {
@@ -945,12 +947,8 @@ selectObject(obj, el) {
 }
 
 deselectObject(doResize) {
-    console.log('deselect')
-  let graph = this.graphh;
-    graph.node.classed('selected', false);
-    this.selected = {};
-    this.highlightObject(null);
-   store.dispatch(selectP(null))
+  this.props.onSelect(null)
+   // store.dispatch(selectP(null))
    store.dispatch(filterPeers({}))
 }
 
@@ -991,7 +989,6 @@ function mapStateToProps(store) {
     data: store.peersReducer.data.data,
     filters:  store.peersReducer.data.length == 0 ?
       [] : store.peersReducer.data.filters.filters,
-    selectedPeerIP:store.peersReducer.selectedPeerIP,
     selectedFilters: store.peersReducer.selected,
   };
 }

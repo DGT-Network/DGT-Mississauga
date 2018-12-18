@@ -14,6 +14,10 @@ class Blocks extends React.Component {
     this.state= { selectedBlock: null}
   }
 
+  selectBlock(ip) {
+    this.setState({selectedBlock: ip})
+  }
+
   render() {
     const that = this;
     const {graph_blocks, columns, blocks_data} = this.props;
@@ -31,7 +35,8 @@ class Blocks extends React.Component {
 
               <Graph data={graph_blocks} id='blocks_graph' title='Ladger'
                 size={{width: 1000, height: 800}}
-                selectedPeerIP={selectedBlock}/>
+                selectedPeerIP={selectedBlock}
+                onSelect={(e) => this.selectBlock(e)}/>
 
               <div className="tab-offset">
                 <Card id='ledger' title='Ledger Data'>

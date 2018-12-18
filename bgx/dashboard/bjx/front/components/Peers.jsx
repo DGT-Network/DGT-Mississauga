@@ -19,6 +19,9 @@ class Peers extends React.Component {
     this.state= { selectedIP: null}
   }
 
+  selectPeer(ip) {
+    this.setState({selectedIP: ip})
+  }
 
   showDetails(info) {
     store.dispatch(selectPeer(info.original.IP));
@@ -26,16 +29,20 @@ class Peers extends React.Component {
 
   render() {
     const {data, filters, selectedPeerIP, selectedFilters} = this.props
+
+    const {selectedIP} = this.state
+
     return (
     <div>
       <div className='row'>
         <div className='col-9'>
           <Graph data={data}
             filters={filters}
-            selectedPeerIP={selectedPeerIP}
+            selectedPeerIP={selectedIP}
             selectedFilters={selectedFilters}
             id='peers_graph'
-            title='Node'/>
+            title='Node'
+            onSelect={(e) => this.selectPeer(e)}/>
         </div>
         <div className='col-3'>
           <Legend/>
