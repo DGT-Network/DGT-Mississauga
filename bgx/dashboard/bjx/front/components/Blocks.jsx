@@ -22,6 +22,7 @@ class Blocks extends React.Component {
     const that = this;
     const {graph_blocks, columns, blocks_data} = this.props;
     const {selectedBlock} = this.state;
+
     return (
       <div>
         {
@@ -32,7 +33,6 @@ class Blocks extends React.Component {
           </div>
         ) : (
             <div >
-
               <Graph data={graph_blocks} id='blocks_graph' title='Ladger'
                 size={{width: 1000, height: 800}}
                 selectedPeerIP={selectedBlock}

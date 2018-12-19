@@ -290,7 +290,6 @@ graph.data = cloneDeep(this.props.data);
                 return d.source.y;
             })
             .each(function(d) {
-
                 var x    = d.target.x,
                     y    = d.target.y,
                     line = new LineSegment(d.source.x, d.source.y, x, y);
@@ -337,28 +336,28 @@ graph.data = cloneDeep(this.props.data);
     // adapted from http://stackoverflow.com/questions/9630008
     // and http://stackoverflow.com/questions/17883655
 
-    var glow = graph.svg.append('filter')
-        .attr('x'     , '-50%')
-        .attr('y'     , '-50%')
-        .attr('width' , '200%')
-        .attr('height', '200%')
-        .attr('id'    , 'blue-glow');
+    // var glow = graph.svg.append('filter')
+    //     .attr('x'     , '-50%')
+    //     .attr('y'     , '-50%')
+    //     .attr('width' , '200%')
+    //     .attr('height', '200%')
+    //     .attr('id'    , 'blue-glow');
 
-    glow.append('feColorMatrix')
-        .attr('type'  , 'matrix')
-        .attr('values', '0 0 0 0  0 '
-                      + '0 0 0 0  0 '
-                      + '0 0 0 0  .7 '
-                      + '0 0 0 1  0 ');
+    // glow.append('feColorMatrix')
+    //     .attr('type'  , 'matrix')
+    //     .attr('values', '0 0 0 0  0 '
+    //                   + '0 0 0 0  0 '
+    //                   + '0 0 0 0  .7 '
+    //                   + '0 0 0 1  0 ');
 
-    glow.append('feGaussianBlur')
-        .attr('stdDeviation', 6)
-        .attr('result'      , 'coloredBlur');
+    // glow.append('feGaussianBlur')
+    //     .attr('stdDeviation', 6)
+    //     .attr('result'      , 'coloredBlur');
 
-    glow.append('feMerge').selectAll('feMergeNode')
-        .data(['coloredBlur', 'SourceGraphic'])
-      .enter().append('feMergeNode')
-        .attr('in', String);
+    // glow.append('feMerge').selectAll('feMergeNode')
+    //     .data(['coloredBlur', 'SourceGraphic'])
+    //   .enter().append('feMergeNode')
+    //     .attr('in', String);
 
     /*graph.legend = graph.svg.append('g')
         .attr('class', 'legend')
@@ -505,8 +504,8 @@ graph.data = cloneDeep(this.props.data);
 
       for (let i = 0; i < 3; i++){
         collapse.append('circle')
-          .attr('cx', 25 + i*4)
-          .attr('cy', 14)
+          .attr('cx', i*4)
+          .attr('cy', 0)
           .attr('r' , 1)
           .attr('fill', '#212529')
       }
@@ -515,11 +514,12 @@ graph.data = cloneDeep(this.props.data);
       let extradata = graph.node.append('g')
         .attr('class', 'extra-data')
         .attr('display', 'none')
+        .attr('transform','translate(-35,-22)')
 
       extradata.append('circle')
         .attr('class', 'extra-active')
-        .attr('cx', -35)
-        .attr('cy', -22)
+        .attr('cx', 4)
+        .attr('cy', 4)
         .attr('r' , 4)
         .attr('fill', '#ffffb3')
         .attr('stroke', '#b3b37d')
@@ -620,22 +620,21 @@ updateGraph(){
                   box = {
                     x : 0,
                     y: 0,
-                    width: 0,
-                    height:0
+                    width: 1,
+                    height:1
                   }
                 }
 
                     bounds.x1 = box.x;
-
                     bounds.y1 = box.y;
-
                     bounds.x2 = box.x + box.width;
-
                     bounds.y2 = box.y + box.height;
+
             }).attr('text-anchor', 'middle')
               .attr('display',  function(d){
                 return that.checkNodeHidden(d.IP) ? 'none' : 'block'
               })
+
 
             text.classed('inactive', d.node_state !== 'active')
               .classed('filter-disable', function(d){
@@ -644,6 +643,44 @@ updateGraph(){
               .classed('filter-enable', function(d){
               return !that.checkNodeFiltered(d)
               })
+
+            var padding  = {
+                left: 5,
+                right: 5,
+                top: 5,
+                bottom: 5,
+              },
+              margin   = {
+                left: 1,
+                right:1,
+                top: 0,
+                bottom: 0,
+              }//config.graph.labelMargin,
+
+              //oldWidth = bounds.x2 - bounds.x1;
+
+             //bounds.x1 -= oldWidth/2;
+             //bounds.x2 -= oldWidth/2;
+
+            bounds.x1 -= (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
+            bounds.y1 -= (that.checkNodeFiltered(d) ? 1 : 2) * padding.top;
+            bounds.x2 += (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
+            bounds.y2 += (that.checkNodeFiltered(d) ? 1 : 2) * padding.bottom;
+
+            d.extent = {
+                left   : bounds.x1 - margin.left,
+                right  : bounds.x2 + margin.left + margin.right,
+                top    : bounds.y1 - margin.top,
+                bottom : bounds.y2 + margin.top  + margin.bottom
+            };
+
+            d.edge = {
+                left   : new LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
+                right  : new LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
+                top    : new LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
+                bottom : new LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
+            };
+
 
             rect.classed('filter-disable', function(d){
                 return that.checkNodeFiltered(d)
@@ -661,25 +698,27 @@ updateGraph(){
                   return that.colorFor(d);
               })
               .attr('x', function(d) {
-                  return that.checkNodeFiltered(d) ? -40 : -43
+                  return  bounds.x1 //that.checkNodeFiltered(d) ? -40 : -43
               })
               .attr('y', function(d) {
-                  return that.checkNodeFiltered(d) ? -13 : -16
+                  return bounds.y1 //that.checkNodeFiltered(d) ? -13 : -16
               })
               .attr('width' , function(d) {
-                  return that.checkNodeFiltered(d) ? 80 : 86
+                  return bounds.x2 - bounds.x1 //that.checkNodeFiltered(d) ? 80 : 86
               })
               .attr('height', function(d) {
-                  return that.checkNodeFiltered(d) ? 20 : 26
+                  return bounds.y2 - bounds.y1 //that.checkNodeFiltered(d) ? 20 : 26
               });
 
             collapsePoints
+              .attr('transform',`translate(${bounds.x2-10}, ${bounds.y2+6})`)
              .attr('display',  function(d){
                 return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
               })
 
             extra
-             .attr('display',  function(d){
+              .attr('transform',`translate(${bounds.x1}, ${bounds.y1-12})`)
+              .attr('display',  function(d){
                 return d.node_state != undefined && !that.checkNodeHidden(d.IP) ?  'block' : 'none'
               })
              .each(function(d) {
@@ -687,37 +726,7 @@ updateGraph(){
                   .attr('fill',  d.node_state == 'active' ? '#ffffb3' : '#8dd3c7' )
                   .attr('stroke',  d.node_state == 'active' ? '#b3b37d' : '#63948b' )
              })
-
-
-            var padding  = 10,
-                margin   = 10,//config.graph.labelMargin,
-                oldWidth = bounds.x2 - bounds.x1;
-
-             bounds.x1 -= oldWidth/2;
-             bounds.x2 -= oldWidth/2;
-
-            bounds.x1 -= padding.left;
-             bounds.y1 -= padding.top;
-            bounds.x2 += padding.left + padding.right;
-             bounds.y2 += padding.top  + padding.bottom;
-
-
-            d.extent = {
-                left   : bounds.x1 - margin.left,
-                right  : bounds.x2 + margin.left + margin.right,
-                top    : bounds.y1 - margin.top,
-                bottom : bounds.y2 + margin.top  + margin.bottom
-            };
-
-            d.edge = {
-                left   : new LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
-                right  : new LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
-                top    : new LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
-                bottom : new LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
-            };
         });
-
-
 }
 checkNodeIsCollapsed(ip){
   return this.state.collapsedNodes.indexOf(ip) == -1
@@ -872,7 +881,6 @@ showTooltip(d){
   div.style("opacity", .9)
     .html(
         Object.keys(d.tooltip).map(key => {
-            console.log ('213213213', typeof Number(key) )
             let s = isNaN(Number(key))  ?  `${key}: ` : ''
             return s + humanize(d.tooltip[key])
         }).reverse().join('<br/>'))
