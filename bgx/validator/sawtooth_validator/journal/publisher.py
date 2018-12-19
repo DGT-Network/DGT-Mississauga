@@ -680,9 +680,12 @@ class BlockPublisher(object):
             previous_block_id=chain_head.header_signature,
             signer_public_key=public_key)
         block_builder = BlockBuilder(block_header)
-        if not consensus.initialize_block(block_builder.block_header):
-            LOGGER.debug("Consensus not ready to build candidate block.")
-            return None
+        try:
+            if not consensus.initialize_block(block_builder.block_header):
+                LOGGER.debug("Consensus not ready to build candidate block.")
+                return None
+        except:
+            pass
 
         # create a new scheduler
         scheduler = self._transaction_executor.create_scheduler(
@@ -693,14 +696,18 @@ class BlockPublisher(object):
             self._block_cache.block_store)
 
         self._transaction_executor.execute(scheduler)
-        self._candidate_block = _CandidateBlock(
-            self._block_cache.block_store,
-            consensus, scheduler,
-            committed_txn_cache,
-            block_builder,
-            max_batches,
-            batch_injectors)
 
+        try:
+            self._candidate_block = _CandidateBlock(
+                self._block_cache.block_store,
+                consensus, scheduler,
+                committed_txn_cache,
+                block_builder,
+                max_batches,
+                batch_injectors)
+        except:
+            pass
+        
         for batch in self._pending_batches:
             if self._candidate_block.can_add_batch:
                 self._candidate_block.add_batch(batch)
@@ -890,12 +897,9 @@ class BlockPublisher(object):
                     LOGGER.debug('BlockPublisher, initialize_block: _candidate_block is not None, initialize_block \
                                  = %s failed', block_id)
         except Exception as exc:
-            LOGGER.critical("initialize_block exception.")
-            LOGGER.exception(exc)
-
-        """
-        self._py_call('initialize_block', ctypes.py_object(block))
-        """
+            # LOGGER.critical("initialize_block exception.")
+            # LOGGER.exception(exc)
+            raise exc
 
     def summarize_block(self, force=False):
         """Creates self._summary of Candidate Block
@@ -908,10 +912,11 @@ class BlockPublisher(object):
                 if self._candidate_block is None:
                     LOGGER.debug('BlockPublisher, summarize_block: _candidate_block is None')
                 else:
-                    self._candidate_block.summarize(force)
+                    return self._candidate_block.summarize(force)
         except Exception as exc:
-            LOGGER.critical("summarize_block exception.")
-            LOGGER.exception(exc)
+            # LOGGER.critical("summarize_block exception.")
+            # LOGGER.exception(exc)
+            raise exc
 
     def finalize_block(self, consensus=None, force=False):
         """Finalize current candidate block, build new one.
@@ -932,24 +937,11 @@ class BlockPublisher(object):
                     new_candidate_block = self._candidate_block.finalize_block(self._identity_signer,
                                                                                self._pending_batches)
         except Exception as exc:
-            LOGGER.critical("finalize_block exception.")
-            LOGGER.exception(exc)
+            # LOGGER.critical("finalize_block exception.")
+            # LOGGER.exception(exc)
+            raise exc
 
         return new_candidate_block
-
-        """
-        (vec_ptr, vec_len, vec_cap) = ffi.prepare_vec_result()
-        self._call(
-            'finalize_block',
-            consensus, len(consensus),
-            ctypes.c_bool(force),
-            ctypes.byref(vec_ptr),
-            ctypes.byref(vec_len),
-            ctypes.byref(vec_cap))
-
-        return ffi.from_rust_vec(vec_ptr, vec_len, vec_cap).decode('utf-8')
-        """
-        #return b'\xdb\x8c\xdc\x84\xfb]\xab\xca2\x1b\x18|J\x1d{\xee\xd9hd\xaf\xe2;N\xa4d\xf0\xb3\xc0\xe2\xf3\x97/S\x14~\x18My\xfd\xd2\x96Z\xbb\x858\x1f\x81\x86c\x85\x1b\xf7[s\xc5\xf1\x97\x94\xab\x89\x04^\x8e\xd4'.decode('utf-8')
 
     def cancel_block(self):
         LOGGER.debug('BlockPublisher: cancel_block')
