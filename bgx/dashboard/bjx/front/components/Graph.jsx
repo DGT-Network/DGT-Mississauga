@@ -581,15 +581,14 @@ graph.data = cloneDeep(this.props.data);
     }
 }
 
-updateGraph(){
+  updateGraph(){
     let graph = this.graphh;
     let that = this;
 
-        $(`#${this.props.id}-container`).off('click').on('click', function(e) {
-        if (!$(e.target).closest('.node').length) {
-
-            that.deselectObject();
-        }
+    $(`#${this.props.id}-container`).off('click').on('click', function(e) {
+      if (!$(e.target).closest('.node').length) {
+        that.deselectObject();
+      }
     });
 
 
@@ -599,153 +598,156 @@ updateGraph(){
       })
     });
 
-        graph.node.each(function(d) {
-            var node   = d3.select(this),
-                rect  = node.select('rect'),
-                text   = node.selectAll('text'),
-                collapsePoints = node.selectAll('.collapse-points'),
-                extra = node.selectAll('.extra-data'),
-                bounds = {}
+    graph.node.each(function(d) {
+      var node   = d3.select(this),
+      rect  = node.select('rect'),
+      text   = node.selectAll('text'),
+      collapsePoints = node.selectAll('.collapse-points'),
+      extra = node.selectAll('.extra-data'),
+      bounds = {}
 
-            if (!text[0].length) return;
+      if (!text[0].length) return;
 
-            text.each(function() {
+      text
+        .each(function() {
+          var box = {
+            x : -25,
+            y: -5,
+            width: 50,
+            height: 8
+            }
+          try {
+            box = this.getBBox();
+          }
+          catch(e){
+          }
 
-                var box
+          bounds.x1 = box.x;
+          bounds.y1 = box.y;
+          bounds.x2 = box.x + box.width;
+          bounds.y2 = box.y + box.height;
 
-                try {
-                  box = this.getBBox();
-                }
-                catch(e){
-                  box = {
-                    x : 0,
-                    y: 0,
-                    width: 1,
-                    height:1
-                  }
-                }
-
-                    bounds.x1 = box.x;
-                    bounds.y1 = box.y;
-                    bounds.x2 = box.x + box.width;
-                    bounds.y2 = box.y + box.height;
-
-            }).attr('text-anchor', 'middle')
-              .attr('display',  function(d){
-                return that.checkNodeHidden(d.IP) ? 'none' : 'block'
-              })
-
-
-            text.classed('inactive', d.node_state !== 'active')
-              .classed('filter-disable', function(d){
-                return that.checkNodeFiltered(d)
-              })
-              .classed('filter-enable', function(d){
-              return !that.checkNodeFiltered(d)
-              })
-
-            var padding  = {
-                left: 5,
-                right: 5,
-                top: 5,
-                bottom: 5,
-              },
-              margin   = {
-                left: 1,
-                right:1,
-                top: 0,
-                bottom: 0,
-              }//config.graph.labelMargin,
-
-              //oldWidth = bounds.x2 - bounds.x1;
-
-             //bounds.x1 -= oldWidth/2;
-             //bounds.x2 -= oldWidth/2;
-
-            bounds.x1 -= (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
-            bounds.y1 -= (that.checkNodeFiltered(d) ? 1 : 2) * padding.top;
-            bounds.x2 += (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
-            bounds.y2 += (that.checkNodeFiltered(d) ? 1 : 2) * padding.bottom;
-
-            d.extent = {
-                left   : bounds.x1 - margin.left,
-                right  : bounds.x2 + margin.left + margin.right,
-                top    : bounds.y1 - margin.top,
-                bottom : bounds.y2 + margin.top  + margin.bottom
-            };
-
-            d.edge = {
-                left   : new LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
-                right  : new LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
-                top    : new LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
-                bottom : new LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
-            };
+        })
+      .attr('text-anchor', 'middle')
+      .attr('display',  function(d){
+        return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+      })
 
 
-            rect.classed('filter-disable', function(d){
-                return that.checkNodeFiltered(d)
-              })
-              .classed('filter-enable', function(d){
-                return !that.checkNodeFiltered(d)
-              })
-             .attr('display',  function(d){
-                return that.checkNodeHidden(d.IP) ? 'none' : 'block'
-              })
-              .attr('stroke', function(d) {
-                  return  that.colorForDarker(d)
-              })
-              .attr('fill', function(d) {
-                  return that.colorFor(d);
-              })
-              .attr('x', function(d) {
-                  return  bounds.x1 //that.checkNodeFiltered(d) ? -40 : -43
-              })
-              .attr('y', function(d) {
-                  return bounds.y1 //that.checkNodeFiltered(d) ? -13 : -16
-              })
-              .attr('width' , function(d) {
-                  return bounds.x2 - bounds.x1 //that.checkNodeFiltered(d) ? 80 : 86
-              })
-              .attr('height', function(d) {
-                  return bounds.y2 - bounds.y1 //that.checkNodeFiltered(d) ? 20 : 26
-              });
+      text.classed('inactive', d.node_state !== 'active')
+        .classed('filter-disable', function(d){
+          return that.checkNodeFiltered(d)
+        })
+        .classed('filter-enable', function(d){
+          return !that.checkNodeFiltered(d)
+        })
 
-            collapsePoints
-              .attr('transform',`translate(${bounds.x2-10}, ${bounds.y2+6})`)
-             .attr('display',  function(d){
-                return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
-              })
+      var padding  = {
+          left: 5,
+          right: 5,
+          top: 5,
+          bottom: 5,
+        },
+      margin   = {
+          left: 1,
+          right:1,
+          top: 0,
+          bottom: 0,
+        }//config.graph.labelMargin,
 
-            extra
-              .attr('transform',`translate(${bounds.x1}, ${bounds.y1-12})`)
-              .attr('display',  function(d){
-                return d.node_state != undefined && !that.checkNodeHidden(d.IP) ?  'block' : 'none'
-              })
-             .each(function(d) {
-                d3.select(this).selectAll('.extra-active')
-                  .attr('fill',  d.node_state == 'active' ? '#ffffb3' : '#8dd3c7' )
-                  .attr('stroke',  d.node_state == 'active' ? '#b3b37d' : '#63948b' )
-             })
+      //oldWidth = bounds.x2 - bounds.x1;
+
+      //bounds.x1 -= oldWidth/2;
+      //bounds.x2 -= oldWidth/2;
+
+      bounds.x1 -= (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
+      bounds.y1 -= (that.checkNodeFiltered(d) ? 1 : 2) * padding.top;
+      bounds.x2 += (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
+      bounds.y2 += (that.checkNodeFiltered(d) ? 1 : 2) * padding.bottom;
+
+      d.extent = {
+        left   : bounds.x1 - margin.left,
+        right  : bounds.x2 + margin.left + margin.right,
+        top    : bounds.y1 - margin.top,
+        bottom : bounds.y2 + margin.top  + margin.bottom
+      };
+
+      d.edge = {
+        left   : new LineSegment(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
+        right  : new LineSegment(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
+        top    : new LineSegment(bounds.x1, bounds.y1, bounds.x2, bounds.y1),
+        bottom : new LineSegment(bounds.x1, bounds.y2, bounds.x2, bounds.y2)
+      };
+
+      rect.classed('filter-disable', function(d){
+          return that.checkNodeFiltered(d)
+        })
+        .classed('filter-enable', function(d){
+          return !that.checkNodeFiltered(d)
+        })
+        .attr('display',  function(d){
+          return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+        })
+        .attr('stroke', function(d) {
+          return  that.colorForDarker(d)
+        })
+        .attr('fill', function(d) {
+          return that.colorFor(d);
+        })
+        .attr('x', function(d) {
+          return  bounds.x1 //that.checkNodeFiltered(d) ? -40 : -43
+        })
+        .attr('y', function(d) {
+          return bounds.y1 //that.checkNodeFiltered(d) ? -13 : -16
+        })
+        .attr('width' , function(d) {
+          return bounds.x2 - bounds.x1 //that.checkNodeFiltered(d) ? 80 : 86
+        })
+        .attr('height', function(d) {
+          return bounds.y2 - bounds.y1 //that.checkNodeFiltered(d) ? 20 : 26
         });
-}
-checkNodeIsCollapsed(ip){
-  return this.state.collapsedNodes.indexOf(ip) == -1
-}
 
-checkNodeHidden(ip){
-  return this.state.hiddenNodes.includes(ip)
-}
+      collapsePoints
+        .attr('transform',`translate(${bounds.x2-10}, ${bounds.y2+6})`)
+        .attr('display',  function(d){
+          return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
+        })
 
-checkNodeFiltered(d){
-  const { selectedFilters, filters } = this.props;
+      extra
+        .attr('transform',`translate(${bounds.x1}, ${bounds.y1-12})`)
+        .attr('display',  function(d){
+          return d.node_state != undefined && !that.checkNodeHidden(d.IP) ?  'block' : 'none'
+        })
+        .each(function(d) {
+          d3.select(this).selectAll('.extra-active')
+          .attr('fill',  d.node_state == 'active' ? '#ffffb3' : '#8dd3c7' )
+          .attr('stroke',  d.node_state == 'active' ? '#b3b37d' : '#63948b' )
+        })
+    });
 
-  if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
-      return true;
+    for (var i = 0; i < 50; i++) {
+        graph.force.tick();
+    }
+  }
 
-  const key = Object.keys(selectedFilters)[0]
+  checkNodeIsCollapsed(ip){
+    return this.state.collapsedNodes.indexOf(ip) == -1
+  }
 
-  return d[key] != selectedFilters[key];
-}
+  checkNodeHidden(ip){
+    return this.state.hiddenNodes.includes(ip)
+  }
+
+  checkNodeFiltered(d){
+    const { selectedFilters, filters } = this.props;
+
+    if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
+        return true;
+
+    const key = Object.keys(selectedFilters)[0]
+
+    return d[key] != selectedFilters[key];
+  }
 
 preventCollisions() {
     var quadtree = d3.geom.quadtree(graph.nodeValues);
@@ -793,35 +795,38 @@ preventCollisions() {
     }
 }
 
-colorFor(d){
-  const { selectedFilters, filters, selectedPeerIP } = this.props;
+  colorFor(d) {
+    const { selectedFilters, filters, selectedPeerIP } = this.props;
 
-  if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
-    return d.IP == selectedPeerIP ? '#ffc107' : '#17a2b8';
+    if (d.IP == selectedPeerIP)
+      return '#ffc107'
 
-  const key = Object.keys(selectedFilters)[0]
+    else if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
+      return '#17a2b8';
 
-  const list = filters.filter((f) => {return f.field == key })[0].list
+    const key = Object.keys(selectedFilters)[0]
 
-  return list[d[key]];
-}
+    const list = filters.filter((f) => {return f.field == key })[0].list
 
-colorForDarker(d){
-    const color = this.colorFor(d)
-    const percent = -0.3
+    return list[d[key]];
+  }
 
-    var f=parseInt(color.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=f>>8&0x00FF,B=f&0x0000FF;
-    return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
-}
+  colorForDarker(d) {
+      const color = this.colorFor(d)
+      const percent = -0.3
 
-hideChildren(array, IP){
-    let graph = this.graphh;
-    let el = graph.data.find((g) => {return g.IP == IP})
-    el.dependedOnBy.forEach((ip) => {
-        this.hideChildren(array,ip)
-    })
-    array.push(IP)
-}
+      var f=parseInt(color.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=f>>8&0x00FF,B=f&0x0000FF;
+      return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
+  }
+
+  hideChildren(array, IP) {
+      let graph = this.graphh;
+      let el = graph.data.find((g) => {return g.IP == IP})
+      el.dependedOnBy.forEach((ip) => {
+          this.hideChildren(array,ip)
+      })
+      array.push(IP)
+  }
 
 
 highlightObject2(obj) {
@@ -844,7 +849,6 @@ highlightObject2(obj) {
     this.setState({hiddenNodes: forHide})
     this.forceUpdate();
 }
-
 
 highlightObject(obj) {
   let graph = this.graphh;
