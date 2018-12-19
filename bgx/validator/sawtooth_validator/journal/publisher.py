@@ -707,7 +707,7 @@ class BlockPublisher(object):
                 batch_injectors)
         except:
             pass
-        
+
         for batch in self._pending_batches:
             if self._candidate_block.can_add_batch:
                 self._candidate_block.add_batch(batch)
@@ -892,7 +892,12 @@ class BlockPublisher(object):
         try:
             with self._lock:
                 if self._candidate_block is None:
-                    self._build_candidate_block(block_id)
+                    blocks = self._block_cache.block_store.get_blocks([block_id])
+                    if len(blocks) == 0:
+                        LOGGER.debug('BlockPublisher, initialize_block: block with id %s not found', block_id)
+                        return
+                    block = blocks[0]
+                    self._build_candidate_block(block)
                 else:
                     LOGGER.debug('BlockPublisher, initialize_block: _candidate_block is not None, initialize_block \
                                  = %s failed', block_id)
