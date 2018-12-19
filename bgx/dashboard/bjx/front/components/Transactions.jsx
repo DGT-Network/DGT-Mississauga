@@ -37,7 +37,7 @@ class Transactions extends React.Component {
           filterable
           minRows={0}
           columns={columns}
-          className='tab-offset -striped'
+          className='-striped'
           getTdProps={(state, rowInfo, column, instance) => {
             return {
               onClick: (e, handleOriginal) => {
