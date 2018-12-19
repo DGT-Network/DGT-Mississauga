@@ -883,24 +883,20 @@ class BlockPublisher(object):
     """
     for proxy consensus interface
     """
-    def initialize_block(self, block_id):
+    def initialize_block(self, block):
         """Build new candidate block.
-        :param block_id: id of block to build.
+        :param block: block on which to build the new one.
         :return: None
         """
-        LOGGER.debug('BlockPublisher: initialize_block %s', block_id)
+        LOGGER.debug('BlockPublisher: initialize_block %s', block)
         try:
             with self._lock:
                 if self._candidate_block is None:
-                    blocks = self._block_cache.block_store.get_blocks([block_id])
-                    if len(blocks) == 0:
-                        LOGGER.debug('BlockPublisher, initialize_block: block with id %s not found', block_id)
-                        return
-                    block = blocks[0]
-                    self._build_candidate_block(block)
+                    wrapped_block = BlockWrapper(block)
+                    self._build_candidate_block(wrapped_block)
                 else:
                     LOGGER.debug('BlockPublisher, initialize_block: _candidate_block is not None, initialize_block \
-                                 = %s failed', block_id)
+                                 = %s failed', block)
         except Exception as exc:
             # LOGGER.critical("initialize_block exception.")
             # LOGGER.exception(exc)
