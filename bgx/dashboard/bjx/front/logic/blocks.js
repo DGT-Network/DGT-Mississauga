@@ -1,4 +1,4 @@
-import { trimHash } from '../helpers/helper'
+import { trimHash, decode } from '../helpers/helper'
 
 // export function convertBlocks(data) {
 //     let parent = {name: 'initial'}
@@ -22,22 +22,21 @@ import { trimHash } from '../helpers/helper'
 
 
 export function convertBlocks(data) {
-  let r = {
-    graph: data.data.map((d) => {
-      const prev = data.data.find(dd => dd.header_signature == d.header.previous_block_id)
-        return {
-          name: trimHash(d.header_signature),
-          IP: d.header_signature,
-          tooltip: {
-            1: d.header_signature,
-          },
-          depends: prev == undefined ? [] : [prev.header_signature],
-          dependedOnBy: data.data.filter((dd) => {
-            return dd.header.previous_block_id == d.header_signature
-          }).map((dd) => {return dd.header_signature})
-        }
-      }),
-    data: data.data,
-  }
-  return r
+  return data.data.map((d) => {
+    const prev = data.data.find(dd => dd.header_signature == d.header.previous_block_id)
+
+    d.decoded_data = decode(d.payload)
+
+    d.name = trimHash(d.header_signature)
+    d.IP = d.header_signature;
+    d.tooltip = {
+      1: d.header_signature,
+    }
+    d.depends = prev == undefined ? [] : [prev.header_signature],
+    d.dependedOnBy = data.data.filter((dd) => {
+        return dd.header.previous_block_id == d.header_signature
+      }).map((dd) => {return dd.header_signature})
+
+    return d
+  })
 }

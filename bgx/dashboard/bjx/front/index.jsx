@@ -28,10 +28,18 @@ const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 window.store = createStore(BJXReducer,
   composeEnhancer(applyMiddleware(thunk)),);
 
-store.dispatch(getTransactions());
-store.dispatch(getPeers());
-store.dispatch(getStates());
-store.dispatch(getBlocks());
+function ping() {
+  store.dispatch(getTransactions());
+  store.dispatch(getPeers());
+  store.dispatch(getStates());
+  store.dispatch(getBlocks());
+}
+
+ping()
+
+setInterval(()=> {
+  ping()
+}, 60 * 1000);
 
 render(
   <Provider store={store}>

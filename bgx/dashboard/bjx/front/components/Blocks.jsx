@@ -8,6 +8,8 @@ import Graph from './Graph'
 
 import ReactTable from "react-table"
 
+import { showModal } from '../actions/actions'
+
 class Blocks extends React.Component {
   constructor(props){
     super(props)
@@ -20,27 +22,27 @@ class Blocks extends React.Component {
 
   render() {
     const that = this;
-    const {graph_blocks, columns, blocks_data} = this.props;
+    const {columns, data} = this.props;
     const {selectedBlock} = this.state;
 
     return (
       <div>
         {
-        graph_blocks == null ?
+        data == null ?
         (
           <div>
             <strong> No Blocks</strong>
           </div>
         ) : (
             <div >
-              <Graph data={graph_blocks} id='blocks_graph' title='Ladger'
+              <Graph data={data} id='blocks_graph' title='Ladger'
                 size={{width: 1000, height: 800}}
                 selectedPeerIP={selectedBlock}
                 onSelect={(e) => this.selectBlock(e)}/>
 
               <div className="tab-offset">
                 <Card id='ledger' title='Ledger Data'>
-                  <ReactTable data={blocks_data}
+                  <ReactTable data={data}
                   defaultPageSize={10}
                   minRows={0}
                   columns={columns}
@@ -52,6 +54,10 @@ class Blocks extends React.Component {
                         that.setState({
                           selectedBlock : rowInfo.row._original.header_signature,
                         })
+
+                        store.dispatch(showModal({title: 'Block raw data',
+                          json: rowInfo.row._original
+                        }))
 
                         // IMPORTANT! React-Table uses onClick internally to trigger
                         // events like expanding SubComponents and pivots.
@@ -79,8 +85,7 @@ class Blocks extends React.Component {
 }
 
 Blocks.defaultProps = {
-  graph_blocks: null,
-  blocks_data: [],
+  data: null,
   columns: [
   {
     id: 'blockNum',
@@ -119,8 +124,7 @@ Blocks.defaultProps = {
 
 function mapStateToProps(store) {
   return {
-    graph_blocks: store.blocksReducer.data.graph,
-    blocks_data: store.blocksReducer.data.data,
+    data: store.blocksReducer.data,
   };
 }
 
