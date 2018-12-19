@@ -320,18 +320,18 @@ graph.data = cloneDeep(this.props.data);
       .append('g')
         .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
 
-    graph.svg.append('defs').selectAll('marker')
-        .data(['end'])
-      .enter().append('marker')
-        .attr('id'          , String)
-        .attr('viewBox'     , '0 -5 10 10')
-        .attr('refX'        , 10)
-        .attr('refY'        , 0)
-        .attr('markerWidth' , 6)
-        .attr('markerHeight', 6)
-        .attr('orient'      , 'auto')
-      .append('path')
-        .attr('d', 'M0,-5L10,0L0,5');
+    // graph.svg.append('defs').selectAll('marker')
+    //     .data(['end'])
+    //   .enter().append('marker')
+    //     .attr('id'          , String)
+    //     .attr('viewBox'     , '0 -5 10 10')
+    //     .attr('refX'        , 10)
+    //     .attr('refY'        , 0)
+    //     .attr('markerWidth' , 6)
+    //     .attr('markerHeight', 6)
+    //     .attr('orient'      , 'auto')
+    //   .append('path')
+    //     .attr('d', 'M0,-5L10,0L0,5');
 
     // adapted from http://stackoverflow.com/questions/9630008
     // and http://stackoverflow.com/questions/17883655
