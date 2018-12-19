@@ -5,6 +5,8 @@ import * as d3 from "d3";
 import $ from 'jquery';
 import colorbrewer from 'colorbrewer';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import cloneDeep from 'lodash/cloneDeep';
 
 import { connect } from 'react-redux'
@@ -12,6 +14,8 @@ import { connect } from 'react-redux'
 import humanize from '../helpers/humanize';
 
 import LineSegment from '../helpers/LineSegment'
+
+import ReactAutocomplete from 'react-autocomplete'
 
 import Legend from './Legend'
 import Filters from './Filters'
@@ -316,7 +320,7 @@ graph.data = cloneDeep(this.props.data);
 
     graph.svg = d3.select(`#${this.props.id}`).append('svg')
         .attr('width' , this.props.size.width)//graph.width + graph.margin.right  + graph.margin.left)
-        .attr('height', this.props.size.height)//graph.height + graph.margin.top  + graph.margin.bottom)
+        .attr('height', this.props.size.height-40)//graph.height + graph.margin.top  + graph.margin.bottom)
       .append('g')
         .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
 
@@ -977,6 +981,26 @@ componentDidUpdate(prevProps, prevState) {
   render() {
     return(
       <Card id='node_graph' title={`${this.props.title} Graph`}>
+        <div className='search-panel float-right'>
+          <FontAwesomeIcon icon='search' />
+          <ReactAutocomplete
+            items={this.props.data}
+            shouldItemRender={(item, value) => item.IP.toLowerCase().indexOf(value.toLowerCase()) > -1}
+            getItemValue={item => item.IP}
+            renderItem={(item, highlighted) =>
+              <div
+                key={item.IP}
+                style={{ backgroundColor: highlighted ? '#17a2b8' : 'transparent'}}
+              >
+                {item.IP}
+              </div>
+            }
+            value={this.props.selectedPeerIP == null ? '' : this.props.selectedPeerIP}
+            onChange={e => this.props.onSelect( e.target.value)}
+            onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
+          />
+          </div>
+
           <div className='graphLayer'>
               <div id={`${this.props.id}-container`}>
                   <div  id={this.props.id}>

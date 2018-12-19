@@ -69,6 +69,7 @@
     "npm": "^6.5.0",
     "popper.js": "^1.14.5",
     "react": "^16.6.3",
+    "react-autocomplete": "^1.8.1",
     "react-chartjs-2": "^2.7.4",
     "react-dom": "^16.6.3",
     "react-json-pretty": "^1.7.9",

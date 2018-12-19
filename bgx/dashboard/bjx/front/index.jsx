@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEnvelope, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+import { faEnvelope, faChevronUp, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons'
 
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Provider } from 'react-redux'
@@ -22,6 +22,7 @@ import { getTransactions, getPeers, getStates, getBlocks } from './actions/actio
 library.add(faEnvelope)
 library.add(faChevronUp)
 library.add(faChevronDown)
+library.add(faSearch)
 
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
