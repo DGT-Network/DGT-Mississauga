@@ -615,13 +615,16 @@ graph.data = cloneDeep(this.props.data);
       text
         .each(function() {
           var box = {
-            x : -25,
-            y: -5,
+            x : -23,
+            y: -7,
             width: 50,
-            height: 8
+            height: 10
             }
           try {
-            box = this.getBBox();
+            let box1 = this.getBBox();
+            if ( box1.width != 0 || box1.height != 0){
+                box = box1
+            }
           }
           catch(e){
           }
@@ -630,7 +633,6 @@ graph.data = cloneDeep(this.props.data);
           bounds.y1 = box.y;
           bounds.x2 = box.x + box.width;
           bounds.y2 = box.y + box.height;
-
         })
       .attr('text-anchor', 'middle')
       .attr('display',  function(d){
@@ -895,7 +897,7 @@ showTooltip(d){
 
 
    .style("left", d.x + 15 + "px")
-   .style("top", d.y - div.node().getBoundingClientRect().height + 65 +"px")
+   .style("top", d.y - div.node().getBoundingClientRect().height + 90 +"px")
 }
 
 selectObject(obj) {

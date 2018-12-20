@@ -38,9 +38,9 @@ function ping() {
 
 ping()
 
-setInterval(()=> {
-  ping()
-}, 60 * 1000);
+// setInterval(()=> {
+//   ping()
+// }, 60 * 1000);
 
 render(
   <Provider store={store}>
