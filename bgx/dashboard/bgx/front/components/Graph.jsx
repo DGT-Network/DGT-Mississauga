@@ -162,6 +162,9 @@ class Graph extends React.Component {
 
 graph.data = cloneDeep(this.props.data);
 
+    if (this.props.lastN != null)
+        graph.data = graph.data.slice(-1 * this.props.lastN);
+
     graph.margin = {
         top    : 20,
         right  : 20,
@@ -878,6 +881,7 @@ Graph.defaultProps = {
   },
   selectedFilters: null,
   filters: [],
+  lastN: null,
 }
 
 export default Graph;

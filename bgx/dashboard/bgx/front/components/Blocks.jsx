@@ -51,7 +51,8 @@ class Blocks extends React.Component {
               <Graph data={data} id='blocks_graph' title='Ladger'
                 size={{width: 1000, height: 800}}
                 selectedPeerIP={selectedBlock}
-                onSelect={(e) => this.selectBlock(e)}/>
+                onSelect={(e) => this.selectBlock(e)}
+                lastN={15}/>
 
               <div className="tab-offset">
                 <Card id='ledger' title='Ledger Data'>
