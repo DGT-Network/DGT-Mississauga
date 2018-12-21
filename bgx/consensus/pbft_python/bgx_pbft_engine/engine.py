@@ -25,11 +25,13 @@ from sawtooth_sdk.protobuf.validator_pb2 import Message
 from bgx_pbft_engine.oracle import PbftOracle, PbftBlock
 from bgx_pbft_engine.pending import PendingForks
 
-from sawtooth_sdk.protobuf.consensus_pb2 import ConsensusPeerMessage
+from sawtooth_sdk.protobuf.consensus_pb2 import ConsensusPeerMessage,ConsensusBlock
+
 from bgx_pbft_common.protobuf.pbft_consensus_pb2 import PbftMessage,PbftMessageInfo 
 from bgx_pbft_engine.config.pbft import PbftConfig
 
 from bgx_pbft.state.settings_view import SettingsView
+from bgx_pbft_common.utils import _short_id
 
 LOGGER = logging.getLogger(__name__)
 PBFT_NAME = 'pbft' 
@@ -74,11 +76,12 @@ class PbftEngine(Engine):
         LOGGER.debug('PbftEngine: START _initialize_block')
         chain_head = self._get_chain_head()
         initialize = self._oracle.initialize_block(chain_head)
-        LOGGER.debug('PbftEngine: _initialize_block initialize=%s ID=%s chain_head=%s',initialize,chain_head.block_id.hex(),chain_head)
+        LOGGER.debug('PbftEngine: _initialize_block initialize=%s ID=%s chain_head=%s',initialize,_short_id(chain_head.block_id.hex()),chain_head)
         if initialize :
             try:
                 self._block_num = chain_head.block_num
                 self._block_id = chain_head.block_id # save current block id
+                # open new block Candidate start from  chain_head.block_id 
                 self._service.initialize_block(previous_id=chain_head.block_id)
                 LOGGER.debug('PbftEngine: PROXY _initialize_block DONE')
             except exceptions.UnknownBlock:
@@ -91,9 +94,9 @@ class PbftEngine(Engine):
 
     def _check_consensus(self, block= None):
         #if not self._is_peer_connected :
-        #s    return True
+        return True
         if self._oracle.check_consensus(self._block):
-            LOGGER.info('PbftEngine:Passed consensus check: %s', self._block.block_id.hex())
+            LOGGER.info('PbftEngine:Passed consensus check: %s', _short_id(self._block.block_id.hex()))
             self._check = False # stop checking
             #self._check_block(block.block_id)
         else:
@@ -126,7 +129,7 @@ class PbftEngine(Engine):
 
     def _check_block(self, block_id):
         # just check there is this block or not 
-        LOGGER.warning("PbftEngine: _check_block: block_id=%s",block_id)
+        LOGGER.warning("PbftEngine: _check_block: block_id=%s",_short_id(block_id))
         self._service.check_blocks([block_id])
 
     def _fail_block(self, block_id):
@@ -171,7 +174,7 @@ class PbftEngine(Engine):
             #LOGGER.debug('Block not ready to be summarized')
             return None
         # only after that point we can receive new block msg
-        LOGGER.debug('PbftEngine: Block ready to be summarized  summary=%s',summary.hex())
+        LOGGER.debug('PbftEngine: Block ready to be finalized summary=%s',_short_id(summary.hex()))
         consensus = self._oracle.finalize_block(summary)
         
         if consensus is None:
@@ -183,8 +186,11 @@ class PbftEngine(Engine):
             If this call is successful, a BlockNew update will be received with the new block
             """
             block_id = self._service.finalize_block(consensus)
+            """
+            now we have block_id for block with summary
+            """
             #LOGGER.info('Finalized %s with %s',block_id.hex(),json.loads(consensus.decode()))
-            LOGGER.info('PbftEngine:: Finalized prev block new one with id=%s',block_id.hex())
+            LOGGER.info('PbftEngine:: Finalized block_id=%s DONE',_short_id(block_id.hex()))
             return block_id
         except exceptions.BlockNotReady:
             LOGGER.debug('PbftEngine:: Block not ready to be finalized')
@@ -211,7 +217,7 @@ class PbftEngine(Engine):
 
         try:
             block_id = self._service.finalize_block(consensus)
-            LOGGER.info('Finalized %s with ',block_id.hex()) #json.loads(consensus.decode())
+            LOGGER.info('Finalized %s with ',_short_id(block_id.hex())) #json.loads(consensus.decode())
             self._building = True
             # broadcast 
             return block_id
@@ -258,7 +264,6 @@ class PbftEngine(Engine):
         }
         sum_cnt = 0
         LOGGER.debug('PbftEngine: start wait message')
-        #self._service.initialize_block()
         while True:
             try:
                 try:
@@ -307,6 +312,7 @@ class PbftEngine(Engine):
             return
 
         if not self._building:
+            LOGGER.debug('PbftEngine: _initialize_block OPEN NEW BLOCK CANDIDATE\n\n')
             if self._initialize_block():
                 self._building = True
                 LOGGER.debug('PbftEngine: _initialize_block DONE')
@@ -318,7 +324,7 @@ class PbftEngine(Engine):
                 #self._check = False
                 block_id = self._finalize_block()
                 if block_id:
-                    LOGGER.info("PbftEngine: after finalize we have new Published block id=%s", block_id.hex())
+                    LOGGER.info("PbftEngine: after finalize we have new Published block id=%s", _short_id(block_id.hex()))
                     self._published = True
                     #self._building = False
                     #self._consensus = True # ready for consensus
@@ -330,7 +336,18 @@ class PbftEngine(Engine):
                 """
 
     def _handle_new_block(self, block):
-        LOGGER.info('PbftEngine: handle NEW_BLOCK:Received id=%s block_num=%s payload=%s', block.block_id.hex(),block.block_num,block.payload)
+        #block = ConsensusBlock()
+        #info = cons_block.ParseFromString(block)
+        """
+        Legitimacy of new block is checked by looking at the signer_id of the block in the BlockNew message,
+        and making sure the previous_id is valid as the current chain head. T
+        """
+        LOGGER.info('NEW_BLOCK id=%s block_num=%s signer=%s summary=%s prev_id=%s', _short_id(block.block_id.hex()),block.block_num,_short_id(block.signer_id.hex()),_short_id(block.summary.hex()),_short_id(block.previous_id.hex()))
+        if block.payload ==b'Genesis':
+            LOGGER.info('PbftEngine: handle NEW_BLOCK  GENESIS')
+            #self._ignore_block(block.block_id)
+            #return
+
         """
         if self._block_id is not None:
             LOGGER.info('PbftEngine:handle NEW_BLOCK: check consensus for =%s', self._block_id.hex())
@@ -357,13 +374,13 @@ class PbftEngine(Engine):
                 #self._fail_block(block.block_id)
             """
     def _handle_valid_block(self, block_id):
-        LOGGER.info('handle VALID_BLOCK:Received id=%s', block_id.hex())
+        LOGGER.info('handle VALID_BLOCK:Received id=%s', _short_id(block_id.hex()))
         block = self._get_block(block_id)
-        self._oracle.message_consensus_handler(Message.CONSENSUS_NOTIFY_BLOCK_VALID,block)
-        
-        self._pending_forks_to_resolve.push(block)
 
+        self._pending_forks_to_resolve.push(block)
         self._process_pending_forks()
+        # after pending_forks block could be ingored
+        self._oracle.message_consensus_handler(Message.CONSENSUS_NOTIFY_BLOCK_VALID,block)
 
     def _process_pending_forks(self):
         LOGGER.info('_process_pending_forks ..')
@@ -377,21 +394,25 @@ class PbftEngine(Engine):
     def _resolve_fork(self, block):
         chain_head = self._get_chain_head()
 
-        LOGGER.info('Choosing between chain heads -- current: %s -- new: %s',chain_head.block_id.hex(),block.block_id.hex())
+        LOGGER.info('Choosing between chain heads -- current: %s -- new: %s',_short_id(chain_head.block_id.hex()),_short_id(block.block_id.hex()))
 
         if self._switch_forks(chain_head, block):
-            LOGGER.info('Committing block=%s', block.block_id.hex())
+            LOGGER.info('Committing block=%s', _short_id(block.block_id.hex()))
             #self._commit_block(block.block_id)
-            self._committing = True
+            # stop process _process_pending_forks()
+            self._committing = True   
         else:
-            LOGGER.info('Ignoring block=%s', block.block_id.hex())
+            #LOGGER.info('Ignoring block=%s', _short_id(block.block_id.hex()))
+            # mark block as ignored
+            self._oracle.ignore_block(block)
             self._ignore_block(block.block_id)
 
     def _handle_committed_block(self, block_id):
-        LOGGER.info('handle COMMITTED_BLOCK:Chain head updated to %s, abandoning block in progress',block_id.hex())
+        LOGGER.info('handle COMMITTED_BLOCK:Chain head updated to %s, abandoning block in progress',_short_id(block_id.hex()))
         block = self._get_block(block_id)
         self._oracle.message_consensus_handler(Message.CONSENSUS_NOTIFY_BLOCK_COMMIT,block)
-        self._cancel_block()
+      
+        #self._cancel_block()
 
         self._building = False
         self._published = False
@@ -405,7 +426,7 @@ class PbftEngine(Engine):
         """
         #block = PbftBlock(block)
         if not self._is_peer_connected:
-            LOGGER.info('handle PEER_CONNECTED: Received %s', type(block))
+            LOGGER.debug('handle PEER_CONNECTED: peer=%s', _short_id(block.peer_id.hex()))
             self._is_peer_connected = True
 
     def _handle_peer_message(self, block):
@@ -413,7 +434,17 @@ class PbftEngine(Engine):
         we have got here messages which were sent for consensus via CONSENSUS_BROADCAST_REQUEST 
         """
         #block = PbftBlock(block)
-        self._peer_message(block)
+        published = self._peer_message(block)
+        if not published:
+            
+            #self._building = False
+            #self._published = False
+            #self._committing = False
+            #self._check = False
+            LOGGER.debug('PUBLISH AGAIN')
+
+
+
        
 
     def _handle_broadcast_request(self, block):

@@ -28,6 +28,7 @@ from bgx_pbft.consensus.pbft_settings_view import PbftSettingsView
 from bgx_pbft.consensus.signup_info import SignupInfo
 
 from bgx_pbft_common.validator_registry_view.validator_registry_view import ValidatorRegistryView
+from bgx_pbft_common.utils import _short_id
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class ConsensusState:
 
     # MINIMUM_WAIT_TIME must match the constants in the enclaves
     MINIMUM_WAIT_TIME = 1.0
-    STEP_LIST = ['NotStarted', 'PrePreparing', 'Preparing', 'Checking', 'Committing', 'Finished']
+    STEP_LIST = ['NotStarted', 'PrePreparing', 'Preparing', 'Checking', 'Committing', 'Finished','Ignored','Commited']
 
     _BlockInfo = collections.namedtuple('_BlockInfo',['wait_certificate', 'validator_info', 'pbft_settings_view'])
 
@@ -138,13 +139,17 @@ class ConsensusState:
         # either get to the root or we get a block for which we have already
         # created consensus state
         current_id = block_id
+        #block = ConsensusState._block_for_id(block_id=current_id,block_cache=block_cache)
+        #LOGGER.debug("ConsensusState: BLOCK for block_id=%s block=%s",_short_id(current_id),block)
         #LOGGER.debug("ConsensusState: ASK STATE for block_id=%s",current_id)
         consensus_state = consensus_state_store.get(block_id=current_id)
         if consensus_state is not None:
-            #LOGGER.debug("ConsensusState: FOUND CONSENSUS_STATE=%s for block_id=%s",consensus_state,current_id)
+            
+            LOGGER.debug("ConsensusState: FOUND CONSENSUS_STATE for block_id=%s",_short_id(current_id))
             pass
         elif force :
-            LOGGER.debug("ConsensusState: CREATE CONSENSUS_STATE node=%s for block_id=%s",node,current_id)
+            
+            LOGGER.debug("ConsensusState: CREATE CONSENSUS_STATE node=%s for block_id=%s",node,_short_id(current_id))
             consensus_state = ConsensusState(node)
         else:
             return None
@@ -195,6 +200,8 @@ class ConsensusState:
         self._total_block_claim_count = 0
         self._validators = {}
         # pbft 
+        self._is_own = False
+        self._published = True
         self._step = 0 # NotStarted, PrePreparing, Preparing, Checking, Committing, Finished 
         self._mode = "Normal"     # Normal, ViewChanging, Checkpointing
         self._sequence_number = 0
@@ -203,6 +210,11 @@ class ConsensusState:
 
     def set_consensus_state_for_block_id(self,block_id,consensus_state_store):
         consensus_state_store[block_id] = self
+        
+
+    def shift_sequence_number(self,block_id,consensus_state_store):
+        self._sequence_number += 1
+        self.set_consensus_state_for_block_id(block_id,consensus_state_store)
 
     @property
     def aggregate_local_mean(self):
@@ -220,12 +232,37 @@ class ConsensusState:
     def node(self):
         return self._node
 
+    @property
+    def is_own(self):
+        return self._is_own
+
+    @property
+    def published(self):
+        return self._published
+
+    def reset_step(self):
+        self._step = 0
+
+    def set_ignored_step(self):
+        self._step = 6
+    def set_commited_step(self):
+        self._step = 7
+
     def next_step(self):
         self._step += 1
-        self._step = self._step % len(ConsensusState.STEP_LIST)
+        self._step = self._step % (len(ConsensusState.STEP_LIST)-1)
+
+    def set_published(self,val=False):
+        """
+        We need publish again for our own block
+        """
+        self._published = val
 
     def set_node(self,node):
         self._node = node
+
+    def mark_as_own(self):
+        self._is_own = True
     
     @property
     def is_step_NotStarted(self):
@@ -248,6 +285,15 @@ class ConsensusState:
     @property
     def is_step_Finished(self):
         return self._step == 5
+
+    @property
+    def is_step_Ignored(self):
+        return self._step == 6
+
+
+    @property
+    def is_step_Commited(self):
+        return self._step == 7
 
     @step.setter
     def set_step(self, value):
@@ -445,6 +491,7 @@ class ConsensusState:
             '_mode': self._mode,
             '_step': self._step,
             '_node': self._node,
+            '_is_own': self._is_own,
             '_sequence_number': self._sequence_number,
             '_validators': self._validators
         }
@@ -478,6 +525,7 @@ class ConsensusState:
             self._mode = self_dict['_mode']
             self._step = self_dict['_step']
             self._node = self_dict['_node']
+            self._is_own = self_dict['_is_own']
             self._sequence_number = int(self_dict['_sequence_number'])
             self._aggregate_local_mean = float(self_dict['_aggregate_local_mean'])
             self._local_mean = None
@@ -539,9 +587,10 @@ class ConsensusState:
              key, value in self._validators.items()]
 
         return \
-            'mode={}, step={}, node={} SEQNUM={}, PEERS={}'.format(
+            'mode={},step={},node={},SEQNUM={},OWN={},PEERS={}'.format(
                 self._mode,
                 self.step,
                 self._node,
                 self._sequence_number,
+                self._is_own,
                 validators)

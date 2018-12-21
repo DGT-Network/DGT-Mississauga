@@ -16,6 +16,7 @@
 import logging
 import os
 import binascii
+import json
 
 import sawtooth_signing as signing
 from sawtooth_signing import CryptoFactory
@@ -44,6 +45,7 @@ from bgx_pbft.journal.block_wrapper import BlockWrapper
 
 
 from bgx_pbft_common.protobuf.pbft_consensus_pb2 import PbftMessage,PbftMessageInfo,PbftBlockMessage,PbftViewChange
+from bgx_pbft_common.utils import _short_id
 
 LOGGER = logging.getLogger(__name__)
 
@@ -81,12 +83,21 @@ class PbftOracle:
                 state_view_factory=self._state_view_factory)
 
         pbft_settings_view = PbftSettingsView(state_view)
-        self._node = pbft_settings_view.pbft_node
-        LOGGER.debug("PbftOracle::pbft_settings_view node=%s",pbft_settings_view.pbft_node)
-        LOGGER.debug('PbftOracle:: _validator_id=%s init DONE',self._validator_id)
+        nodes = pbft_settings_view.pbft_nodes.replace("'",'"')
+        #LOGGER.debug("PbftOracle::pbft_settings_view node=%s nodes=%s",pbft_settings_view.pbft_node,nodes)
+        
+        self._nodes = json.loads(nodes)
+        self._node = self._nodes[self._validator_id] if self._validator_id in self._nodes else 'plink'
+        LOGGER.debug('PbftOracle:: _validator_id=%s is [%s] nodes=%s init DONE',_short_id(self._validator_id),self._node,nodes)
+        #sid = self.get_validator_id().encode()
+        #sidd = sid.decode()
+        #LOGGER.debug('PbftOracle:: _validator_id %s %s..%s',sid,sidd[:8],sidd[-8:])
 
     def get_validator_id(self):
         return self._validator_id 
+
+    def get_node_type_by_id(self,vid):
+        return self._nodes[vid] if vid in self._nodes else 'UNDEF'
 
     def initialize_block(self, previous_block):
         block_header = NewBlockHeader(
@@ -131,7 +142,12 @@ class PbftOracle:
         '''"compare_forks" is not an intuitive name.'''
         LOGGER.debug('PbftOracle: switch_forks %s',cur_fork_head)
         if new_fork_head.block_num > cur_fork_head.block_num or (new_fork_head.block_num == cur_fork_head.block_num and new_fork_head.block_id > cur_fork_head.block_id) :
-            LOGGER.debug('PbftOracle: switch_forks new-num=%s cur-num=%s new-id=%s cur-id=%s',new_fork_head.block_num,cur_fork_head.block_num,new_fork_head.block_id,cur_fork_head.block_id)
+            """
+            if new_fork_head.block_num == 0 and self._node == 'plink':
+                LOGGER.debug('PbftOracle:switch_forks TRUE for LEADER')
+                return False
+            """
+            LOGGER.debug('PbftOracle:switch_forks TRUE for new-num=%s cur-num=%s new-id=%s cur-id=%s',new_fork_head.block_num,cur_fork_head.block_num,_short_id(new_fork_head.block_id.hex()),_short_id(cur_fork_head.block_id.hex()))
             return True
         elif new_fork_head.block_num < cur_fork_head.block_num :
             #
@@ -149,7 +165,13 @@ class PbftOracle:
                 LOGGER.debug('PbftOracle: switch to new forks')
                 return True 
         else:
-            return True
+            # num is the same genesis for instance
+            if new_fork_head.block_id != cur_fork_head.block_id:
+                return False
+            else:
+                LOGGER.debug('PbftOracle: switch_forks TRUE blocks ID are the same')
+                return True
+
 
         return False
 
@@ -185,11 +207,13 @@ class PbftOracle:
 
         #block_str = int2hex(block.block_num)
         block_id = block.block_id.hex()
-        LOGGER.debug("PbftOracle: start_consensus for block='%s'",block_id)
+        summary = block.summary.hex()
+        self.get_state_by_summary(summary,"NEW_BLOCK")
+        LOGGER.debug("PbftOracle: start_consensus for block='%s'",_short_id(block_id))
         state = self.get_consensus_state_for_block_id(block) # create in case state is not exists 
         if state is not None:
             if state.is_step_NotStarted:
-                LOGGER.debug('PbftOracle: START CONSENSUS for block_id=%s step=%s mode=%s',block_id,state.step,state.mode)
+                LOGGER.debug('PbftOracle: START CONSENSUS for block_id=%s step=%s mode=%s',_short_id(block_id),state.step,state.mode)
                 
                 if not is_new_block_valid():
                     # ignore NewBlock
@@ -203,11 +227,19 @@ class PbftOracle:
                      leader node - send prePrepare to plink nodes
                     """
                     self._send_pre_prepare(state,block)
+                    # we already have prePrepare message go to the new state
+                    state.next_step() # => Preparing
+                    self.set_consensus_state_for_block_id(block_id,state)
                   
                 elif state.node == _PLINK_ :
                     """
                     just change step of consensus and ignore BlockNew messages; only append them to their logs
                     """
+                    # try send PrePrepare for starting consensus in case it's leader block 
+                    # use nodes map for checking
+                    self._send_pre_prepare(state,block)
+                    state.next_step() # => Preparing
+                    self.set_consensus_state_for_block_id(block_id,state)
                     LOGGER.debug('PbftOracle: PLINK node CONSENSUS step=%s',state.step)
                 elif state.node == _ARBITER_ :
                     """
@@ -223,10 +255,16 @@ class PbftOracle:
                     """
                     LOGGER.debug('PbftOracle: AUX node CONSENSUS step=%s',state.step)
                 return True
+            elif state.is_step_Ignored or state.is_step_Committing:
+                LOGGER.debug('PbftOracle: cant START CONSENSUS for block_id=%s (incorrect state=%s) fail it',_short_id(block_id),state.step)
+                self._service.fail_block(block.block_id)
+                #self._service.ignore_block(block.block_id)
             else:
-                LOGGER.debug('PbftOracle: cant START CONSENSUS for block_id=%s (incorrect state) ',block_id)
+                LOGGER.debug('PbftOracle: cant START CONSENSUS for block_id=%s (incorrect state=%s) ',_short_id(block_id),state.step)
+                self.cancel_curr_block()
+
         else:
-            LOGGER.debug('PbftOracle: there is no CONSENSUS_STATE for block_id=%s',block_id)
+            LOGGER.debug('PbftOracle: there is no CONSENSUS_STATE for block_id=%s',_short_id(block_id))
             return False
 
     def check_consensus(self,block):
@@ -241,14 +279,45 @@ class PbftOracle:
         """
         self._send_viewchange(state,block)
         return True
+
     
+    def cancel_curr_block(self):
+        try:
+            LOGGER.warning("PbftOracle:cancel_curr_block")
+            self._service.cancel_block()
+        except exceptions.InvalidState:
+            LOGGER.warning("PbftOracle:cancel_curr_block: ERR=InvalidState")
+            pass
+
+    def ignore_block(self,block):
+        block_id = block.block_id.hex()
+
+        state = self.get_consensus_state_for_block_id(block,False)
+        state.set_ignored_step()
+        self.set_consensus_state_for_block_id(block_id,state)
+        LOGGER.warning("PbftOracle:ignore block_id=%s => state=%s",_short_id(block_id),state.step)
+
+    def get_state_by_summary(self,summary,title):
+        state = None
+        try:
+            state = self._consensus_state_store[summary]
+            LOGGER.debug("%s get state=%s",title,state)
+        except KeyError:
+            LOGGER.debug("%s key=%s error state=UNDEF",title,_short_id(summary))
+            pass
+        except Exception as ex:
+            LOGGER.debug("%s key len=%s",title,len(summary))
+            pass
+        return state
+
     def consensus_plink(self,state,msg_type,block,block_id):
         """
         actions for plink nodes
         """
         def is_pre_prepare_valid():
             return True
-
+        LOGGER.debug('PbftOracle: >>> PLINK state=%s',state.step)
+        
         if state.is_step_PrePreparing :
             if msg_type == PbftMessageInfo.PRE_PREPARE_MSG:
                 
@@ -285,7 +354,17 @@ class PbftOracle:
                 LOGGER.debug('PbftOracle: PLINK PREPARE_MSG Preparing => Checking')
                 state.next_step() # => Checking
                 self.set_consensus_state_for_block_id(block_id,state)
-                self._service.check_blocks([block.block_id])
+                if state.is_own:
+                    #  own block - go to the Committing
+                    LOGGER.debug('PbftOracle: PLINK skip check_blocks')
+                    state.next_step() # => Committing
+                    self.set_consensus_state_for_block_id(block_id,state)
+                    self._send_commit(state,block)
+                    
+                else :
+                    LOGGER.debug('PbftOracle: PLINK call check_blocks')
+                    self._send_prepare(state,block)
+                    self._service.check_blocks([block.block_id])
                 #self._send_prepare(state,block)
             else:
                 LOGGER.debug('PbftOracle: PLINK NOT PREPARE_MSG in state Preparing ignore')
@@ -297,7 +376,7 @@ class PbftOracle:
             2) PREPARED is true
             """
             if Message.CONSENSUS_NOTIFY_BLOCK_VALID == msg_type:
-                LOGGER.debug('PbftOracle: PLINK have got ValidBlock block_id=%d',block_id)
+                LOGGER.debug('PbftOracle: PLINK have got ValidBlock block_id=%s',_short_id(block_id))
                 state.next_step() # => Committing
                 self.set_consensus_state_for_block_id(block_id,state)
                 self._send_commit(state,block)
@@ -311,11 +390,23 @@ class PbftOracle:
             """
             
             if msg_type == PbftMessageInfo.COMMIT_MSG:
-                LOGGER.debug('PbftOracle: PLINK COMMIT_MSG block=%s Committing => Finished!',block_id)
+                LOGGER.debug('PbftOracle: PLINK COMMIT_MSG block=%s Committing => Finished!',_short_id(block_id))
                 state.next_step() # => Finished
                 self.set_consensus_state_for_block_id(block_id,state)
-                LOGGER.debug('PbftOracle: PLINK commit_block')
-                self._service.commit_block(block.block_id)
+                
+                if state.is_own:
+                    # own block skip Finished
+                    #state.next_step() # => NotInit
+                    state.set_commited_step()
+                    state.set_published(False)
+                    self.set_consensus_state_for_block_id(block_id,state)
+                    LOGGER.debug('PbftOracle: PLINK skip commiting')
+                    """
+                    We should set _published = False
+                    """
+                else :
+                    LOGGER.debug('PbftOracle: PLINK call commit_block')
+                    self._service.commit_block(block.block_id)
             else:
                 LOGGER.debug('PbftOracle: PLINK NOT COMMIT_MSG in Committing state!')
 
@@ -324,19 +415,23 @@ class PbftOracle:
             This node has accepted 2f + 1 Commit messages, including its own
             """
             if Message.CONSENSUS_NOTIFY_BLOCK_COMMIT == msg_type:
-                LOGGER.debug('PbftOracle: PLINK BLOCK_COMMIT block=%s Finished => NotInit!',block_id)
+                LOGGER.debug('PbftOracle: PLINK BLOCK_COMMIT block=%s Finished => NotStarted!',_short_id(block_id))
+                #state.next_step() # => NotInit
+                state.set_commited_step()
+                self.set_consensus_state_for_block_id(block_id,state)
+                #self.cancel_curr_block()
             else:
-                LOGGER.debug('PbftOracle: PLINK NOT BLOCK_COMMIT Finished state IGNORE!')
+                LOGGER.debug('PbftOracle: PLINK IGNORE NOT BLOCK_COMMIT in Finished state !')
 
         else:
             LOGGER.debug('PbftOracle: PRE_PREPARE_MSG PLINK incorrect consensus state=%s',state.step)
-
+        LOGGER.debug('PbftOracle: <<< PLINK => %s',state.step)
 
     def consensus_leader(self,state,msg_type,block,block_id):
         """
         actions for LEADER nodes
         """
-        LOGGER.debug('PbftOracle: >>> LEADER handler')
+        LOGGER.debug('PbftOracle: >>> LEADER state=%s',state.step)
         if state.is_step_PrePreparing :
             """
             After NewBlock message
@@ -347,31 +442,47 @@ class PbftOracle:
                 reply from plink node on PrePrepare message
                 we consider PREPARE_MSG as receiving PRE_PREPARE_MSG because we sent it 
                 """
-                LOGGER.debug('PbftOracle: LEADER PREPARE MSG for block=%d in PrePreparing => Preparing',block_id)
+                LOGGER.debug('PbftOracle: LEADER PREPARE MSG for block=%s in PrePreparing => Preparing',_short_id(block_id))
                 state.next_step() # => Preparing
                 self.set_consensus_state_for_block_id(block_id,state)
-                LOGGER.debug('PbftOracle: LEADER PrePreparing state=%s',state.step)
+                LOGGER.debug('PbftOracle: LEADER PrePreparing => %s',state.step)
                 self._send_prepare(state,block)
                 # skip step 
                 state.next_step() # => Checking
                 self.set_consensus_state_for_block_id(block_id,state)
                 self._service.check_blocks([block.block_id])
+            elif msg_type == PbftMessageInfo.PRE_PREPARE_MSG:
+                """
+                we are owner of this block
+                """
+                LOGGER.debug('PbftOracle: LEADER PRE_PREPARE MSG for block=%s in PrePreparing => Preparing',_short_id(block_id))
+                state.next_step() # => Preparing
+                self.set_consensus_state_for_block_id(block_id,state)
+                self._send_prepare(state,block)
             else:
-                LOGGER.debug('PbftOracle: LEADER NOT PREPARE MSG in state PrePreparing IGNORE!')
+                LOGGER.debug('PbftOracle: LEADER IGNORE NOT PREPARE MSG in state PrePreparing !')
 
         elif state.is_step_Preparing:
             """
             A PrePrepare message has been received and is valid. Ready to receive Prepare messages corresponding to this PrePrepare
 
             """
+            LOGGER.debug('PbftOracle: LEADER Preparing ')
             if msg_type == PbftMessageInfo.PREPARE_MSG :
-                LOGGER.debug('PbftOracle: LEADER have got PREPARE for block=%d in Preparing => Checking',block_id)
+                LOGGER.debug('PbftOracle: LEADER have got PREPARE for block=%s in Preparing => Checking',_short_id(block_id))
+                self._send_prepare(state,block)
                 state.next_step() # => Checking
                 self.set_consensus_state_for_block_id(block_id,state)
-                LOGGER.debug('PbftOracle: LEADER CHECK block=%d and => Checking',block_id)
-                self._service.check_blocks([block.block_id])
+                if state.is_own:
+                    LOGGER.debug('PbftOracle: LEADER skip check_blocks')
+                    state.next_step() # => Committing
+                    self.set_consensus_state_for_block_id(block_id,state)
+                    self._send_commit(state,block)
+                else:
+                    LOGGER.debug('PbftOracle: LEADER CHECK block=%s and => Checking',_short_id(block_id))
+                    self._service.check_blocks([block.block_id])
             else:
-                LOGGER.debug('PbftOracle: LEADER NOT PREPARE_MSG in state Preparing IGNORE!')
+                LOGGER.debug('PbftOracle: LEADER IGNORE NOT PREPARE_MSG in state Preparing!')
                 
         elif state.is_step_Checking:
             """
@@ -380,7 +491,7 @@ class PbftOracle:
             """
             
             if Message.CONSENSUS_NOTIFY_BLOCK_VALID == msg_type:
-                LOGGER.debug('PbftOracle: LEADER have got ValidBlock block_id=%d in Checking => Committing',block_id)
+                LOGGER.debug('PbftOracle: LEADER have got ValidBlock block_id=%s in Checking => Committing',_short_id(block_id))
                 state.next_step() # => Committing
                 self.set_consensus_state_for_block_id(block_id,state)
                 self._send_commit(state,block)
@@ -394,11 +505,19 @@ class PbftOracle:
             """
             LOGGER.debug('PbftOracle: LEADER in Committing state!')
             if msg_type == PbftMessageInfo.COMMIT_MSG:
-                LOGGER.debug('PbftOracle: LEADER COMMIT_MSG block=%s Committing => Finished!',block_id)
+                LOGGER.debug('PbftOracle: LEADER COMMIT_MSG block=%s Committing => Finished!',_short_id(block_id))
                 state.next_step() # => Finished
                 self.set_consensus_state_for_block_id(block_id,state)
-                LOGGER.debug('PbftOracle: LEADER commit_block')
-                self._service.commit_block(block.block_id)
+                if state.is_own:
+                    # own block skip Finished
+                    #state.next_step() # => NotInit
+                    state.set_commited_step()
+                    state.set_published(False)
+                    self.set_consensus_state_for_block_id(block_id,state)
+                    LOGGER.debug('PbftOracle: LEADER skip commiting')
+                else :
+                    LOGGER.debug('PbftOracle: LEADER commit_block')
+                    self._service.commit_block(block.block_id)
             else:
                 LOGGER.debug('PbftOracle: LEADER NOT COMMIT_MSG in Committing state!')
             
@@ -407,13 +526,18 @@ class PbftOracle:
             The predicate committed is true and the block has been committed to the chain. Ready to receive a BlockCommit update.
             """
             if Message.CONSENSUS_NOTIFY_BLOCK_COMMIT == msg_type:
-                LOGGER.debug('PbftOracle: LEADER BLOCK_COMMIT block=%s Finished => NotInit!',block_id)
+                LOGGER.debug('PbftOracle: LEADER BLOCK_COMMIT block=%s Finished => NotStarted!',_short_id(block_id))
+                #state.next_step() # => NotInit
+                state.set_commited_step()
+                self.set_consensus_state_for_block_id(block_id,state)
+                #self.cancel_curr_block()
+
             else:
                 LOGGER.debug('PbftOracle: LEADER NOT BLOCK_COMMIT Finished state IGNORE!')
 
         else:
-            LOGGER.debug('PbftOracle: LEADER is incorrect consensus state=%s',state.step)
-        LOGGER.debug('PbftOracle: <<< LEADER handler')
+            LOGGER.debug('PbftOracle: LEADER is incorrect consensus state=%s IGNORE MESSAGE',state.step)
+        LOGGER.debug('PbftOracle: <<< LEADER => %s',state.step)
   
     def consensus_aux(self,state,msg_type,block,block_id):
         """
@@ -458,16 +582,23 @@ class PbftOracle:
 
     def message_consensus_handler(self,msg_type,block):
         block_id = block.block_id.hex()
+        summary  = block.summary.hex()
         state = self.get_consensus_state_for_block_id(block,False)
 
         if state is None:
             """
             Undefined state for block 
             """
-            LOGGER.debug('PbftOracle: PEER_MESSAGE=%s undefined state for block=%s IGNORE message',msg_type,block_id)
-            return
+            state = self.get_state_by_summary(summary,"PEER_MESSAGE")
+            if state is None:
+                LOGGER.debug('PbftOracle: PEER_MESSAGE=%s undefined state for block=%s IGNORE message',msg_type,_short_id(block_id))
+                return
+            else:
+                # save for block
+                state.next_step()
+                state.set_consensus_state_for_block_id(block_id,self._consensus_state_store)
 
-        LOGGER.debug('PbftOracle: consensus_handler MESSAGE=%s STATE=%s for block_id=%s',msg_type,state,block_id) 
+        LOGGER.debug('PbftOracle: consensus_handler MESSAGE=%s block_id=%s STATE=%s',msg_type,_short_id(block_id),state) 
         if state.node == _PLINK_:
             self.consensus_plink(state,msg_type,block,block_id)
         elif state.node == _LEADER_ :
@@ -476,6 +607,8 @@ class PbftOracle:
             self.consensus_aux(state,msg_type,block,block_id)
         elif state.node == _ARBITER_ :
             self.consensus_arbiter(state,msg_type,block,block_id)
+
+        return state.published
 
     def peer_message(self,msg):
         """
@@ -488,8 +621,12 @@ class PbftOracle:
         info,block = payload.info,payload.block
         msg_type = PbftOracle.CONSENSUS_MSG[info.msg_type]
         block_id = block.block_id.hex()
-        LOGGER.debug("PbftOracle: => Received PEER_MESSAGE '%s'",msg_type)
-        self.message_consensus_handler(info.msg_type,block)
+        summary  = block.summary.hex()
+        signer_id = info.signer_id.decode()
+        #self.get_state_by_summary(summary,"PEER_MESSAGE")
+
+        LOGGER.debug("PbftOracle: => PEER_MESSAGE %s.'%s' block_id=%s summary=%s signer='%s.%s..%s'",info.seq_num,msg_type,_short_id(block_id),_short_id(summary),self.get_node_type_by_id(signer_id),signer_id[:8],signer_id[-8:])
+        return self.message_consensus_handler(info.msg_type,block)
 
     def _send_pre_prepare(self,state,block):
         # send PRE_PREPARE message 
@@ -505,7 +642,7 @@ class PbftOracle:
                     block_num = block.block_num,
                     summary   = block.summary 
             )
-        self._broadcast(PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.PRE_PREPARE_MSG,block.block_id) 
+        self._broadcast(state,PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.PRE_PREPARE_MSG,block.block_id) 
 
     def _send_prepare(self,state,block):
         # send PREPARE message 
@@ -521,7 +658,7 @@ class PbftOracle:
                     block_num = block.block_num,
                     summary   = block.summary 
             )
-        self._broadcast(PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.PREPARE_MSG,block.block_id) 
+        self._broadcast(state,PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.PREPARE_MSG,block.block_id) 
 
     def _send_commit(self,state,block):
         # send COMMIT message 
@@ -537,7 +674,7 @@ class PbftOracle:
                     block_num = block.block_num,
                     summary   = block.summary 
             )
-        self._broadcast(PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.COMMIT_MSG,block.block_id) 
+        self._broadcast(state,PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.COMMIT_MSG,block.block_id) 
 
     def _send_checkpoint(self,state,block):
         """
@@ -555,7 +692,7 @@ class PbftOracle:
                     block_num = block.block_num,
                     summary   = block.summary 
             )
-        self._broadcast(PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.CHECKPOINT_MSG,block.block_id) 
+        self._broadcast(state,PbftMessage(info=messageInfo,block=blockMessage),PbftMessageInfo.CHECKPOINT_MSG,block.block_id) 
     
     def _send_viewchange(self,state,block):
         """
@@ -568,12 +705,14 @@ class PbftOracle:
                     signer_id = self.get_validator_id().encode()
             ) 
         # TODO add stack of PbftMessage for this block
-        self._broadcast(PbftViewChange(messageInfo),PbftMessageInfo.VIEWCHANGE_MSG,block.block_id) 
+        self._broadcast(state,PbftViewChange(messageInfo),PbftMessageInfo.VIEWCHANGE_MSG,block.block_id) 
 
-    def _broadcast(self,payload,msg_type,block_id):
+    def _broadcast(self,state,payload,msg_type,block_id):
         # broadcast 
+        block_id = block_id.hex()
+        state.shift_sequence_number(block_id,self._consensus_state_store)
         mgs_type = PbftOracle.CONSENSUS_MSG[msg_type]
-        LOGGER.debug("BROADCAST =>> '%s' for(%s)",mgs_type,block_id.hex())
+        LOGGER.debug("BROADCAST =>> '%s' for block_id=%s",mgs_type,_short_id(block_id))
         self._service.broadcast(mgs_type,payload.SerializeToString()) 
 
 
@@ -612,9 +751,9 @@ class PbftBlock:
             "Block("
             + ", ".join([
                 "block_num: {}".format(self.block_num),
-                "block_id: {}".format(self.block_id.hex()),
-                "previous_id: {}".format(self.previous_id.hex()),
-                "signer_id: {}".format(self.signer_id.hex()),
+                "block_id: {}".format(_short_id(self.block_id.hex())),
+                "previous_id: {}".format(_short_id(self.previous_id.hex())),
+                "signer_id: {}".format(_short_id(self.signer_id.hex())), # self.get_node_type_by_id(self.signer_id.hex()),_short_id(self.signer_id.hex())
                 "payload: {}".format(self.payload),
                 "summary: {}".format(self.summary.hex()),
             ])

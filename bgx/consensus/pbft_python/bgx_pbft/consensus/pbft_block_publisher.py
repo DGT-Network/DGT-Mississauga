@@ -45,6 +45,7 @@ from bgx_pbft.enclave.utils import dict2json
 
 import bgx_pbft_common.protobuf.bgx_validator_registry_pb2 as vr_pb
 from bgx_pbft_common.validator_registry_view.validator_registry_view import ValidatorRegistryView
+from bgx_pbft_common.utils import _short_id
 
 from  sawtooth_settings.protobuf.settings_pb2 import SettingProposal
 from  sawtooth_settings.protobuf.settings_pb2 import SettingsPayload
@@ -151,6 +152,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
         self._consensus_state_store = ConsensusStateStore(data_dir=self._data_dir,validator_id=self._validator_id)
         self._pbft_key_state_store = PbftKeyStateStore(data_dir=self._data_dir,validator_id=self._validator_id)
         self._wait_timer = None
+        self._block_id = None
 
     def _create_proposal(self, block_header, pbft_enclave_module):
         """
@@ -325,7 +327,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
             Boolean: True if the candidate block should be built. False if
             no candidate should be built.
         """
-        LOGGER.debug('PbftBlockPublisher::initialize_block previous_block_id=%s (%s)',block_header.previous_block_id,block_header)
+        LOGGER.debug('PbftBlockPublisher::initialize_block previous_block_id=%s (%s)',_short_id(block_header.previous_block_id),block_header)
         # If the previous block ID matches our cached one, that means that we
         # have already determined that even if we initialize the requested
         # block we would not be able to claim it.  So, instead of wasting time
@@ -355,9 +357,11 @@ class PbftBlockPublisher(BlockPublisherInterface):
                 )
         # shift into PrePrepare state
         consensus_state.next_step()
+        #consensus_state.mark_as_own()
         consensus_state.set_consensus_state_for_block_id(block_header.previous_block_id,self._consensus_state_store)
+        self._block_id = block_header.previous_block_id
         #consensus_state.set_node(self._node)
-        LOGGER.debug("PbftBlockPublisher::initialize_block GET CONSENSUS_STATE=%s for block_id=%s ",consensus_state,block_header.previous_block_id)
+        LOGGER.debug("PbftBlockPublisher::initialize_block GET CONSENSUS_STATE=%s for block_id=%s ",consensus_state,_short_id(block_header.previous_block_id))
         # start 
         # Get our validator registry entry to see what PBFT public key
         # other validators think we are using.
@@ -526,9 +530,10 @@ class PbftBlockPublisher(BlockPublisherInterface):
             Boolean: True if the candidate block should be claimed. False if
             the block is not ready to be claimed.
         """
-        if False and   block_header is not None:
-            LOGGER.debug("PbftBlockPublisher::check_publish_block block_header=(%s)",type(block_header))
-        
+        if block_header is not None:
+            pass
+            #LOGGER.debug("PbftBlockPublisher::check_publish_block block_header(%s)=%s",type(block_header),block_header)
+            """
             consensus_state = ConsensusState.consensus_state_for_block_id(
                     block_id=block_header.previous_block_id,
                     block_cache=self._block_cache,
@@ -538,7 +543,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
             if not consensus_state.is_step_NotStarted:
                 LOGGER.debug("PbftBlockPublisher::check_publish_block state=%s",consensus_state)
             return not consensus_state.is_step_NotStarted
-        
+            """
         # Only claim readiness if the wait timer has expired
         return True #self._wait_timer.has_expired(now=time.time())
 
@@ -554,10 +559,26 @@ class PbftBlockPublisher(BlockPublisherInterface):
             Boolean: True if the candidate block good and should be generated.
             False if the block should be abandoned.
         """
-        LOGGER.debug('PbftBlockPublisher::FINALIZE BLOCK: block_header[%s]=(%s)',type(block_header),block_header)
+        summary = block_header.hex()
+        LOGGER.debug('FINALIZE BLOCK CANDIDATE: block_id=%s summary=%s',_short_id(self._block_id),_short_id(summary))
         if isinstance(block_header, bytes):
-            # Using the current chain head, we need to create a state
-            # view so we can create a PBFT enclave.
+            """
+            At this point _block_id is previous and summary for current block
+            save state with block_header key
+            """
+            state = ConsensusState.consensus_state_for_block_id(
+                    block_id=summary,
+                    block_cache=self._block_cache,
+                    state_view_factory=self._state_view_factory,
+                    consensus_state_store=self._consensus_state_store,
+                    force=True
+                    )
+
+
+            LOGGER.debug('FINALIZE BLOCK CANDIDATE: state=%s',state)
+            # save in store
+            state.set_consensus_state_for_block_id(summary,self._consensus_state_store)
+            
             """
             state_view = BlockWrapper.state_view_for_block(
                     block_wrapper=self._block_cache.block_store.chain_head,

@@ -27,6 +27,7 @@ class PbftSettingsView:
     or that are invalid, default values are returned.
     """
     _NODE_ = 'plink' 
+    _NODES_ = "{\"0281e398fc978e8d36d6b2244c71e140f3ee464cb4c0371a193bb0a5c6574810ba\": \"leader\",\"028c7e06db3af50a9958390e3e29f166b1cf6198586acf37cde46c8ea54e4a79ef\": \"plink\"}"
     _MAX_LOG_SIZE_ = 1000
     _BLOCK_DURATION_ = 200
     _CHECKPOINT_PERIOD_ = 100
@@ -42,6 +43,7 @@ class PbftSettingsView:
 
         self._settings_view = SettingsView(state_view)
         self._node = None
+        self._nodes = None
         self._max_log_size = None
         self._block_duration = None
         self._checkpoint_period = None
@@ -159,6 +161,19 @@ class PbftSettingsView:
                     validate_function=lambda value: value)
 
         return self._node
+
+    @property
+    def pbft_nodes(self):
+        """Return nodes list.
+        """
+        if self._nodes is None:
+            self._nodes = self._get_config_setting(
+                    name='sawtooth.consensus.pbft.nodes',
+                    value_type=str,
+                    default_value=PbftSettingsView._NODES_,
+                    validate_function=lambda value: value)
+
+        return self._nodes
 
     @property
     def signup_commit_maximum_delay(self):

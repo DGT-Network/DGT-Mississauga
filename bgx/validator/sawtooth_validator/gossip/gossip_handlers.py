@@ -248,11 +248,15 @@ class GossipBroadcastHandler(Handler):
             gossip_message.time_to_live = time_to_live - 1
 
         if gossip_message.content_type == GossipMessage.BATCH:
+            """
+            batch from others nodes 
+            """
             batch = Batch()
             batch.ParseFromString(gossip_message.content)
             # If we already have this batch, don't forward it
             LOGGER.debug("GossipBroadcastHandler:handle BATCH !!!")
             if not self._completer.get_batch(batch.header_signature):
+                # this new batch for this node 
                 self._gossip.broadcast_batch(batch, exclude)
         elif gossip_message.content_type == GossipMessage.BLOCK:
             LOGGER.debug("GossipBroadcastHandler:handle BLOCK !!!")

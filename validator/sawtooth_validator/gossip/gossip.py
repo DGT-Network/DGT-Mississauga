@@ -630,7 +630,7 @@ class ConnectionManager(InstrumentedThread):
             # Endpoints that have reached their retry count and should be
             # removed
             to_remove = []
-            LOGGER.debug("retry_static_peering: _initial_peer_endpoints %s", len(self._initial_peer_endpoints))
+            #LOGGER.debug("retry_static_peering: _initial_peer_endpoints %s", len(self._initial_peer_endpoints))
             for endpoint in self._initial_peer_endpoints:
                 connection_id = None
                 try:
@@ -644,7 +644,7 @@ class ConnectionManager(InstrumentedThread):
                 if connection_id is not None:
                     if connection_id in self._connection_statuses:
                         # Endpoint is already a Peer
-                        LOGGER.debug("retry_static_peering:Endpoint %s is already a Peer",endpoint)
+                        #LOGGER.debug("retry_static_peering:Endpoint %s is already a Peer",endpoint)
                         if self._connection_statuses[connection_id] == \
                                 PeerStatus.PEER:
                             # reset static peering info
@@ -654,7 +654,7 @@ class ConnectionManager(InstrumentedThread):
                                     retry_threshold=INITIAL_RETRY_FREQUENCY,
                                     count=0)
                             continue
-                LOGGER.debug("retry_static_peering:KeyError for %s threshold=%s",str(time.time() - static_peer_info.time),static_peer_info.retry_threshold)
+                #LOGGER.debug("retry_static_peering:KeyError for %s threshold=%s",str(time.time() - static_peer_info.time),static_peer_info.retry_threshold)
                 if (time.time() - static_peer_info.time) > \
                         static_peer_info.retry_threshold:
                     LOGGER.debug("Endpoint has not completed authorization in "
@@ -693,13 +693,13 @@ class ConnectionManager(InstrumentedThread):
                                     MAXIMUM_STATIC_RETRY_FREQUENCY),
                                 count=0)
 
-                    LOGGER.debug("retry_static_peering:attempting to peer with %s", endpoint)
+                    #LOGGER.debug("retry_static_peering:attempting to peer with %s", endpoint)
                     self._network.add_outbound_connection(endpoint)
                     self._temp_endpoints[endpoint] = EndpointInfo(
                         EndpointStatus.PEERING,
                         time.time(),
                         INITIAL_RETRY_FREQUENCY)
-            LOGGER.debug("gossip:retry_static_peering num=%d _static_peer_status=%d",len(to_remove),len(self._static_peer_status))
+            #LOGGER.debug("gossip:retry_static_peering num=%d _static_peer_status=%d",len(to_remove),len(self._static_peer_status))
             for endpoint in to_remove:
                 # Endpoints that have reached their retry count and should be
                 # removed

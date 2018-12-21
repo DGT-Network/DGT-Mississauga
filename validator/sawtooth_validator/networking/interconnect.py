@@ -311,9 +311,9 @@ class _SendReceive:
                     connection_id = \
                         self._identity_to_connection_id(
                             self._connection.encode())
-                LOGGER.debug("_SendReceive:_dispatch_message:... ")
+                #LOGGER.debug("_SendReceive:_dispatch_message:... ")
                 try:
-                    LOGGER.debug("_SendReceive:_dispatch_message:set_result message_type=%s",get_enum_name(message.message_type))
+                    #LOGGER.debug("_SendReceive:_dispatch_message:set_result message_type=%s",get_enum_name(message.message_type))
                     self._futures.set_result(
                         message.correlation_id,
                         future.FutureResult(
