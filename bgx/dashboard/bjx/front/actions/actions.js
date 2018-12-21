@@ -21,46 +21,34 @@ export const GET_PEERS = 'GET_PEERS';
 export const SHOW_MODAL = 'SHOW_MODAL';
 
 export function getTransactions() {
-    //TEMP
-  //return getTransactionsSuccess(convertTransactions(transactions));
-  //END TEMP
-
   return function(dispatch) {
     return axios.get(`${apiUrl}/transactions`)
       .then( response => {
         dispatch(getTransactionsSuccess(convertTransactions(response.data)))
       })
       .catch(error => {
-        //throw(error);
-        console.log(error)
-        dispatch(getTransactionsSuccess(convertTransactions(transactions)));
+        throw(error);
+        // console.log(error)
+        // dispatch(getTransactionsSuccess(convertTransactions(transactions)));
       })
   };
 }
 
 export function getStates() {
-    //TEMP
-  //return getStateSuccess(convertState(state));
-  //END TEMP
-
   return function(dispatch) {
     return axios.get(`${apiUrl}/state`)
       .then( response => {
         dispatch(getStatesSuccess(convertStates(response.data)))
       })
       .catch(error => {
-        //throw(error);
-        console.log(error)
-        dispatch(getStatesSuccess(convertStates(states)));
+        throw(error);
+        // console.log(error)
+        // dispatch(getStatesSuccess(convertStates(states)));
       })
   };
 }
 
 export function getState(address) {
-    //TEMP
-  //return getStateSuccess(convertState(state));
-  //END TEMP
-
   return function(dispatch) {
     return axios.get(`${apiUrl}/state/${address}`)
       .then( response => {
@@ -68,49 +56,40 @@ export function getState(address) {
         dispatch(showModal(response.data))
       })
       .catch(error => {
-        //throw(error);
-        console.log(error)
-        dispatch(getStateSuccess(convertState(state, address)));
-        dispatch(showModal({title: 'State raw data',
-          json: state.data
-        }))
+        throw(error);
+        // console.log(error)
+        // dispatch(getStateSuccess(convertState(state, address)));
+        // dispatch(showModal({title: 'State raw data',
+          // json: state.data
+        // }))
       })
   };
 }
 
-
 export function getBlocks() {
-  //TEMP
-  //return getBlocksSuccess(convertBlocks(blocks));
-  //END TEMP
-
   return function(dispatch) {
     return axios.get(`${apiUrl}/blocks`)
       .then( response => {
         dispatch(getBlocksSuccess(convertBlocks(response.data)))
       })
       .catch(error => {
-        // throw(error);
-        console.log(error)
-        dispatch(getBlocksSuccess(convertBlocks(blocks)));
+        throw(error);
+        // console.log(error)
+        // dispatch(getBlocksSuccess(convertBlocks(blocks)));
       })
   };
 }
 
 export function getPeers() {
-  //TEMP
-  //return getPeersSuccess(convertPeers(nodes));
-  //END TEMP
-
   return function(dispatch) {
     return axios.get(`${apiUrl}/peers`)
       .then( response => {
         dispatch(getPeersSuccess(convertPeers(response.data)))
       })
       .catch(error => {
-        // throw(error);
-        console.log(error)
-        dispatch(getPeersSuccess(convertPeers(nodes)))
+        throw(error);
+        // console.log(error)
+        // dispatch(getPeersSuccess(convertPeers(nodes)))
       })
   };
 }

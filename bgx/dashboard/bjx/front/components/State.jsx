@@ -10,10 +10,6 @@ import ReactTable from "react-table"
 import { getState, showModal } from '../actions/actions';
 
 class State extends React.Component {
-  showDetails(info) {
-    store.dispatch(getState(info.original.address));
-  }
-
   render() {
     const {state, columns} = this.props;
     return (<Card id='card_state' title='State'>
@@ -28,7 +24,9 @@ class State extends React.Component {
           getTdProps={(state, rowInfo, column, instance) => {
             return {
               onClick: (e, handleOriginal) => {
-                this.showDetails(rowInfo)
+                store.dispatch(showModal({title: 'State raw data',
+                  json: rowInfo.original
+                }))
 
                 // IMPORTANT! React-Table uses onClick internally to trigger
                 // events like expanding SubComponents and pivots.

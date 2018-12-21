@@ -1,8 +1,10 @@
+import { decode } from '../helpers/helper'
+
 export function convertStates(data) {
   //console.log(data.data)
-  data.data = data.data.map((i) => {
-    i.decoded_data = null;
-    return i;
+  data.data = data.data.map((d) => {
+    d.decoded_data = decode(d.data);
+    return d;
   });
 
   return data.data;
