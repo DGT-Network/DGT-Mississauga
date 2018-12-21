@@ -37,9 +37,7 @@ export function getTransactions() {
         dispatch(getTransactionsSuccess(convertTransactions(response.data)));
       })
       .catch(error => {
-        //throw(error);
-        console.log(error)
-        dispatch(getTransactionsSuccess(convertTransactions(transactions)));
+        throw(error);
       })
   };
 }
@@ -51,9 +49,7 @@ export function getStates() {
         dispatch(getStatesSuccess(convertStates(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        // console.log(error)
-        dispatch(getStatesSuccess(convertStates(states)));
+        throw(error);
       })
   };
 }
@@ -63,15 +59,9 @@ export function getState(address) {
     return axios.get(`${apiUrl}/state/${address}`)
       .then( response => {
         dispatch(getStateSuccess(convertState(response.data, address)));
-        dispatch(showModal(response.data));
       })
       .catch(error => {
-        // throw(error);
-        // console.log(error)
-         dispatch(getStateSuccess(convertState(state, address)));
-        // dispatch(showModal({title: 'State raw data',
-          // json: state.data
-        // }))
+        throw(error);
       })
   };
 }
@@ -83,9 +73,7 @@ export function getBlocks() {
         dispatch(getBlocksSuccess(convertBlocks(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        // console.log(error)
-         dispatch(getBlocksSuccess(convertBlocks(blocks)));
+        throw(error);
       })
   };
 }
@@ -97,9 +85,7 @@ export function getPeers() {
         dispatch(getPeersSuccess(convertPeers(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        // console.log(error)
-        dispatch(getPeersSuccess(convertPeers(nodes)))
+        throw(error);
       })
   };
 }
