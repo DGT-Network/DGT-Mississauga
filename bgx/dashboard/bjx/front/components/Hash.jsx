@@ -12,8 +12,8 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import { trimHash } from '../helpers/helper'
+import React from 'react';
+import { trimHash } from '../helpers/helper';
 
 class Hash extends React.Component {
   render() {

@@ -12,16 +12,16 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import { connect } from 'react-redux'
-import classNames from 'classnames/bind'
-import ReactTable from "react-table"
+import React from 'react';
+import { connect } from 'react-redux';
+import classNames from 'classnames/bind';
+import ReactTable from "react-table";
 
-import Hash from './Hash'
-import Card from './Card'
-import Graph from './Graph'
+import Hash from './Hash';
+import Card from './Card';
+import Graph from './Graph';
 
-import { showModal } from '../actions/actions'
+import { showModal } from '../actions/actions';
 
 class Blocks extends React.Component {
   constructor(props){

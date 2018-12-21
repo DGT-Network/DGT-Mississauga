@@ -12,13 +12,13 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import { connect } from 'react-redux'
-import JSONPretty from 'react-json-pretty'
+import React from 'react';
+import { connect } from 'react-redux';
+import JSONPretty from 'react-json-pretty';
 
 import $ from 'jquery';
 
-import { trimHash } from '../helpers/helper'
+import { trimHash } from '../helpers/helper';
 
 class Modal extends React.Component {
   render() {

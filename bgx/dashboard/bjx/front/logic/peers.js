@@ -16,7 +16,7 @@ import colorbrewer from 'colorbrewer';
 
 export function convertPeers(data) {
   //console.log('data',data)
-  let parent_node = data.data.net_structure.parent_node
+  let parent_node = data.data.net_structure.parent_node;
   const data2 = {
       IP: parent_node.IP,
       public_key: parent_node.public_key,
@@ -24,9 +24,9 @@ export function convertPeers(data) {
         return {IP: j.IP,
                 size: 4000}
       }),
-  }
-  let r = []
-  convertNode(r, data.data.net_structure.parent_node )
+  };
+  let r = [];
+  convertNode(r, data.data.net_structure.parent_node );
   return {
     data: r,
     filters: convertFilters(data.data.groups, r),
@@ -39,53 +39,52 @@ function convertFilters(filters, d){
       if ( !f.list.includes(i[f.field]) ){
         f.list.push(i[f.field])
       }
-    })
-    return f
+    });
+    return f;
   })
 
-  let count =0
-  let ff = []
+  let count =0;
+  let ff = [];
 
   f.forEach((f) => {
-    count += f.list.length
-    ff = ff.concat(f.list)
+    count += f.list.length;
+    ff = ff.concat(f.list);
   })
   let colors = colorbrewer.Set3[count+5];
 
   let r = 0;
 
   f.forEach((f) => {
-    let arr = {}
+    let arr = {};
     f.list.forEach((i) => {
-      return arr[i] = colors[r++]
+      return arr[i] = colors[r++];
     })
     f.list = arr;
   })
 
-  let i={}
-  ff.map((f) => { i[f] = colors[r++]; return i})
+  let i={};
+  ff.map((f) => { i[f] = colors[r++]; return i});
 
-  return {filters: f,
-  }
+  return { filters: f, };
 }
 
 function convertNode(r, node, parent_node = null){
 
-  let ch = []
-  let parentRelation = []
+  let ch = [];
+  let parentRelation = [];
 
   if (parent_node != null)
-    parentRelation = [parent_node.IP]
+    parentRelation = [parent_node.IP];
 
  if (typeof node.children !== 'undefined'){
-    ch = node.children
+    ch = node.children;
 
     ch.forEach((j) => {
       convertNode(r, j, node);
     })
   }
 
-  let legend = []
+  let legend = [];
 
   legend.push({"Main": {
     'Public Key': node.public_key,
@@ -105,11 +104,10 @@ function convertNode(r, node, parent_node = null){
             'children'].includes(k) })
 
   keys_for_legend.forEach((k) => {
-    let r = {}
-    r[k] = node[k]
-    legend.push( r )
+    let r = {};
+    r[k] = node[k];
+    legend.push( r );
     })
-
 
   r.push({
       name: node.IP,

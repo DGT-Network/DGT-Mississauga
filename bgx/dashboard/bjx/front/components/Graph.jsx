@@ -12,25 +12,25 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
+import React from 'react';
 import {ForceGraph, ForceGraphNode, ForceGraphLink} from 'react-vis-force';
 import axios from 'axios';
 import * as d3 from "d3";
 import $ from 'jquery';
 import colorbrewer from 'colorbrewer';
 
-import ReactAutocomplete from 'react-autocomplete'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ReactAutocomplete from 'react-autocomplete';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cloneDeep from 'lodash/cloneDeep';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 
 import humanize from '../helpers/humanize';
 
-import LineSegment from '../helpers/LineSegment'
+import LineSegment from '../helpers/LineSegment';
 
-import Legend from './Legend'
-import Filters from './Filters'
-import Card from './Card'
+import Legend from './Legend';
+import Filters from './Filters';
+import Card from './Card';
 
 class Graph extends React.Component {
   constructor(props) {
@@ -53,7 +53,7 @@ class Graph extends React.Component {
     let graph = this.graphh;
 
     let config = {
-    "title" : "Les Miserables characters",
+    "title" : "",
     "graph" : {
         "linkDistance" : 60,
         "charge"       : -400,
@@ -177,12 +177,11 @@ graph.data = cloneDeep(this.props.data);
     graph.height = this.props.size.height - graph.margin.top  - graph.margin.bottom;
     $(`#${this.props.id}`).css('display', display);
 
-
     var div = d3.select(`#${this.props.id}`).append("div")
-    .attr("class", "tooltip")
-    .attr("id", `${this.props.id}-tooltip`)
-    .style("opacity", 0)
-    .style("position", "absolute");
+        .attr("class", "tooltip")
+        .attr("id", `${this.props.id}-tooltip`)
+        .style("opacity", 0)
+        .style("position", "absolute");
 
     for (var name in graph.data) {
         var obj = graph.data[name];
@@ -656,11 +655,11 @@ graph.data = cloneDeep(this.props.data);
   }
 
   checkNodeIsCollapsed(ip){
-    return this.state.collapsedNodes.indexOf(ip) == -1
+    return this.state.collapsedNodes.indexOf(ip) == -1;
   }
 
   checkNodeHidden(ip){
-    return this.state.hiddenNodes.includes(ip)
+    return this.state.hiddenNodes.includes(ip);
   }
 
   checkNodeFiltered(d){
@@ -669,56 +668,56 @@ graph.data = cloneDeep(this.props.data);
     if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
         return true;
 
-    const key = Object.keys(selectedFilters)[0]
+    const key = Object.keys(selectedFilters)[0];
 
     return d[key] != selectedFilters[key];
   }
 
-preventCollisions() {
+  preventCollisions() {
     var quadtree = d3.geom.quadtree(graph.nodeValues);
 
     for (var name in graph.data) {
-        var obj = graph.data[name],
-            ox1 = obj.x + obj.extent.left,
-            ox2 = obj.x + obj.extent.right,
-            oy1 = obj.y + obj.extent.top,
-            oy2 = obj.y + obj.extent.bottom;
+      var obj = graph.data[name],
+          ox1 = obj.x + obj.extent.left,
+          ox2 = obj.x + obj.extent.right,
+          oy1 = obj.y + obj.extent.top,
+          oy2 = obj.y + obj.extent.bottom;
 
-        quadtree.visit(function(quad, x1, y1, x2, y2) {
-            if (quad.point && quad.point !== obj) {
-                // Check if the rectangles intersect
-                var p   = quad.point,
-                    px1 = p.x + p.extent.left,
-                    px2 = p.x + p.extent.right,
-                    py1 = p.y + p.extent.top,
-                    py2 = p.y + p.extent.bottom,
-                    ix  = (px1 <= ox2 && ox1 <= px2 && py1 <= oy2 && oy1 <= py2);
-                if (ix) {
-                    var xa1 = ox2 - px1, // shift obj left , p right
-                        xa2 = px2 - ox1, // shift obj right, p left
-                        ya1 = oy2 - py1, // shift obj up   , p down
-                        ya2 = py2 - oy1, // shift obj down , p up
-                        adj = Math.min(xa1, xa2, ya1, ya2);
+      quadtree.visit(function(quad, x1, y1, x2, y2) {
+        if (quad.point && quad.point !== obj) {
+          // Check if the rectangles intersect
+          var p   = quad.point,
+              px1 = p.x + p.extent.left,
+              px2 = p.x + p.extent.right,
+              py1 = p.y + p.extent.top,
+              py2 = p.y + p.extent.bottom,
+              ix  = (px1 <= ox2 && ox1 <= px2 && py1 <= oy2 && oy1 <= py2);
+          if (ix) {
+            var xa1 = ox2 - px1, // shift obj left , p right
+                xa2 = px2 - ox1, // shift obj right, p left
+                ya1 = oy2 - py1, // shift obj up   , p down
+                ya2 = py2 - oy1, // shift obj down , p up
+                adj = Math.min(xa1, xa2, ya1, ya2);
 
-                    if (adj == xa1) {
-                        obj.x -= adj / 2;
-                        p.x   += adj / 2;
-                    } else if (adj == xa2) {
-                        obj.x += adj / 2;
-                        p.x   -= adj / 2;
-                    } else if (adj == ya1) {
-                        obj.y -= adj / 2;
-                        p.y   += adj / 2;
-                    } else if (adj == ya2) {
-                        obj.y += adj / 2;
-                        p.y   -= adj / 2;
-                    }
-                }
-                return ix;
+            if (adj == xa1) {
+              obj.x -= adj / 2;
+              p.x   += adj / 2;
+            } else if (adj == xa2) {
+              obj.x += adj / 2;
+              p.x   -= adj / 2;
+            } else if (adj == ya1) {
+              obj.y -= adj / 2;
+              p.y   += adj / 2;
+            } else if (adj == ya2) {
+              obj.y += adj / 2;
+              p.y   -= adj / 2;
             }
-        });
+          }
+          return ix;
+        }
+      });
     }
-}
+  }
 
   colorFor(d) {
     const { selectedFilters, filters, selectedPeerIP } = this.props;
@@ -737,107 +736,107 @@ preventCollisions() {
   }
 
   colorForDarker(d) {
-      const color = this.colorFor(d)
-      const percent = -0.3
+    const color = this.colorFor(d)
+    const percent = -0.3
 
-      var f=parseInt(color.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=f>>8&0x00FF,B=f&0x0000FF;
-      return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
+    var f=parseInt(color.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent,R=f>>16,G=f>>8&0x00FF,B=f&0x0000FF;
+    return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
   }
 
   hideChildren(array, IP) {
-      let graph = this.graphh;
-      let el = graph.data.find((g) => {return g.IP == IP})
-      el.dependedOnBy.forEach((ip) => {
-          this.hideChildren(array,ip)
-      })
-      array.push(IP)
+    let graph = this.graphh;
+    let el = graph.data.find((g) => {return g.IP == IP})
+    el.dependedOnBy.forEach((ip) => {
+        this.hideChildren(array,ip)
+    })
+    array.push(IP)
   }
 
 
-highlightObject2(obj) {
-  let graph = this.graphh;
+  highlightObject2(obj) {
+    let graph = this.graphh;
 
-  if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
-    this.setState({collapsedNodes: this.state.collapsedNodes.concat([obj.IP]) })
-  }
-  else {
-    this.setState({collapsedNodes: this.state.collapsedNodes.filter((ip) => {return ip != obj.IP})})
-  }
+    if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
+      this.setState({collapsedNodes: this.state.collapsedNodes.concat([obj.IP]) })
+    }
+    else {
+      this.setState({collapsedNodes: this.state.collapsedNodes.filter((ip) => {return ip != obj.IP})})
+    }
 
-  let forHide  = [];
+    let forHide  = [];
 
-  this.state.collapsedNodes.forEach((ip) => {
+    this.state.collapsedNodes.forEach((ip) => {
       this.hideChildren(forHide,ip)
       forHide.pop();
     });
 
     this.setState({hiddenNodes: forHide})
     this.forceUpdate();
-}
+  }
 
-highlightObject(obj) {
-  let graph = this.graphh;
+  highlightObject(obj) {
+    let graph = this.graphh;
     if (obj) {
-        if (obj !== this.highlighted) {
-            graph.node.classed('inactive', function(d) {
-                return (obj !== d
-                     && d.depends.indexOf(obj.name) == -1
-                     && d.dependedOnBy.indexOf(obj.name) == -1);
-            });
-            graph.line.classed('inactive', function(d) {
-                return (obj !== d.source && obj !== d.target);
-            });
-        }
-        this.highlighted = obj;
+      if (obj !== this.highlighted) {
+        graph.node.classed('inactive', function(d) {
+          return (obj !== d
+            && d.depends.indexOf(obj.name) == -1
+            && d.dependedOnBy.indexOf(obj.name) == -1);
+        });
+        graph.line.classed('inactive', function(d) {
+          return (obj !== d.source && obj !== d.target);
+        });
+      }
+      this.highlighted = obj;
     } else {
         if (this.highlighted) {
-            graph.node.classed('inactive', false);
-            graph.line.classed('inactive', false);
+          graph.node.classed('inactive', false);
+          graph.line.classed('inactive', false);
         }
         this.highlighted = null;
     }
-}
-
-hideTooltip(){
-    var div = d3.select(`#${this.props.id}-tooltip`)
-    div.style("opacity", 0)
-        .style("left", "-100px")
-        .style("top", "-100px");
   }
 
-showTooltip(d){
-  var div = d3.select(`#${this.props.id}-tooltip`)
-  div.style("opacity", .9)
-    .html(
-        Object.keys(d.tooltip).map(key => {
-            let s = isNaN(Number(key))  ?  `${key}: ` : ''
-            return s + humanize(d.tooltip[key])
-        }).reverse().join('<br/>'))
+  hideTooltip(){
+    var div = d3.select(`#${this.props.id}-tooltip`)
 
+    div.style("opacity", 0)
+      .style("left", "-100px")
+      .style("top", "-100px");
+    }
 
-   .style("left", d.x + 15 + "px")
-   .style("top", d.y - div.node().getBoundingClientRect().height + 90 +"px")
-}
+  showTooltip(d){
+    var div = d3.select(`#${this.props.id}-tooltip`)
 
-selectObject(obj) {
-  this.props.onSelect(obj.IP)
-}
+    div.style("opacity", .9)
+      .html(
+          Object.keys(d.tooltip).map(key => {
+              let s = isNaN(Number(key))  ?  `${key}: ` : ''
+              return s + humanize(d.tooltip[key])
+          }).reverse().join('<br/>'))
+      .style("left", d.x + 15 + "px")
+      .style("top", d.y - div.node().getBoundingClientRect().height + 90 +"px");
+  }
 
-deselectObject(doResize) {
-  this.props.onSelect(null)
-  this.props.onFilter({})
-}
+  selectObject(obj) {
+    this.props.onSelect(obj.IP)
+  }
 
-componentDidMount() {
+  deselectObject(doResize) {
+    this.props.onSelect(null)
+    this.props.onFilter({})
+  }
+
+  componentDidMount() {
     this.drawGraph();
-}
+  }
 
-componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(this.props.data) !== JSON.stringify(prevProps.data)) {
-        this.drawGraph();
+      this.drawGraph();
     }
     this.updateGraph();
-}
+  }
 
   render() {
     return(
@@ -851,8 +850,7 @@ componentDidUpdate(prevProps, prevState) {
             renderItem={(item, highlighted) =>
               <div
                 key={item.IP}
-                style={{ backgroundColor: highlighted ? '#17a2b8' : 'transparent'}}
-              >
+                style={{ backgroundColor: highlighted ? '#17a2b8' : 'transparent'}}>
                 {item.IP}
               </div>
             }
@@ -860,15 +858,14 @@ componentDidUpdate(prevProps, prevState) {
             onChange={e => this.props.onSelect( e.target.value)}
             onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
           />
+        </div>
+        <div className='graphLayer'>
+          <div id={`${this.props.id}-container`}>
+            <div  id={this.props.id}>
+              <div id={`{${this.props.id}-tooltip}`} />
+            </div>
           </div>
-
-          <div className='graphLayer'>
-              <div id={`${this.props.id}-container`}>
-                  <div  id={this.props.id}>
-                  <div id={`{${this.props.id}-tooltip}`} />
-                  </div>
-              </div>
-          </div>
+        </div>
       </Card>
     );
   }

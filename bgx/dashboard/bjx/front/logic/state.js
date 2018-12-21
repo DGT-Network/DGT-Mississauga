@@ -12,7 +12,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import { decode } from '../helpers/helper'
+import { decode } from '../helpers/helper';
 
 export function convertStates(data) {
   //console.log(data.data)
@@ -29,36 +29,32 @@ export function convertState(data, address) {
   return {
     data: data.data,
     address: address
-  }
+  };
 
-  let keys = Object.keys(data.data)
-
-  let key = null;
-
-  let decoded = null;
+  let keys = Object.keys(data.data),
+      key = null,
+      decoded = null;
 
   if (keys.length) {
     key = keys[0];
 
     let p = JSON.parse(data.data[key]);
 
-    let k = Object.keys(p)[0]
-    let v = JSON.parse(Object.values(p)[0])
-
-    decoded = v;
+    let k = Object.keys(p)[0];
+    decoded = JSON.parse(Object.values(p)[0]);
   }
 
   return {
     data: decoded,
     key: key,
     address: address
-  }
+  };
 }
 
 export function addState(to, data) {
   return to.map((i) => {
     if (i.address === data.address)
-      i.decoded_data=data
+      i.decoded_data = data;
     return i;
   });
 }

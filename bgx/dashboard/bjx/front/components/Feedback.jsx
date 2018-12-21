@@ -12,7 +12,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
+import React from 'react';
 
 class Feedback extends React.Component {
   render() {

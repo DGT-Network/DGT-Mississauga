@@ -30,7 +30,7 @@ const DICT = {
 
 export default function humanize(string) {
   if (!Object.keys(DICT).includes(string))
-    return string
+    return string;
   else
-    return DICT[string]
+    return DICT[string];
 }

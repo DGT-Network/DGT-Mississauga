@@ -12,22 +12,20 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import JSONPretty from 'react-json-pretty'
+import React from 'react';
+import JSONPretty from 'react-json-pretty';
 
-import  Hash  from './Hash'
+import  Hash  from './Hash';
 
 class DecodedData extends React.Component {
   constructor(props) {
     super(props);
-
     this.state ={open: false};
   }
 
   render() {
     const { decodedData, data } = this.props;
     const {open} = this.state;
-
 
     return (
       <div onClick={(e) => {this.setState({open: !this.state.open})}}>
@@ -41,6 +39,7 @@ class DecodedData extends React.Component {
     )
   }
 }
+
 DecodedData.defaultProps = {
   decodedData: {},
 }

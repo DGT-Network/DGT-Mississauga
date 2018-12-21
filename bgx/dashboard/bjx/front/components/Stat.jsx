@@ -12,9 +12,9 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
+import React from 'react';
 
-import Card from './Card'
+import Card from './Card';
 
 class Stat extends React.Component {
   render() {
@@ -34,32 +34,34 @@ class Stat extends React.Component {
         ['Leader', 'fbb1b73c4f0bda4f67dca266ce6ef42f520eea98'],
         ['Genesis', 'fbb1b73c4f0bda4f67dca266ce6ef42f520eea98'],
       ],
-    ]
+    ];
 
     return (
       <div className='tab-offset'>
         <Card id="Identity" title='Identity'>
-            <div className='row'>
-              { data.map((dd) => {
-                  return (
-                    <div key={dd[0][0]} className='col-4'>
-                      {
-                        dd.map((d) => {
-                          return (
-                            <p key={d[0]}>
-                              <strong>{d[0]}:</strong>
-                              <span className='text-secondary'>{` ${d[1]}`}</span>
-                            </p>
-                          )
-                        })
-                      }
-                    </div>
-                  )
-                })
-              }
-            </div>
+          <div className='row'>
+            {
+              data.map((dd) => {
+                return (
+                  <div key={dd[0][0]} className='col-4'>
+                    {
+                      dd.map((d) => {
+                        return (
+                          <p key={d[0]}>
+                            <strong>{d[0]}:</strong>
+                            <span className='text-secondary'>{` ${d[1]}`}</span>
+                          </p>
+                        );
+                      })
+                    }
+                  </div>
+                )
+              })
+            }
+          </div>
         </Card>
-      </div>);
+      </div>
+    );
   }
 }
 

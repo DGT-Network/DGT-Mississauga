@@ -12,8 +12,8 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import base64js from 'base64-js'
-import cbor from 'borc'
+import base64js from 'base64-js';
+import cbor from 'borc';
 
 export function trimHash(s, length=5) {
   if (typeof s === 'undefined') return '';
@@ -32,9 +32,9 @@ export function trimSpaces(s) {
 
 export function decode(d) {
   try {
-    return cbor.decode(base64js.toByteArray(d))
+    return cbor.decode(base64js.toByteArray(d));
   }
   catch (e) {
-    return {}
+    return {};
   }
 }

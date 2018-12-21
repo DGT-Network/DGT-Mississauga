@@ -28,13 +28,10 @@ class LineSegment {
     this.c = x1 * this.a + y1 * this.b;
 
     if (this.eq(this.a, 0) && this.eq(this.b, 0)) {
-        throw new Error(
-            'Cannot construct a LineSegment with two equal endpoints.');
+      throw new Error(
+        'Cannot construct a LineSegment with two equal endpoints.');
     }
   }
-
-
-//  tolerance = 1e-10;
 
   eq(a, b) {
     return (Math.abs(a - b) < this.tolerance);
@@ -59,11 +56,11 @@ class LineSegment {
             (this.y1 - this.y2) * (that.x1 - that.x2);
 
     if (this.eq(d, 0)) {
-        // The two lines are parallel or very close.
-        return {
-            x : NaN,
-            y : NaN
-        };
+      // The two lines are parallel or very close.
+      return {
+        x : NaN,
+        y : NaN
+      };
     }
 
     var t1  = this.x1 * this.y2 - this.y1 * this.x2,
@@ -76,10 +73,10 @@ class LineSegment {
                this.gt(y, Math.min(that.y1, that.y2)) && this.lt(y, Math.max(that.y1, that.y2)));
 
     return {
-        x   : x,
-        y   : y,
-        in1 : in1,
-        in2 : in2
+      x   : x,
+      y   : y,
+      in1 : in1,
+      in2 : in2
     };
   }
 }

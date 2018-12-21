@@ -12,12 +12,12 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
+import React from 'react';
 import {Line, Bar, Doughnut} from 'react-chartjs-2';
 
-import Card from './Card'
+import Card from './Card';
 
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 
 class Network extends React.Component {
 
@@ -28,8 +28,7 @@ class Network extends React.Component {
   }
 
   render() {
-
-    const { nodes_count, transactions_count, transactions } = this.props
+    const { nodes_count, transactions_count, transactions } = this.props;
 
     let success_transactions = 0;
     let failed_transactions = 0;
@@ -41,18 +40,18 @@ class Network extends React.Component {
       }
       else {
         success_transactions = transactions_count - 4;
-        failed_transactions = 4
+        failed_transactions = 4;
       }
     }
 
     let generatedData = [],
-    generatedLabels = []
+    generatedLabels = [];
 
     for (let i = 200; i < 24*60; i+=5){
       let h = Math.floor(i / 60);
       let m = i % 60;
-      generatedLabels.push(`${h}:${m}`)
-      generatedData.push(this.randomInteger(200,500))
+      generatedLabels.push(`${h}:${m}`);
+      generatedData.push(this.randomInteger(200,500));
     }
 
     const data = {
@@ -80,19 +79,16 @@ class Network extends React.Component {
           data: generatedData
         }
       ]
-    }
+    };
 
-
-
-
-    const generatedData2 =[]
+    const generatedData2 =[];
 
     transactions.forEach((t) =>
       {
         if (t.decoded_data.num_bgt === undefined || t.decoded_data.Verb != 'transfer')
-          return
+          return;
 
-        generatedData2.push(t.decoded_data.num_bgt)
+        generatedData2.push(t.decoded_data.num_bgt);
       }
     )
 
@@ -123,7 +119,7 @@ class Network extends React.Component {
           data: generatedData2
         }
       ]
-    }
+    };
 
     const doughData = {
       labels: [

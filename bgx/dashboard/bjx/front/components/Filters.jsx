@@ -12,14 +12,14 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import classNames from 'classnames/bind'
+import React from 'react';
+import classNames from 'classnames/bind';
 
-import {trimSpaces} from '../helpers/helper'
-import humanize from '../helpers/humanize'
+import {trimSpaces} from '../helpers/helper';
+import humanize from '../helpers/humanize';
 
-import Hash from './Hash'
-import Card from './Card'
+import Hash from './Hash';
+import Card from './Card';
 
 class Filters extends React.Component {
   render() {

@@ -12,23 +12,23 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import classNames from 'classnames/bind'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react';
+import classNames from 'classnames/bind';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import packageJson from '../../package.json'
+import packageJson from '../../package.json';
 import $ from 'jquery';
 
-import Transactions from './Transactions'
-import Blocks from './Blocks'
-import State from './State'
-import Peers from './Peers'
-import Network from './Network'
-import Stat from './Stat'
-import Wallet from './Wallet'
-import Feedback from './Feedback'
-import LogoSvg from '../assets/logo.svg'
-import Modal from './Modal'
+import Transactions from './Transactions';
+import Blocks from './Blocks';
+import State from './State';
+import Peers from './Peers';
+import Network from './Network';
+import Stat from './Stat';
+import Wallet from './Wallet';
+import Feedback from './Feedback';
+import LogoSvg from '../assets/logo.svg';
+import Modal from './Modal';
 
 import { getTransactions, getPeers, getStates, getBlocks } from '../actions/actions';
 
@@ -48,7 +48,6 @@ class Main extends React.Component {
   }
 
   render() {
-
     const {name, version} = packageJson;
 
     return (
@@ -157,7 +156,8 @@ class Main extends React.Component {
         </div>
 
         <Feedback/>
-      </div>);
+      </div>
+    );
   }
 }
 

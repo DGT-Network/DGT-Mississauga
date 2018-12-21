@@ -12,14 +12,14 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-import React from 'react'
-import { connect } from 'react-redux'
-import classNames from 'classnames/bind'
-import Hash from './Hash'
-import DecodedData from './DecodedData'
-import Card from './Card'
+import React from 'react';
+import { connect } from 'react-redux';
+import classNames from 'classnames/bind';
+import Hash from './Hash';
+import DecodedData from './DecodedData';
+import Card from './Card';
 
-import ReactTable from "react-table"
+import ReactTable from "react-table";
 
 import { getState, showModal } from '../actions/actions';
 
@@ -55,7 +55,7 @@ class State extends React.Component {
           }}/>
       )}
       </Card>
-    )
+    );
   }
 }
 
