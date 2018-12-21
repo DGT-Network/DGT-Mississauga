@@ -1,3 +1,17 @@
+// Copyright 2018 NTRlab
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -----------------------------------------------------------------------------
+
 import React from 'react'
 import {ForceGraph, ForceGraphNode, ForceGraphLink} from 'react-vis-force';
 import axios from 'axios';
@@ -5,22 +19,18 @@ import * as d3 from "d3";
 import $ from 'jquery';
 import colorbrewer from 'colorbrewer';
 
+import ReactAutocomplete from 'react-autocomplete'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
 import cloneDeep from 'lodash/cloneDeep';
-
 import { connect } from 'react-redux'
 
 import humanize from '../helpers/humanize';
 
 import LineSegment from '../helpers/LineSegment'
 
-import ReactAutocomplete from 'react-autocomplete'
-
 import Legend from './Legend'
 import Filters from './Filters'
 import Card from './Card'
-
 
 class Graph extends React.Component {
   constructor(props) {
@@ -323,97 +333,6 @@ graph.data = cloneDeep(this.props.data);
         .attr('height', this.props.size.height-40)//graph.height + graph.margin.top  + graph.margin.bottom)
       .append('g')
         .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
-
-    // graph.svg.append('defs').selectAll('marker')
-    //     .data(['end'])
-    //   .enter().append('marker')
-    //     .attr('id'          , String)
-    //     .attr('viewBox'     , '0 -5 10 10')
-    //     .attr('refX'        , 10)
-    //     .attr('refY'        , 0)
-    //     .attr('markerWidth' , 6)
-    //     .attr('markerHeight', 6)
-    //     .attr('orient'      , 'auto')
-    //   .append('path')
-    //     .attr('d', 'M0,-5L10,0L0,5');
-
-    // adapted from http://stackoverflow.com/questions/9630008
-    // and http://stackoverflow.com/questions/17883655
-
-    // var glow = graph.svg.append('filter')
-    //     .attr('x'     , '-50%')
-    //     .attr('y'     , '-50%')
-    //     .attr('width' , '200%')
-    //     .attr('height', '200%')
-    //     .attr('id'    , 'blue-glow');
-
-    // glow.append('feColorMatrix')
-    //     .attr('type'  , 'matrix')
-    //     .attr('values', '0 0 0 0  0 '
-    //                   + '0 0 0 0  0 '
-    //                   + '0 0 0 0  .7 '
-    //                   + '0 0 0 1  0 ');
-
-    // glow.append('feGaussianBlur')
-    //     .attr('stdDeviation', 6)
-    //     .attr('result'      , 'coloredBlur');
-
-    // glow.append('feMerge').selectAll('feMergeNode')
-    //     .data(['coloredBlur', 'SourceGraphic'])
-    //   .enter().append('feMergeNode')
-    //     .attr('in', String);
-
-    /*graph.legend = graph.svg.append('g')
-        .attr('class', 'legend')
-        .attr('x', 0)
-        .attr('y', 0)
-      .selectAll('.category')
-        .data(d3.values(graph.categories))
-      .enter().append('g')
-        .attr('class', 'category');
-
-    graph.legendConfig = {
-        rectWidth   : 12,
-        rectHeight  : 12,
-        xOffset     : -10,
-        yOffset     : 30,
-        xOffsetText : 20,
-        yOffsetText : 10,
-        lineHeight  : 15
-    };
-    graph.legendConfig.xOffsetText += graph.legendConfig.xOffset;
-    graph.legendConfig.yOffsetText += graph.legendConfig.yOffset;
-
-    graph.legend.append('rect')
-        .attr('x', graph.legendConfig.xOffset)
-        .attr('y', function(d, i) {
-            return graph.legendConfig.yOffset + i * graph.legendConfig.lineHeight;
-        })
-        .attr('height', graph.legendConfig.rectHeight)
-        .attr('width' , graph.legendConfig.rectWidth)
-        .attr('fill'  , function(d) {
-            return graph.fillColor(d.key);
-        })
-        .attr('stroke', function(d) {
-            return graph.strokeColor(d.key);
-        });
-
-    graph.legend.append('text')
-        .attr('x', graph.legendConfig.xOffsetText)
-        .attr('y', function(d, i) {
-            return graph.legendConfig.yOffsetText + i * graph.legendConfig.lineHeight;
-        })
-        .text(function(d) {
-            return d.typeName + (d.group ? ': ' + d.group : '');
-        });
-
-
-
-    $('#graph-container').on('scroll', function() {
-        graph.legend.attr('transform', 'translate(0,' + $(this).scrollTop() + ')');
-    });
-    */
-
 
     graph.draggedThreshold = d3.scale.linear()
         .domain([0, 0.1])
@@ -901,73 +820,13 @@ showTooltip(d){
 }
 
 selectObject(obj) {
-
   this.props.onSelect(obj.IP)
-
-  //store.dispatch(selectP(obj.IP))
-  // let graph = this.graphh;
-  //   var node;
-  //   if (el) {
-  //       node = d3.select(el);
-  //   } else {
-  //       graph.node.each(function(d) {
-  //           if (d === obj) {
-  //               node = d3.select(el = this);
-  //           }
-  //       });
-  //   }
-  //   if (!node) return;
-
-  //   if (node.classed('selected')) {
-  //       this.deselectObject();
-  //       return;
-  //   }
-
-  //   this.selected = {
-  //       obj : obj,
-  //       el  : el
-  //   };
-
-  //   this.highlightObject(obj);
-
-  //   node.classed('selected', true);
-  //   $('#docs').html(obj.docs);
-  //   $('#docs-container').scrollTop(0);
-
-  //   var $graph   = $(`#${this.props.id}-container`),
-  //       nodeRect = {
-  //           left   : obj.x + obj.extent.left + graph.margin.left,
-  //           top    : obj.y + obj.extent.top  + graph.margin.top,
-  //           width  : obj.extent.right  - obj.extent.left,
-  //           height : obj.extent.bottom - obj.extent.top
-  //       },
-  //       graphRect = {
-  //           left   : $graph.scrollLeft(),
-  //           top    : $graph.scrollTop(),
-  //           width  : $graph.width(),
-  //           height : $graph.height()
-  //       };
-
-  //   const offset = 20;
-
-  //   if (nodeRect.left + nodeRect.width/2 < graphRect.left + graphRect.width/2 - offset ||
-  //       nodeRect.left + nodeRect.width/2 > graphRect.left + graphRect.width/2 + offset ||
-  //       nodeRect.top + nodeRect.height/2 < graphRect.top + graphRect.height/2 - offset ||
-  //       nodeRect.top + nodeRect.height/2 > graphRect.top + graphRect.height/2 + offset) {
-
-
-  //       $graph.animate({
-  //           scrollLeft : nodeRect.left + nodeRect.width  / 2 - graphRect.width  / 2,
-  //           scrollTop  : nodeRect.top  + nodeRect.height / 2 - graphRect.height / 2
-  //       }, 500);
-  //   }
 }
 
 deselectObject(doResize) {
   this.props.onSelect(null)
   this.props.onFilter({})
 }
-
 
 componentDidMount() {
     this.drawGraph();

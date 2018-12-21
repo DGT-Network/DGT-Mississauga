@@ -1,25 +1,18 @@
+// Copyright 2018 NTRlab
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -----------------------------------------------------------------------------
+
 import { trimHash, decode } from '../helpers/helper'
-
-// export function convertBlocks(data) {
-//     let parent = {name: 'initial'}
-//     let initial = parent
-//     data.data.forEach((i) => {
-//       i.header.block_num = parseInt(i.header.block_num)
-
-//       let node = {
-//         name: trimHash(i.header_signature),
-//         number: i.header.block_num,
-//         children: []
-//       }
-//       parent.children = [node]
-//       parent = node
-//     })
-
-//     data.graph = initial.children[0];
-//     data.data = data.data.reverse();
-//   return data;
-// }
-
 
 export function convertBlocks(data) {
   return data.data.map((d) => {

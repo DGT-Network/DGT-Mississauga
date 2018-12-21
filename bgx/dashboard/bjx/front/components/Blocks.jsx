@@ -1,23 +1,36 @@
+// Copyright 2018 NTRlab
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -----------------------------------------------------------------------------
+
 import React from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames/bind'
+import ReactTable from "react-table"
 
 import Hash from './Hash'
 import Card from './Card'
 import Graph from './Graph'
 
-import ReactTable from "react-table"
-
 import { showModal } from '../actions/actions'
 
 class Blocks extends React.Component {
   constructor(props){
-    super(props)
-    this.state= { selectedBlock: null}
+    super(props);
+    this.state = { selectedBlock: null};
   }
 
   selectBlock(ip) {
-    this.setState({selectedBlock: ip})
+    this.setState({selectedBlock: ip});
   }
 
   render() {
@@ -59,11 +72,6 @@ class Blocks extends React.Component {
                           json: rowInfo.row._original
                         }))
 
-                        // IMPORTANT! React-Table uses onClick internally to trigger
-                        // events like expanding SubComponents and pivots.
-                        // By default a custom 'onClick' handler will override this functionality.
-                        // If you want to fire the original onClick handler, call the
-                        // 'handleOriginal' function.
                         if (handleOriginal) {
                           handleOriginal();
                         }
