@@ -42,6 +42,8 @@ from sawtooth_validator.metrics.wrappers import GaugeWrapper
 from sawtooth_validator.protobuf.block_pb2 import BlockHeader
 from sawtooth_validator.protobuf.transaction_pb2 import TransactionHeader
 
+#from sawtooth_sdk.consensus import exceptions
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -128,7 +130,7 @@ class _CandidateBlock(object):
         self._pending_batch_ids = set()
         self._injected_batch_ids = set()
         self._block_store = block_store
-        # self._consensus = consensus
+        self._consensus = None
         self._scheduler = scheduler
         self._committed_txn_cache = committed_txn_cache
         # Look-up cache for transactions that are committed in the current
@@ -142,6 +144,23 @@ class _CandidateBlock(object):
         self._remaining_batches = []
         self._identity_signer = identity_signer
         self._settings_view = settings_view
+
+    def __str__(self):
+        res = 'self._previous_block : ' + str(self._previous_block) + ' ||\n' + \
+              'self._pending_batches : ' + str(self._pending_batches) + ' ||\n' + \
+              'self._pending_batch_ids : ' + str(self._pending_batch_ids) + ' ||\n' + \
+              'self._injected_batch_ids : ' + str(self._injected_batch_ids) + ' ||\n' + \
+              'self._block_store : ' + str(self._block_store) + ' ||\n' + \
+              'self._scheduler : ' + str(self._scheduler) + ' ||\n' + \
+              'self._committed_txn_cache : ' + str(self._committed_txn_cache) + ' ||\n' + \
+              'self._block_builder : ' + str(self._block_builder) + ' ||\n' + \
+              'self._max_batches : ' + str(self._max_batches) + ' ||\n' + \
+              'self._batch_injectors : ' + str(self._batch_injectors) + ' ||\n' + \
+              'self._summary : ' + str(self._summary) + ' ||\n' + \
+              'self._remaining_batches : ' + str(self._remaining_batches) + ' ||\n' + \
+              'self._identity_signer : ' + str(self._identity_signer) + ' ||\n' + \
+              'self._settings_view : ' + str(self._settings_view) + ' ||\n'
+        return res
 
     def __del__(self):
         # Cancel the scheduler if it is not complete
@@ -928,7 +947,11 @@ class BlockPublisher(object):
         :param block: block on which to build the new one.
         :return: None
         """
-        LOGGER.debug('BlockPublisher: initialize_block %s', block)
+        LOGGER.debug('$$$$$$$$$$$$$$$$$$$$$$ BlockPublisher: initialize_block %s', block)
+
+        if self._candidate_block is not None:
+            LOGGER.debug("BEFORE ib | self._candidate_block now = %s", str(self._candidate_block))
+        
         try:
             with self._lock:
                 if self._candidate_block is not None:
@@ -943,34 +966,58 @@ class BlockPublisher(object):
             # LOGGER.exception(exc)
             raise exc
 
+        if self._candidate_block is not None:
+            LOGGER.debug("AFTER ib | self._candidate_block now = %s", str(self._candidate_block))
+
     def summarize_block(self, force=False):
         """Creates self._summary of Candidate Block
         :param force: Summarize even if pending batches array of CandidateBlock is empty
         :return: Summary of batches in block
         """
-        LOGGER.debug('BlockPublisher: summarize_block')
+        LOGGER.debug('$$$$$$$$$$$$$$$$$$$$$$ BlockPublisher: summarize_block')
+        ##if self._candidate_block is not None:
+        ##    wrapped_block = BlockWrapper(self._chain_head)
+        ##    self._build_candidate_block(wrapped_block)
+        ##    LOGGER.error('New block generated')
+
+        if self._candidate_block is None:
+            #raise exceptions.BlockNotReady
+            raise BlockEmpty()
+
+        if self._candidate_block is not None:
+            LOGGER.debug("BEFORE sb | self._candidate_block now = %s", str(self._candidate_block))
+        	
         try:
             with self._lock:
                 if self._candidate_block is None:
                     LOGGER.debug('BlockPublisher, summarize_block: _candidate_block is None')
+                    self.initialize_block(self._chain_head)
+                
+                result = self._candidate_block.summarize(force)
+                LOGGER.debug('BlockPublisher, summarize_block: _candidate_block.summarize execution result - %s', result)
+                if result is None:
+                    raise BlockNotInitialized()
                 else:
-                    result = self._candidate_block.summarize(force)
-                    LOGGER.debug('BlockPublisher, summarize_block: _candidate_block.summarize execution result - %s', result)
-                    if result is None:
-                        raise BlockNotInitialized()
-                    else:
-                        return result
+                    if self._candidate_block is not None:
+                        LOGGER.debug("AFTER sb | self._candidate_block now = %s", str(self._candidate_block))
         except Exception as exc:
             # LOGGER.critical("summarize_block exception.")
             # LOGGER.exception(exc)
             raise exc
+
+        return result
+
+        
 
     def finalize_block(self, consensus=None, force=False):
         """Finalize current candidate block, build new one.
         :param block: consensus for _candidate_block, force for on_check_publish_block.
         :return: (BlockBuilder) - New candidate block in a BlockBuilder wrapper.
         """
-        LOGGER.debug('BlockPublisher: finalize_block with consensus=%s', consensus)
+        LOGGER.debug('$$$$$$$$$$$$$$$$$$$$$$ BlockPublisher: finalize_block with consensus=%s', consensus)
+        if self._candidate_block is not None:
+            LOGGER.debug("BEFORE fb | self._candidate_block now = %s", str(self._candidate_block))
+
         new_candidate_block = None
         try:
             with self._lock:
@@ -993,10 +1040,12 @@ class BlockPublisher(object):
             # LOGGER.exception(exc)
             raise exc
 
+        if self._candidate_block is not None:
+            LOGGER.debug("AFTER fb | self._candidate_block now = %s", str(self._candidate_block))
         return new_candidate_block
 
     def cancel_block(self):
-        LOGGER.debug('BlockPublisher: cancel_block')
+        LOGGER.debug('$$$$$$$$$$$$$$$$$$$$$$ BlockPublisher: cancel_block')
         self._candidate_block = None
         """
         self._call("cancel_block")
