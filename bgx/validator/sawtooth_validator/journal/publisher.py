@@ -406,17 +406,17 @@ class _CandidateBlock(object):
 
 
         LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
-        if not self._consensus:
-            LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
-        else:
-            if not self._consensus.finalize_block(builder.block_header):
-                LOGGER.debug("Abandoning block %s, consensus failed to finalize "
-                             "it", builder)
-                # return all valid batches to the pending_batches list
-                pending_batches.clear()
-                pending_batches.extend([x for x in self._pending_batches
-                                        if x not in bad_batches])
-                return None
+        # if not self._consensus:
+        #     LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
+        # else:
+        #     if not self._consensus.finalize_block(builder.block_header):
+        #         LOGGER.debug("Abandoning block %s, consensus failed to finalize "
+        #                      "it", builder)
+        #         # return all valid batches to the pending_batches list
+        #         pending_batches.clear()
+        #         pending_batches.extend([x for x in self._pending_batches
+        #                                 if x not in bad_batches])
+        #         return None
 
         builder.set_state_hash(state_hash)
         self._sign_block(builder, identity_signer)
@@ -980,10 +980,14 @@ class BlockPublisher(object):
                     self.on_check_publish_block(force)
 
                     if consensus is not None:
-                        self._candidate_block._consensus = consensus
-                        LOGGER.debug('BlockPublisher:finalize_block:consensus - %s', self._candidate_block._consensus)
+                        pass
+                        # self._candidate_block._consensus = consensus
+                        # LOGGER.debug('BlockPublisher:finalize_block:consensus - %s', self._candidate_block._consensus)
                     new_candidate_block = self._candidate_block.finalize_block(self._identity_signer,
                                                                                self._pending_batches)
+                    LOGGER.error('BlockPublisher:finalize_block:new_candidate_block - %s', new_candidate_block)
+                    self._candidate_block = self._build_candidate_block(new_candidate_block)
+                    # Make Ok, please
         except Exception as exc:
             # LOGGER.critical("finalize_block exception.")
             # LOGGER.exception(exc)
