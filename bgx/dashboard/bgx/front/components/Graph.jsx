@@ -164,9 +164,6 @@ class Graph extends React.Component {
 
 graph.data = cloneDeep(this.props.data);
 
-    if (this.props.lastN != null)
-        graph.data = graph.data.slice(-1 * this.props.lastN);
-
     graph.margin = {
         top    : 20,
         right  : 20,
@@ -415,7 +412,6 @@ graph.data = cloneDeep(this.props.data);
 
         //add line to graph object
 
-
       graph.nodeRect = graph.node.append('rect')
         .attr('rx', 5)
         .attr('ry', 5)
@@ -426,30 +422,54 @@ graph.data = cloneDeep(this.props.data);
       let collapse = graph.node.append('g')
         .attr('class', 'collapse-children')
 
+
       for (let i = 0; i < 3; i++){
         collapse.append('circle')
-          .attr('cx', i*4)
+          .attr('cx', i*5)
           .attr('cy', 0)
           .attr('r' , 3)
-          .attr('fill', '#FF0000') //'#212529'
-          .on('click', function(d) {
-            that.collapseChildren(d);
-          })
+          .attr('fill', '#666666') //'#212529'
+          .attr('opacity', 0.7)
+
       }
+
+      collapse.append('rect')
+        .attr('x', -5)
+        .attr('y', -4)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', 20)
+        .attr('height', 8)
+        .attr('opacity', 0.01)
+        .attr('fill', '#FFFFFF')
+        .on('click', function(d) {
+          that.collapseChildren(d);
+        })
 
       collapse = graph.node.append('g')
         .attr('class', 'collapse-parents')
 
       for (let i = 0; i < 3; i++){
         collapse.append('circle')
-          .attr('cx', i*4)
+          .attr('cx', i*5)
           .attr('cy', 0)
           .attr('r' , 3)
-          .attr('fill', '#00FF00')
-          .on('click', function(d) {
-            that.collapseParents(d);
-          })
+          .attr('fill', '#666666')
+          .attr('opacity', 0.7)
       }
+
+      collapse.append('rect')
+        .attr('x', -5)
+        .attr('y', -4)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', 20)
+        .attr('height', 8)
+        .attr('opacity', 0.01)
+        .attr('fill', '#FFFFFF')
+        .on('click', function(d) {
+          that.collapseParents(d);
+        })
 
       let extradata = graph.node.append('g')
         .attr('class', 'extra-data')
@@ -534,7 +554,8 @@ graph.data = cloneDeep(this.props.data);
 
     graph.line.each(function(d) {
       d3.select(this).attr('display', function(d){
-        return that.checkNodeHidden(d.target.IP) ? 'none' : 'block'
+        return that.checkNodeHidden(d.target.IP) ||
+          that.checkNodeHidden(d.source.IP) ? 'none' : 'block'
       })
     });
 
@@ -652,15 +673,31 @@ graph.data = cloneDeep(this.props.data);
 
       collapseChildren
         .attr('transform',`translate(${bounds.x2-10}, ${bounds.y2+6})`)
-        // .attr('display',  function(d){
-        //   return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
-        // })
+        .attr('display', function(d){
+          return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+        })
+
+      collapseChildren.selectAll('circle')
+        .attr('r', function(d){
+          return that.checkNodeIsCollapsed(d.IP) ? 2 : 3
+        })
+        .attr('fill', function(d){
+          return that.checkNodeIsCollapsed(d.IP) ? '#666666' : '#212529'
+        })
 
       collapseParents
           .attr('transform',`translate(${bounds.x1 }, ${bounds.y2+6})`)
-          // .attr('display',  function(d){
-          //   return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
-          // })
+          .attr('display',  function(d){
+            return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+          })
+
+      collapseParents.selectAll('circle')
+        .attr('r', function(d){
+          return that.checkParentIsCollapsed(d.IP) ? 2 : 3
+        })
+        .attr('fill', function(d){
+          return that.checkParentIsCollapsed(d.IP) ? '#666666' : '#212529'
+        })
 
       extra
         .attr('transform',`translate(${bounds.x1}, ${bounds.y1-12})`)
@@ -682,6 +719,11 @@ graph.data = cloneDeep(this.props.data);
   checkNodeIsCollapsed(ip){
     return this.state.collapsedNodes.indexOf(ip) == -1;
   }
+
+  checkParentIsCollapsed(ip){
+    return this.state.collapsedParents.indexOf(ip) == -1;
+  }
+
 
   checkNodeHidden(ip){
     return this.state.hiddenNodes.includes(ip) || this.state.hiddenParents.includes(ip);
@@ -768,29 +810,36 @@ graph.data = cloneDeep(this.props.data);
     return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
   }
 
-  hideChildren(array, IP) {
+  hideChildren(array, IP, except=null) {
     let graph = this.graphh;
     let el = graph.data.find((g) => {return g.IP == IP})
     el.dependedOnBy.forEach((ip) => {
+      if (ip != except)
         this.hideChildren(array,ip)
     })
-    array.push(IP)
+    if (IP != except)
+      array.push(IP)
   }
 
-  hideParents(array, IP) {
-
+  hideParents(array, IP, except = null) {
     let graph = this.graphh;
     let el = graph.data.find((g) => {return g.IP == IP})
+
     el.depends.forEach((ip) => {
-        this.hideParents(array,ip)
+        this.hideParents(array,ip, el.IP)
     })
-    array.push(IP)
-    console.log('array',array)
+
+    if (el.IP != except)
+      el.dependedOnBy.forEach((ip) => {
+        if (ip != except)
+          this.hideChildren(array, ip)
+      })
+
+    if (IP != except)
+      array.push(IP)
   }
 
-
   collapseChildren(obj) {
-    //console.log('object', obj)
     let graph = this.graphh;
 
     if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
@@ -812,7 +861,6 @@ graph.data = cloneDeep(this.props.data);
   }
 
   collapseParents(obj) {
-    //console.log('object', obj)
     let graph = this.graphh;
 
     if (this.state.collapsedParents.indexOf(obj.IP) === -1 ){
@@ -825,8 +873,7 @@ graph.data = cloneDeep(this.props.data);
     let forHide  = [];
 
     this.state.collapsedParents.forEach((ip) => {
-      this.hideParents(forHide,ip)
-      forHide.pop();
+      this.hideParents(forHide,ip, ip)
     });
 
 
