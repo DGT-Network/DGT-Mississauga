@@ -37,7 +37,9 @@ class Graph extends React.Component {
     super(props);
 
     this.state = {collapsedNodes: [],
-                  hiddenNodes: []}
+                  collapsedParents: [],
+                  hiddenNodes: [],
+                  hiddenParents: []}
 
     this.selected    = {}
     this.highlighted = null
@@ -410,9 +412,6 @@ graph.data = cloneDeep(this.props.data);
       .on('click', function(d) {
         that.selectObject(d)
       })
-      .on('dblclick', function(d) {
-          that.highlightObject2(d);
-      })
 
         //add line to graph object
 
@@ -425,16 +424,32 @@ graph.data = cloneDeep(this.props.data);
 
 
       let collapse = graph.node.append('g')
-        .attr('class', 'collapse-points')
+        .attr('class', 'collapse-children')
 
       for (let i = 0; i < 3; i++){
         collapse.append('circle')
           .attr('cx', i*4)
           .attr('cy', 0)
-          .attr('r' , 1)
-          .attr('fill', '#212529')
+          .attr('r' , 3)
+          .attr('fill', '#FF0000') //'#212529'
+          .on('click', function(d) {
+            that.collapseChildren(d);
+          })
       }
 
+      collapse = graph.node.append('g')
+        .attr('class', 'collapse-parents')
+
+      for (let i = 0; i < 3; i++){
+        collapse.append('circle')
+          .attr('cx', i*4)
+          .attr('cy', 0)
+          .attr('r' , 3)
+          .attr('fill', '#00FF00')
+          .on('click', function(d) {
+            that.collapseParents(d);
+          })
+      }
 
       let extradata = graph.node.append('g')
         .attr('class', 'extra-data')
@@ -527,7 +542,8 @@ graph.data = cloneDeep(this.props.data);
       var node   = d3.select(this),
       rect  = node.select('rect'),
       text   = node.selectAll('text'),
-      collapsePoints = node.selectAll('.collapse-points'),
+      collapseChildren = node.selectAll('.collapse-children'),
+      collapseParents = node.selectAll('.collapse-parents'),
       extra = node.selectAll('.extra-data'),
       bounds = {}
 
@@ -634,11 +650,17 @@ graph.data = cloneDeep(this.props.data);
           return bounds.y2 - bounds.y1 //that.checkNodeFiltered(d) ? 20 : 26
         });
 
-      collapsePoints
+      collapseChildren
         .attr('transform',`translate(${bounds.x2-10}, ${bounds.y2+6})`)
-        .attr('display',  function(d){
-          return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
-        })
+        // .attr('display',  function(d){
+        //   return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
+        // })
+
+      collapseParents
+          .attr('transform',`translate(${bounds.x1 }, ${bounds.y2+6})`)
+          // .attr('display',  function(d){
+          //   return that.checkNodeHidden(d.IP) || that.checkNodeIsCollapsed(d.IP) ? 'none' : 'block'
+          // })
 
       extra
         .attr('transform',`translate(${bounds.x1}, ${bounds.y1-12})`)
@@ -662,7 +684,7 @@ graph.data = cloneDeep(this.props.data);
   }
 
   checkNodeHidden(ip){
-    return this.state.hiddenNodes.includes(ip);
+    return this.state.hiddenNodes.includes(ip) || this.state.hiddenParents.includes(ip);
   }
 
   checkNodeFiltered(d){
@@ -755,8 +777,20 @@ graph.data = cloneDeep(this.props.data);
     array.push(IP)
   }
 
+  hideParents(array, IP) {
 
-  highlightObject2(obj) {
+    let graph = this.graphh;
+    let el = graph.data.find((g) => {return g.IP == IP})
+    el.depends.forEach((ip) => {
+        this.hideParents(array,ip)
+    })
+    array.push(IP)
+    console.log('array',array)
+  }
+
+
+  collapseChildren(obj) {
+    //console.log('object', obj)
     let graph = this.graphh;
 
     if (this.state.collapsedNodes.indexOf(obj.IP) === -1 ){
@@ -774,6 +808,29 @@ graph.data = cloneDeep(this.props.data);
     });
 
     this.setState({hiddenNodes: forHide})
+    this.forceUpdate();
+  }
+
+  collapseParents(obj) {
+    //console.log('object', obj)
+    let graph = this.graphh;
+
+    if (this.state.collapsedParents.indexOf(obj.IP) === -1 ){
+      this.setState({collapsedParents: this.state.collapsedParents.concat([obj.IP]) })
+    }
+    else {
+      this.setState({collapsedParents: this.state.collapsedParents.filter((ip) => {return ip != obj.IP})})
+    }
+
+    let forHide  = [];
+
+    this.state.collapsedParents.forEach((ip) => {
+      this.hideParents(forHide,ip)
+      forHide.pop();
+    });
+
+
+    this.setState({hiddenParents: forHide})
     this.forceUpdate();
   }
 
