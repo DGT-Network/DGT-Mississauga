@@ -162,9 +162,6 @@ class Graph extends React.Component {
 
 graph.data = cloneDeep(this.props.data);
 
-    if (this.props.lastN != null)
-        graph.data = graph.data.slice(-1 * this.props.lastN);
-
     graph.margin = {
         top    : 20,
         right  : 20,
@@ -835,8 +832,31 @@ graph.data = cloneDeep(this.props.data);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (JSON.stringify(this.props.data) !== JSON.stringify(prevProps.data)) {
+
+    const { data, lastN } = this.props;
+
+    if (JSON.stringify(data) !== JSON.stringify(prevProps.data)) {
       this.drawGraph();
+    }
+
+    if (data.length != prevProps.data.length &&
+        lastN != null) {
+      let a = [],
+          b = [];
+      for (let i = lastN; i < data.length; i ++){
+        if (i % lastN == 0)
+          a.push(data[i].IP)
+
+      }
+    this.setState({collapsedNodes: a})
+
+    let forHide  = [];
+    a.forEach((ip) => {
+      this.hideChildren(forHide,ip)
+      forHide.pop();
+    });
+
+    this.setState({hiddenNodes: forHide})
     }
     this.updateGraph();
   }
