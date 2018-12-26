@@ -198,6 +198,8 @@ class _CandidateBlock(object):
         transactions to check against, updated during processing.
         :return: Boolean, True if dependencies checkout, False otherwise.
         """
+        LOGGER.debug('_CandidateBlock:_check_batch_dependencies:batch - %s', batch)
+        LOGGER.debug('_CandidateBlock:_check_batch_dependencies:committed_txn_cache - %s', committed_txn_cache)
         for txn in batch.transactions:
             if self._is_txn_already_committed(txn, committed_txn_cache):
                 LOGGER.debug(
@@ -245,6 +247,7 @@ class _CandidateBlock(object):
         """ Test if a transaction is already committed to the chain or
         is already in the pending queue.
         """
+        LOGGER.debug('_CandidateBlock:_is_txn_already_committed:txn - %s', txn)
         LOGGER.debug('_CandidateBlock:_is_txn_already_committed:committed_txn_cache - %s', committed_txn_cache)
         for block in self._block_store.get_block_iter():
             LOGGER.debug('_CandidateBlock:_is_txn_already_committed:block - %s', block)
@@ -273,6 +276,7 @@ class _CandidateBlock(object):
         # BlockPublisher prior to this Batch. So if there is a missing
         # dependency this is an error condition and the batch will be
         # dropped.
+        LOGGER.debug('_CandidateBlock:add_batch:batch - %s', batch)
         if self._is_batch_already_committed(batch):
             # batch is already committed.
             LOGGER.debug("Dropping previously committed batch: %s",
@@ -357,6 +361,8 @@ class _CandidateBlock(object):
         # 3) all batches that failed processing. These will be discarded.
         #   This list is needed in some case when the block is abandoned to
         #   make sure they do not remain in the pending_batches list.
+        LOGGER.debug('_Candidate_Block: finalize_block: self._pending_batches - %s', self._pending_batches)
+        LOGGER.debug('_Candidate_Block: finalize_block: self._injected_batch_ids - %s', self._injected_batch_ids)
         for batch in self._pending_batches:
             if batch.trace:
                 LOGGER.debug("TRACE %s: %s", batch.header_signature,
@@ -368,6 +374,7 @@ class _CandidateBlock(object):
             # received the batch and it should be added to
             # the pending_batches, to be added to the next
             # block
+            LOGGER.debug('_Candidate_Block: finalize_block: result = %s of self._scheduler.get_batch_execution_result(batch.header_signature = %s)', result, batch.header_signature)
             if result is None:
                 # If this was an injected batch, don't keep it in pending
                 # batches since it had to be in this block
@@ -412,12 +419,15 @@ class _CandidateBlock(object):
                 LOGGER.debug("Batch %s invalid, not added to block.",
                              batch.header_signature)
 
+        LOGGER.debug('_CandidateBlock:finalize_block: after checking batches execution result pending_batches - %s', pending_batches)
+
         if state_hash is None or not builder.batches:
             LOGGER.debug("Abandoning block %s: no batches added", builder)
             return None
 
-
-        LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
+        if not self._summary:
+            LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
+            return None
         # if not self._consensus:
         #     LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
         # else:
@@ -692,7 +702,7 @@ class BlockPublisher(object):
             chain_head,
             self._state_view_factory)
         ##
-        ##cur_batches = chain_head.batches
+        # cur_batches = chain_head.batches
         ##
 
         LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block START")
@@ -764,16 +774,14 @@ class BlockPublisher(object):
         except Exception as exc:
             LOGGER.debug('RIGHTHERE BlockPublisher: _build_candidate_block - _candidate_block did not create - %s', exc)
 
+        LOGGER.debug('RIGHTHERE BlockPublisher: _build_candidate_block - self._pending_batches - %s', self._pending_batches)
+
         for batch in self._pending_batches:
             if self._candidate_block.can_add_batch:
                 self._candidate_block.add_batch(batch)
             else:
                 break
 
-        ##self._candidate_block._pending_batches = cur_batches
-        ##for batch in cur_batches:
-        ##    LOGGER.debug("mein batch %s", batch.header_signature)
-        ##    self._candidate_block._pending_batch_ids.add( batch.header_signature)
 
         LOGGER.debug("RIGHTHERE curren cb=   %s", self._candidate_block)
         LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block END")
@@ -784,6 +792,7 @@ class BlockPublisher(object):
         :param batch: the new pending batch
         :return: None
         """
+        LOGGER.debug('BlockPublisher:on_batch_received:batch - %s', batch)
         with self._lock:
             self._queued_batch_ids = self._queued_batch_ids[:1]
             if self._permission_verifier.is_batch_signer_authorized(batch):
@@ -901,16 +910,30 @@ class BlockPublisher(object):
                     self._candidate_block.has_pending_batches()) and \
                         self._candidate_block.check_publish_block():
 
+                    LOGGER.debug('BlockPublisher:on_check_publish_block self._candidate_block._pending_batches - %s',
+                                 self._candidate_block._pending_batches)
                     pending_batches = []  # will receive the list of batches
                     # that were not added to the block
                     last_batch = self._candidate_block.last_batch
                     block = self._candidate_block.finalize_block(
                         self._identity_signer,
                         pending_batches)
-                    self._candidate_block = None
+                    if block is not None:
+                        self._candidate_block = None
+                    LOGGER.debug('BlockPublisher:on_check_publish_block pending_batches after self._candidate_block.finalize_block - %s', pending_batches)
+                    LOGGER.debug('BlockPublisher:on_check_publish_block self._pending_batches after self._candidate_block.finalize_block - %s', self._pending_batches)
+                    LOGGER.debug('BlockPublisher:on_check_publish_block self._candidate_block._pending_batches after self._candidate_block.finalize_block - %s', self._candidate_block._pending_batches)
                     # Update the _pending_batches to reflect what we learned.
 
-                    last_batch_index = self._pending_batches.index(last_batch)
+                    try:
+                        last_batch_index = self._pending_batches.index(last_batch)
+                    except ValueError as exc:
+                        LOGGER.debug('BlockPublisher:on_check_publish_block finalized block - %s', block)
+                        LOGGER.debug('BlockPublisher:on_check_publish_block last_batch not in self._pending_batches')
+                        LOGGER.debug('BlockPublisher:on_check_publish_block last_batch - %s', last_batch)
+                        LOGGER.debug('BlockPublisher:on_check_publish_block self._pending_batches - %s', self._pending_batches)
+                        last_batch_index = 0
+
                     unsent_batches = \
                         self._pending_batches[last_batch_index + 1:]
                     self._pending_batches = pending_batches + unsent_batches
@@ -957,6 +980,11 @@ class BlockPublisher(object):
         LOGGER.debug('RIGHTHERE WRAPPEDBLOCK: %s', BlockWrapper(block))
         LOGGER.debug('RIGHTHERE CHAINHEAD: %s', self._chain_head)
 
+        LOGGER.debug('RIGHTHERE CHAIN DATA - self._block_cache.block_store')
+        for store_block in self._block_cache.block_store.get_block_iter():
+            LOGGER.debug('BLOCK - %s', store_block)
+        LOGGER.debug('RIGHTHERE CHAIN DATA - STOPED')
+
         if self._candidate_block is not None:
             LOGGER.debug("BEFORE ib | self._candidate_block now = %s", str(self._candidate_block))
         
@@ -999,6 +1027,8 @@ class BlockPublisher(object):
             for b_id in batch_ids:
                 result_bytes.update(b_id.encode('utf-8'))
             return result_bytes.digest()
+
+        LOGGER.debug('BlockPublisher: summarize_block: self._pending_batches - %s', self._pending_batches)
 
         if self._candidate_block is None:
             #raise exceptions.BlockNotReady
@@ -1051,7 +1081,7 @@ class BlockPublisher(object):
                         # self._candidate_block._consensus = consensus
                         # LOGGER.debug('BlockPublisher:finalize_block:consensus - %s', self._candidate_block._consensus)
                     new_candidate_block = self._candidate_block.finalize_block(self._identity_signer,
-                                                                               self._pending_batches)
+                                                                               self._candidate_block._pending_batches)
                     LOGGER.error('BlockPublisher:finalize_block:new_candidate_block - %s', new_candidate_block)
                     self._candidate_block = self._build_candidate_block(new_candidate_block)
                     # Make Ok, please
