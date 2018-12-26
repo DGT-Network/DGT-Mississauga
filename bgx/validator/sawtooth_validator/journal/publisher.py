@@ -425,9 +425,9 @@ class _CandidateBlock(object):
             LOGGER.debug("Abandoning block %s: no batches added", builder)
             return None
 
-        if not self._summary:
-            LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
-            return None
+        # if not self._summary:
+        LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
+            # return None
         # if not self._consensus:
         #     LOGGER.debug('_CandidateBlock:finalize_block: self._summary - %s', self._summary)
         # else:
@@ -918,11 +918,9 @@ class BlockPublisher(object):
                     block = self._candidate_block.finalize_block(
                         self._identity_signer,
                         pending_batches)
-                    if block is not None:
-                        self._candidate_block = None
-                    LOGGER.debug('BlockPublisher:on_check_publish_block pending_batches after self._candidate_block.finalize_block - %s', pending_batches)
-                    LOGGER.debug('BlockPublisher:on_check_publish_block self._pending_batches after self._candidate_block.finalize_block - %s', self._pending_batches)
-                    LOGGER.debug('BlockPublisher:on_check_publish_block self._candidate_block._pending_batches after self._candidate_block.finalize_block - %s', self._candidate_block._pending_batches)
+                    # if block is not None:
+                    LOGGER.debug('BlockPublisher:on_check_publish_block after self._candidate_block.finalize_block pending_batches - %s', pending_batches)
+                    LOGGER.debug('BlockPublisher:on_check_publish_block after self._candidate_block.finalize_block self._pending_batches - %s', self._pending_batches)
                     # Update the _pending_batches to reflect what we learned.
 
                     try:
@@ -956,7 +954,7 @@ class BlockPublisher(object):
 
         # pylint: disable=broad-except
         except Exception as exc:
-            LOGGER.critical("on_check_publish_block exception.")
+            LOGGER.critical("BlockPublisher:on_check_publish_block exception.")
             LOGGER.exception(exc)
 
     def has_batch(self, batch_id):
@@ -1075,13 +1073,14 @@ class BlockPublisher(object):
                     LOGGER.debug('BlockPublisher, finalize_block: _candidate_block is None, nothing to finalize')
                 else:
                     self.on_check_publish_block(force)
+                    self._candidate_block = None
 
                     if consensus is not None:
                         pass
                         # self._candidate_block._consensus = consensus
                         # LOGGER.debug('BlockPublisher:finalize_block:consensus - %s', self._candidate_block._consensus)
                     new_candidate_block = self._candidate_block.finalize_block(self._identity_signer,
-                                                                               self._candidate_block._pending_batches)
+                                                                               self._pending_batches)
                     LOGGER.error('BlockPublisher:finalize_block:new_candidate_block - %s', new_candidate_block)
                     self._candidate_block = self._build_candidate_block(new_candidate_block)
                     # Make Ok, please
