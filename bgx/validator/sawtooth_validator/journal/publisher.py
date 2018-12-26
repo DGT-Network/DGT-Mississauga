@@ -25,20 +25,13 @@ import hashlib
 
 from sawtooth_validator.concurrent.thread import InstrumentedThread
 from sawtooth_validator.execution.scheduler_exceptions import SchedulerError
-
 from sawtooth_validator.journal.block_builder import BlockBuilder
 from sawtooth_validator.journal.block_wrapper import BlockWrapper
-from sawtooth_validator.journal.consensus.batch_publisher import \
-    BatchPublisher
-from sawtooth_validator.journal.consensus.consensus_factory import \
-    ConsensusFactory
-
-from sawtooth_validator.journal.chain_commit_state import \
-    TransactionCommitCache
-
+from sawtooth_validator.journal.consensus.batch_publisher import BatchPublisher
+from sawtooth_validator.journal.consensus.consensus_factory import ConsensusFactory
+from sawtooth_validator.journal.chain_commit_state import TransactionCommitCache
 from sawtooth_validator.metrics.wrappers import CounterWrapper
 from sawtooth_validator.metrics.wrappers import GaugeWrapper
-
 from sawtooth_validator.protobuf.block_pb2 import BlockHeader
 from sawtooth_validator.protobuf.transaction_pb2 import TransactionHeader
 
@@ -698,7 +691,11 @@ class BlockPublisher(object):
         state_view = BlockWrapper.state_view_for_block(
             chain_head,
             self._state_view_factory)
-        LOGGER.debug("BlockPublisher: _build_candidate_block ")
+        ##
+        cur_batches = chain_head.batches
+        ##
+
+        LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block START")
         # try:
         #     consensus_module = ConsensusFactory.get_configured_consensus_module(
         #         chain_head.header_signature,
@@ -729,7 +726,7 @@ class BlockPublisher(object):
             batch_injectors = self._batch_injector_factory.create_injectors(
                 chain_head.identifier)
             if batch_injectors:
-                LOGGER.debug("BlockPublisher: _build_candidate_block - Loaded batch injectors: %s", batch_injectors)
+                LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block - Loaded batch injectors: %s", batch_injectors)
 
         block_header = BlockHeader(
             block_num=chain_head.block_num + 1,
@@ -765,13 +762,21 @@ class BlockPublisher(object):
                 self._identity_signer,
                 state_view)
         except Exception as exc:
-            LOGGER.debug('BlockPublisher: _build_candidate_block - _candidate_block did not create - %s', exc)
+            LOGGER.debug('RIGHTHERE BlockPublisher: _build_candidate_block - _candidate_block did not create - %s', exc)
 
         for batch in self._pending_batches:
             if self._candidate_block.can_add_batch:
                 self._candidate_block.add_batch(batch)
             else:
                 break
+
+        self._candidate_block._pending_batches = cur_batches
+        for batch in cur_batches:
+            LOGGER.debug("mein batch %s", batch.header_signature)
+            self._candidate_block._pending_batch_ids.add( batch.header_signature)
+
+        LOGGER.debug("RIGHTHERE curren cb=   %s", self._candidate_block)
+        LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block END")
 
     def on_batch_received(self, batch):
         """
@@ -947,7 +952,10 @@ class BlockPublisher(object):
         :param block: block on which to build the new one.
         :return: None
         """
-        LOGGER.debug('$$$$$$$$$$$$$$$$$$$$$$ BlockPublisher: initialize_block %s', block)
+        LOGGER.debug('RIGHTHERE IB-START BlockPublisher: initialize_block')
+        LOGGER.debug('RIGHTHERE BLOCK: %s', block)
+        LOGGER.debug('RIGHTHERE WRAPPEDBLOCK: %s', BlockWrapper(block))
+        LOGGER.debug('RIGHTHERE CHAINHEAD: %s', self._chain_head)
 
         if self._candidate_block is not None:
             LOGGER.debug("BEFORE ib | self._candidate_block now = %s", str(self._candidate_block))
@@ -967,7 +975,11 @@ class BlockPublisher(object):
             raise exc
 
         if self._candidate_block is not None:
-            LOGGER.debug("AFTER ib | self._candidate_block now = %s", str(self._candidate_block))
+            LOGGER.debug("RIGHTHERE IB_END | self._candidate_block now = %s", str(self._candidate_block))
+        else:
+            LOGGER.debug("RIGHTHERE IB_END | self._candidate_block now = None")
+        LOGGER.debug('RIGHTHERE CHAINHEAD AFTER ALL: %s', self._chain_head)
+
 
     def summarize_block(self, force=False):
         """Creates self._summary of Candidate Block
@@ -989,9 +1001,9 @@ class BlockPublisher(object):
         	
         try:
             with self._lock:
-                if self._candidate_block is None:
-                    LOGGER.debug('BlockPublisher, summarize_block: _candidate_block is None')
-                    self.initialize_block(self._chain_head)
+                #if self._candidate_block is None:
+                #    LOGGER.debug('BlockPublisher, summarize_block: _candidate_block is None')
+                #    self.initialize_block(self._chain_head)
                 
                 result = self._candidate_block.summarize(force)
                 LOGGER.debug('BlockPublisher, summarize_block: _candidate_block.summarize execution result - %s', result)
