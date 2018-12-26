@@ -692,7 +692,7 @@ class BlockPublisher(object):
             chain_head,
             self._state_view_factory)
         ##
-        cur_batches = chain_head.batches
+        ##cur_batches = chain_head.batches
         ##
 
         LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block START")
@@ -770,10 +770,10 @@ class BlockPublisher(object):
             else:
                 break
 
-        self._candidate_block._pending_batches = cur_batches
-        for batch in cur_batches:
-            LOGGER.debug("mein batch %s", batch.header_signature)
-            self._candidate_block._pending_batch_ids.add( batch.header_signature)
+        ##self._candidate_block._pending_batches = cur_batches
+        ##for batch in cur_batches:
+        ##    LOGGER.debug("mein batch %s", batch.header_signature)
+        ##    self._candidate_block._pending_batch_ids.add( batch.header_signature)
 
         LOGGER.debug("RIGHTHERE curren cb=   %s", self._candidate_block)
         LOGGER.debug("RIGHTHERE BlockPublisher: _build_candidate_block END")
@@ -991,6 +991,14 @@ class BlockPublisher(object):
         ##    wrapped_block = BlockWrapper(self._chain_head)
         ##    self._build_candidate_block(wrapped_block)
         ##    LOGGER.error('New block generated')
+        LOGGER.debug('Pending batches of Publisher = %s', str(self._pending_batches))
+
+        if len(self._pending_batches) > 0:
+            batch_ids = [b.header_signature for b in self._pending_batches]
+            result_bytes = hashlib.sha256()
+            for b_id in batch_ids:
+                result_bytes.update(b_id.encode('utf-8'))
+            return result_bytes.digest()
 
         if self._candidate_block is None:
             #raise exceptions.BlockNotReady
