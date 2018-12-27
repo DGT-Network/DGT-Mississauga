@@ -18,7 +18,7 @@ import axios from 'axios';
 import * as d3 from "d3";
 import $ from 'jquery';
 import colorbrewer from 'colorbrewer';
-
+import lodash from 'lodash'
 import ReactAutocomplete from 'react-autocomplete';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cloneDeep from 'lodash/cloneDeep';
@@ -45,6 +45,114 @@ class Graph extends React.Component {
     this.highlighted = null
     this.collapsed = null
     this.graphh       = {}
+
+    this.configg = {
+        "title" : "",
+        "graph" : {
+            "linkDistance" : 60,
+            "charge"       : -400,
+            "height"       : 400,
+            "numColors"    : 12,
+            "labelPadding" : {
+                "left"   : 3,
+                "right"  : 3,
+                "top"    : 2,
+                "bottom" : 2
+            },
+            "labelMargin" : {
+                "left"   : 3,
+                "right"  : 3,
+                "top"    : 2,
+                "bottom" : 2
+            },
+            "ticksWithoutCollisions" : 50
+        },
+        "types" : {
+            "group0" : {
+                "short" : "Group 0",
+                "long"  : "Group 0 long name for docs"
+            },
+            "group1" : {
+                "short" : "Group 1",
+                "long"  : "Group 1 long name for docs"
+            },
+            "group2" : {
+                "short" : "Group 2",
+                "long"  : "Group 2 long name for docs"
+            },
+            "group3" : {
+                "short" : "Group 3",
+                "long"  : "Group 3 long name for docs"
+            },
+            "group4" : {
+                "short" : "Group 4",
+                "long"  : "Group 4 long name for docs"
+            },
+            "group5" : {
+                "short" : "Group 5",
+                "long"  : "Group 5 long name for docs"
+            },
+            "group6" : {
+                "short" : "Group 6",
+                "long"  : "Group 6 long name for docs"
+            },
+            "group7" : {
+                "short" : "Group 7",
+                "long"  : "Group 7 long name for docs"
+            },
+            "group8" : {
+                "short" : "Group 8",
+                "long"  : "Group 8 long name for docs"
+            },
+            "group9" : {
+                "short" : "Group 9",
+                "long"  : "Group 9 long name for docs"
+            },
+            "group10" : {
+                "short" : "Group 10",
+                "long"  : "Group 10 long name for docs"
+            }
+        },
+        "constraints" : [
+            {
+                "has"    : { "type" : "group1" },
+                "type"   : "position",
+                "x"      : 0.2,
+                "y"      : 0.2,
+                "weight" : 0.7
+            }, {
+                "has"    : { "type" : "group2" },
+                "type"   : "position",
+                "x"      : 0.8,
+                "y"      : 0.2,
+                "weight" : 0.7
+            }, {
+                "has"    : { "type" : "group3" },
+                "type"   : "position",
+                "x"      : 0.2,
+                "y"      : 0.5,
+                "weight" : 0.7
+            }, {
+                "has"    : { "type" : "group4" },
+                "type"   : "position",
+                "x"      : 0.8,
+                "y"      : 0.5,
+                "weight" : 0.7
+            }, {
+                "has"    : { "type" : "group5" },
+                "type"   : "position",
+                "x"      : 0.2,
+                "y"      : 0.8,
+                "weight" : 0.7
+            }, {
+                "has"    : { "type" : "group8" },
+                "type"   : "position",
+                "x"      : 0.8,
+                "y"      : 0.8,
+                "weight" : 0.7
+            }
+        ]
+    }
   }
 
   drawGraph() {
@@ -53,114 +161,7 @@ class Graph extends React.Component {
     let that = this;
 
     let graph = this.graphh;
-
-    let config = {
-    "title" : "",
-    "graph" : {
-        "linkDistance" : 60,
-        "charge"       : -400,
-        "height"       : 400,
-        "numColors"    : 12,
-        "labelPadding" : {
-            "left"   : 3,
-            "right"  : 3,
-            "top"    : 2,
-            "bottom" : 2
-        },
-        "labelMargin" : {
-            "left"   : 3,
-            "right"  : 3,
-            "top"    : 2,
-            "bottom" : 2
-        },
-        "ticksWithoutCollisions" : 50
-    },
-    "types" : {
-        "group0" : {
-            "short" : "Group 0",
-            "long"  : "Group 0 long name for docs"
-        },
-        "group1" : {
-            "short" : "Group 1",
-            "long"  : "Group 1 long name for docs"
-        },
-        "group2" : {
-            "short" : "Group 2",
-            "long"  : "Group 2 long name for docs"
-        },
-        "group3" : {
-            "short" : "Group 3",
-            "long"  : "Group 3 long name for docs"
-        },
-        "group4" : {
-            "short" : "Group 4",
-            "long"  : "Group 4 long name for docs"
-        },
-        "group5" : {
-            "short" : "Group 5",
-            "long"  : "Group 5 long name for docs"
-        },
-        "group6" : {
-            "short" : "Group 6",
-            "long"  : "Group 6 long name for docs"
-        },
-        "group7" : {
-            "short" : "Group 7",
-            "long"  : "Group 7 long name for docs"
-        },
-        "group8" : {
-            "short" : "Group 8",
-            "long"  : "Group 8 long name for docs"
-        },
-        "group9" : {
-            "short" : "Group 9",
-            "long"  : "Group 9 long name for docs"
-        },
-        "group10" : {
-            "short" : "Group 10",
-            "long"  : "Group 10 long name for docs"
-        }
-    },
-    "constraints" : [
-        {
-            "has"    : { "type" : "group1" },
-            "type"   : "position",
-            "x"      : 0.2,
-            "y"      : 0.2,
-            "weight" : 0.7
-        }, {
-            "has"    : { "type" : "group2" },
-            "type"   : "position",
-            "x"      : 0.8,
-            "y"      : 0.2,
-            "weight" : 0.7
-        }, {
-            "has"    : { "type" : "group3" },
-            "type"   : "position",
-            "x"      : 0.2,
-            "y"      : 0.5,
-            "weight" : 0.7
-        }, {
-            "has"    : { "type" : "group4" },
-            "type"   : "position",
-            "x"      : 0.8,
-            "y"      : 0.5,
-            "weight" : 0.7
-        }, {
-            "has"    : { "type" : "group5" },
-            "type"   : "position",
-            "x"      : 0.2,
-            "y"      : 0.8,
-            "weight" : 0.7
-        }, {
-            "has"    : { "type" : "group8" },
-            "type"   : "position",
-            "x"      : 0.8,
-            "y"      : 0.8,
-            "weight" : 0.7
-        }
-    ]
-}
+    let config = this.configg
 
 graph.data = cloneDeep(this.props.data);
 
@@ -213,10 +214,53 @@ graph.data = cloneDeep(this.props.data);
         });
     }
 
+    graph.svg = d3.select(`#${this.props.id}`).append('svg')
+        .attr('width' , this.props.size.width)//graph.width + graph.margin.right  + graph.margin.left)
+        .attr('height', this.props.size.height-40)//graph.height + graph.margin.top  + graph.margin.bottom)
+      .append('g')
+        .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
+
+
+
+
+    //setTimeout(this.updateGraph());
+}
+
+    wrap(text) {
+      let maxLineChars = 10;
+      let wrapChars = ' /_-.'.split('');
+    if (text.length <= maxLineChars) {
+        return [text];
+    } else {
+        for (var k = 0; k < wrapChars.length; k++) {
+            var c = wrapChars[k];
+            for (var i = maxLineChars; i >= 0; i--) {
+                if (text.charAt(i) === c) {
+                    var line = text.substring(0, i + 1);
+                    return [line].concat(this.wrap(text.substring(i + 1)));
+                }
+            }
+        }
+        return [text.substring(0, maxLineChars)]
+            .concat(this.wrap(text.substring(maxLineChars)));
+    }
+}
+
+  redrawNodes() {
+    let graph = this.graphh;
+    let config = this.configg;
+
+    let that = this;
+
+
+    graph.svg.selectAll('*').remove();
+
     graph.links = [];
     for (var name in graph.data) {
         var obj = graph.data[name];
         obj.depends.forEach((depends) => {
+            if (this.checkNodeHidden(obj.IP))
+              return;
             var link = {
                 source : graph.data.find(function r(i){return i.IP === depends}),
                 target : obj
@@ -249,22 +293,9 @@ graph.data = cloneDeep(this.props.data);
     }
     graph.categoryKeys = d3.keys(graph.categories);
 
-    graph.colors = colorbrewer.Set3[config.graph.numColors];
-
-    function getColorScale(darkness) {
-        return d3.scale.ordinal()
-            .domain(graph.categoryKeys)
-            .range(graph.colors.map(function(c) {
-                return d3.hsl(c).darker(darkness).toString();
-            }));
-    }
-
-    graph.strokeColor = getColorScale( 0.1);
-    graph.strokeColorActive = getColorScale( 0.8);
-    graph.fillColorActive   = getColorScale(-0.1);
-        graph.fillColor   = getColorScale(-0.3);
-
-    graph.nodeValues = d3.values(graph.data);
+    graph.nodeValues = d3.values(graph.data.filter((d) => {
+      return !this.checkNodeHidden(d.IP);
+    }));
 
     graph.force = d3.layout.force()
         .nodes(graph.nodeValues)
@@ -329,11 +360,7 @@ graph.data = cloneDeep(this.props.data);
 });
     }
 
-    graph.svg = d3.select(`#${this.props.id}`).append('svg')
-        .attr('width' , this.props.size.width)//graph.width + graph.margin.right  + graph.margin.left)
-        .attr('height', this.props.size.height-40)//graph.height + graph.margin.top  + graph.margin.bottom)
-      .append('g')
-        .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
+
 
     graph.draggedThreshold = d3.scale.linear()
         .domain([0, 0.1])
@@ -516,30 +543,7 @@ graph.data = cloneDeep(this.props.data);
             graph.force.tick();
         }
         graph.preventCollisions = true;
-
-
-    setTimeout(this.updateGraph());
-}
-
-    wrap(text) {
-      let maxLineChars = 10;
-      let wrapChars = ' /_-.'.split('');
-    if (text.length <= maxLineChars) {
-        return [text];
-    } else {
-        for (var k = 0; k < wrapChars.length; k++) {
-            var c = wrapChars[k];
-            for (var i = maxLineChars; i >= 0; i--) {
-                if (text.charAt(i) === c) {
-                    var line = text.substring(0, i + 1);
-                    return [line].concat(this.wrap(text.substring(i + 1)));
-                }
-            }
-        }
-        return [text.substring(0, maxLineChars)]
-            .concat(this.wrap(text.substring(maxLineChars)));
-    }
-}
+  }
 
   updateGraph(){
     let graph = this.graphh;
@@ -934,7 +938,8 @@ graph.data = cloneDeep(this.props.data);
   }
 
   componentDidMount() {
-    this.drawGraph();
+      this.drawGraph();
+      this.redrawNodes();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -943,6 +948,7 @@ graph.data = cloneDeep(this.props.data);
 
     if (JSON.stringify(data) !== JSON.stringify(prevProps.data)) {
       this.drawGraph();
+      this.redrawNodes();
     }
 
     if (data.length != prevProps.data.length &&
@@ -963,6 +969,10 @@ graph.data = cloneDeep(this.props.data);
 
     this.setState({hiddenParents: forHide})
     }
+
+    if(!lodash.isEqual(this.state.hiddenNodes, prevState.hiddenNodes) ||
+       !lodash.isEqual(this.state.hiddenParents, prevState.hiddenParents))
+      this.redrawNodes();
     this.updateGraph();
   }
 
