@@ -18,8 +18,6 @@ export function convertBlocks(data) {
   return data.data.map((d) => {
     const prev = data.data.find(dd => dd.header_signature == d.header.previous_block_id);
 
-    d.decoded_data = decode(d.payload);
-
     d.name = trimHash(d.header_signature);
     d.IP = d.header_signature;
     d.tooltip = {

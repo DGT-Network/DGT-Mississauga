@@ -650,10 +650,10 @@ graph.data = cloneDeep(this.props.data);
       //bounds.x1 -= oldWidth/2;
       //bounds.x2 -= oldWidth/2;
 
-      bounds.x1 -= (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
-      bounds.y1 -= (that.checkNodeFiltered(d) ? 1 : 2) * padding.top;
-      bounds.x2 += (that.checkNodeFiltered(d) ? 1 : 3) * padding.left;
-      bounds.y2 += (that.checkNodeFiltered(d) ? 1 : 2) * padding.bottom;
+      bounds.x1 -= (that.checkNodeFiltered(d) ? 0 : 3) + padding.left;
+      bounds.y1 -= (that.checkNodeFiltered(d) ? 0 : 3) + padding.top;
+      bounds.x2 += (that.checkNodeFiltered(d) ? 0 : 3) + padding.left;
+      bounds.y2 += (that.checkNodeFiltered(d) ? 0 : 3) + padding.bottom;
 
       d.extent = {
         left   : bounds.x1 - margin.left,

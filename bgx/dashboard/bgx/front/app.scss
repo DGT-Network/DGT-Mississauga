@@ -141,13 +141,10 @@ marker#end {
 
     &.filter-enable {
       stroke-width: 3px;
-      font-size: 10px;
-
     }
   }
 
   &.selected {
-    font: 12px sans-serif;
     border: 2px solid black;
     rect {
 
