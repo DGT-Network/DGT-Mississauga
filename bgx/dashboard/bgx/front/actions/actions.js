@@ -38,8 +38,7 @@ export function getTransactions() {
       })
       .catch(error => {
         console.log(error)
-        dispatch(getTransactionsSuccess(convertTransactions(transactions)));
-        // throw(error);
+        throw(error);
       })
   };
 }
@@ -51,8 +50,7 @@ export function getStates() {
         dispatch(getStatesSuccess(convertStates(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        dispatch(getStatesSuccess(convertStates(states)));
+        throw(error);
       })
   };
 }
@@ -76,8 +74,7 @@ export function getBlocks() {
         dispatch(getBlocksSuccess(convertBlocks(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        dispatch(getBlocksSuccess(convertBlocks(blocks)));
+        throw(error);
       })
   };
 }
@@ -89,8 +86,7 @@ export function getPeers() {
         dispatch(getPeersSuccess(convertPeers(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        dispatch(getPeersSuccess(convertPeers(nodes)))
+        throw(error);
       })
   };
 }
