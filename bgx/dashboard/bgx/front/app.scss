@@ -123,7 +123,7 @@ marker#end {
 }
 
 .node {
-  font: 10px sans-serif;
+  font: sans-serif;
 
   text {
     fill: #000;
@@ -133,7 +133,6 @@ marker#end {
 
     &.inactive {
       fill: #333;
-      font-size: 8px;
       font-style: italic;
     }
 

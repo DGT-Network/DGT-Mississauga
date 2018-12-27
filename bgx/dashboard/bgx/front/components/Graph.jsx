@@ -39,12 +39,16 @@ class Graph extends React.Component {
     this.state = {collapsedNodes: [],
                   collapsedParents: [],
                   hiddenNodes: [],
-                  hiddenParents: []}
+                  hiddenParents: [],
+                  scale: 8}
 
     this.selected    = {}
     this.highlighted = null
     this.collapsed = null
     this.graphh       = {}
+
+    this.decreaseScale = this.decreaseScale.bind(this);
+    this.increaseScale = this.increaseScale.bind(this);
 
     this.configg = {
         "title" : "",
@@ -155,6 +159,25 @@ class Graph extends React.Component {
     }
   }
 
+  increaseScale() {
+    const { scale } = this.state
+    if (scale == 20)
+      return
+
+    this.setState({scale: scale + 1})
+    this.updateGraph();
+  }
+
+  decreaseScale() {
+    const { scale } = this.state
+        if (scale == 2)
+      return
+
+    this.setState({scale: scale - 1})
+    this.updateGraph();
+
+  }
+
   drawGraph() {
     $(`#${this.props.id}`).empty();
 
@@ -214,16 +237,14 @@ graph.data = cloneDeep(this.props.data);
         });
     }
 
-    graph.svg = d3.select(`#${this.props.id}`).append('svg')
+    graph.svg = d3.select(`#${this.props.id}`)
+      .append('svg')
         .attr('width' , this.props.size.width)//graph.width + graph.margin.right  + graph.margin.left)
         .attr('height', this.props.size.height-40)//graph.height + graph.margin.top  + graph.margin.bottom)
       .append('g')
         .attr('transform', 'translate(' + graph.margin.left + ',' + graph.margin.top + ')');
 
-
-
-
-    //setTimeout(this.updateGraph());
+    graph.svg.classed('graph-container')
 }
 
     wrap(text) {
@@ -302,8 +323,8 @@ graph.data = cloneDeep(this.props.data);
         .links(graph.links)
         .linkStrength(function(d) { return d.strength; })
         .size([graph.width, graph.height])
-        .linkDistance(config.graph.linkDistance)
-        .charge(config.graph.charge)
+        .linkDistance(this.state.scale*8)
+        .charge(this.state.scale * -50)
         .on('tick', tick)
 
 
@@ -597,6 +618,7 @@ graph.data = cloneDeep(this.props.data);
           bounds.y2 = box.y + box.height;
         })
       .attr('text-anchor', 'middle')
+      .attr('font-size', that.state.scale)
       .attr('display',  function(d){
         return that.checkNodeHidden(d.IP) ? 'none' : 'block'
       })
@@ -934,7 +956,8 @@ graph.data = cloneDeep(this.props.data);
 
   deselectObject(doResize) {
     this.props.onSelect(null)
-    this.props.onFilter({})
+    if (this.props.onFilter != undefined)
+      this.props.onFilter({})
   }
 
   componentDidMount() {
@@ -949,6 +972,7 @@ graph.data = cloneDeep(this.props.data);
     if (JSON.stringify(data) !== JSON.stringify(prevProps.data)) {
       this.drawGraph();
       this.redrawNodes();
+      this.deselectObject();
     }
 
     if (data.length != prevProps.data.length &&
@@ -971,8 +995,12 @@ graph.data = cloneDeep(this.props.data);
     }
 
     if(!lodash.isEqual(this.state.hiddenNodes, prevState.hiddenNodes) ||
-       !lodash.isEqual(this.state.hiddenParents, prevState.hiddenParents))
+       !lodash.isEqual(this.state.hiddenParents, prevState.hiddenParents) ||
+       this.state.scale != prevState.scale)
+    {
       this.redrawNodes();
+      this.deselectObject();
+    }
     this.updateGraph();
   }
 
@@ -996,6 +1024,10 @@ graph.data = cloneDeep(this.props.data);
             onChange={e => this.props.onSelect( e.target.value)}
             onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
           />
+          &nbsp;
+          <button type="button" class="btn btn-sm btn-light" onClick={this.decreaseScale}>-</button>
+          &nbsp;
+          <button type="button" class="btn btn-sm btn-light" onClick={this.increaseScale}>+</button>
         </div>
         <div className='graphLayer'>
           <div id={`${this.props.id}-container`}>
