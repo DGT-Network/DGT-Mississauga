@@ -52,7 +52,8 @@ class Blocks extends React.Component {
                 size={{width: 1000, height: 800}}
                 selectedPeerIP={selectedBlock}
                 onSelect={(e) => this.selectBlock(e)}
-                lastN={10}/>
+                lastN={10}
+                collapseFront={false}/>
 
               <div className="tab-offset">
                 <Card id='ledger' title='Ledger Data'>

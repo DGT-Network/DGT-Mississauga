@@ -674,7 +674,7 @@ graph.data = cloneDeep(this.props.data);
       collapseChildren
         .attr('transform',`translate(${bounds.x2-10}, ${bounds.y2+6})`)
         .attr('display', function(d){
-          return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+          return (!that.props.collapseFront || that.checkNodeHidden(d.IP)) ? 'none' : 'block'
         })
 
       collapseChildren.selectAll('circle')
@@ -688,7 +688,7 @@ graph.data = cloneDeep(this.props.data);
       collapseParents
           .attr('transform',`translate(${bounds.x1 }, ${bounds.y2+6})`)
           .attr('display',  function(d){
-            return that.checkNodeHidden(d.IP) ? 'none' : 'block'
+            return (!that.props.collapseBack || that.checkNodeHidden(d.IP)) ? 'none' : 'block'
           })
 
       collapseParents.selectAll('circle')
@@ -852,8 +852,7 @@ graph.data = cloneDeep(this.props.data);
     let forHide  = [];
 
     this.state.collapsedNodes.forEach((ip) => {
-      this.hideChildren(forHide,ip)
-      forHide.pop();
+      this.hideChildren(forHide, ip, ip);
     });
 
     this.setState({hiddenNodes: forHide})
@@ -1008,6 +1007,8 @@ Graph.defaultProps = {
   selectedFilters: null,
   filters: [],
   lastN: null,
+  collapseBack: true,
+  collapseFront: true,
 }
 
 export default Graph;
