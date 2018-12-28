@@ -19,15 +19,38 @@ import Hash from './Hash';
 import DecodedData from './DecodedData';
 import Card from './Card';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import ReactTable from "react-table";
 
 import { getStates, showModal } from '../actions/actions';
 
 class State extends React.Component {
+  constructor(props){
+    super(props)
+
+    this.state={search: ''}
+
+    this.handleChange = this.handleChange.bind(this)
+    this.checkSearched = this.checkSearched.bind(this)
+  }
 
   update(){
     store.dispatch(getStates());
   }
+
+  checkSearched(el){
+    const { search } = this.state;
+    if (search === '')
+      return false;
+
+    return JSON.stringify(el).includes(search);
+  }
+
+  handleChange(e) {
+    this.setState({search: e.target.value})
+  }
+
 
   render() {
     const {state, columns} = this.props;
@@ -36,29 +59,51 @@ class State extends React.Component {
       {!state.length  ? (
         <strong> No State</strong>
       ) : (
-        <ReactTable data={state}
-          defaultPageSize={10}
-          columns={columns}
-          minRows={0}
-          className='-striped'
-          getTdProps={(state, rowInfo, column, instance) => {
-            return {
-              onClick: (e, handleOriginal) => {
-                store.dispatch(showModal({title: 'State raw data',
-                  json: rowInfo.original
-                }))
+        <div>
+          <div className='form-inline float-right'>
+            <div className='input-group mb-2'>
+                <div className="input-group-prepend">
+                  <div className="input-group-text">
+                    <FontAwesomeIcon icon={"filter"} />
+                  </div>
+                </div>
+              <input type="text"
+                className="form-control"
+                value={this.state.search}
+                onChange={this.handleChange}
+                placeholder='Filter' />
+            </div>
+          </div>
+          <div className='clearfix'>
+          </div>
+          <ReactTable data={state}
+            defaultPageSize={10}
+            columns={columns}
+            minRows={0}
+            className='-striped'
+            getTdProps={(state, rowInfo, column, instance) => {
+              return {
+                onClick: (e, handleOriginal) => {
+                  store.dispatch(showModal({title: 'State raw data',
+                    json: rowInfo.original
+                  }))
 
-                // IMPORTANT! React-Table uses onClick internally to trigger
-                // events like expanding SubComponents and pivots.
-                // By default a custom 'onClick' handler will override this functionality.
-                // If you want to fire the original onClick handler, call the
-                // 'handleOriginal' function.
-                if (handleOriginal) {
-                  handleOriginal();
+                  // IMPORTANT! React-Table uses onClick internally to trigger
+                  // events like expanding SubComponents and pivots.
+                  // By default a custom 'onClick' handler will override this functionality.
+                  // If you want to fire the original onClick handler, call the
+                  // 'handleOriginal' function.
+                  if (handleOriginal) {
+                    handleOriginal();
+                  }
+                },
+                style: {
+                  background: this.checkSearched(rowInfo.original) ? '#ffc107' :
+                   rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
                 }
-              }
-            };
-          }}/>
+              };
+            }}/>
+        </div>
       )}
       </Card>
     );
