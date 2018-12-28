@@ -22,7 +22,7 @@ import sawtooth_signing as signing
 from sawtooth_signing import CryptoFactory
 from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
 
-from sawtooth_sdk.consensus.exceptions import UnknownBlock
+from sawtooth_sdk.consensus.exceptions import UnknownBlock,InvalidState
 from sawtooth_sdk.messaging.stream import Stream
 from sawtooth_sdk.protobuf.batch_pb2 import Batch
 from sawtooth_sdk.protobuf.batch_pb2 import BatchHeader
@@ -308,7 +308,7 @@ class PbftOracle:
             LOGGER.warning("cancel_curr_block")
             self._service.cancel_block()
             self._canceled = True
-        except exceptions.InvalidState:
+        except InvalidState:
             LOGGER.warning("cancel_curr_block: ERR=InvalidState")
             pass
 
