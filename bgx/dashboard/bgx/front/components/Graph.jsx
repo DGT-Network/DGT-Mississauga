@@ -998,26 +998,33 @@ graph.data = cloneDeep(this.props.data);
     return(
       <Card id={this.props.id} title={`${this.props.title} Graph`} btns = {this.props.btns}>
         <div className='search-panel float-right'>
-          <FontAwesomeIcon icon='search' />
-          <ReactAutocomplete
-            items={this.props.data}
-            shouldItemRender={(item, value) => item.IP.toLowerCase().indexOf(value.toLowerCase()) > -1}
-            getItemValue={item => item.IP}
-            renderItem={(item, highlighted) =>
-              <div
-                key={item.IP}
-                style={{ backgroundColor: highlighted ? '#17a2b8' : 'transparent'}}>
-                {item.IP}
+          <div className='input-group mb-2'>
+            <div className="input-group-prepend">
+              <div className="input-group-text">
+                <FontAwesomeIcon icon="search" />
               </div>
-            }
-            value={this.props.selectedPeerIP == null ? '' : this.props.selectedPeerIP}
-            onChange={e => this.props.onSelect( e.target.value)}
-            onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
-          />
-          &nbsp;
-          <button type="button" class="btn btn-sm btn-light" onClick={this.decreaseScale}>-</button>
-          &nbsp;
-          <button type="button" class="btn btn-sm btn-light" onClick={this.increaseScale}>+</button>
+            </div>
+
+            <ReactAutocomplete
+              items={this.props.data}
+              shouldItemRender={(item, value) => item.IP.toLowerCase().indexOf(value.toLowerCase()) > -1}
+              getItemValue={item => item.IP}
+              renderItem={(item, highlighted) =>
+                <div
+                  key={item.IP}
+                  style={{ backgroundColor: highlighted ? '#17a2b8' : 'transparent'}}>
+                  {item.IP}
+                </div>
+              }
+              value={this.props.selectedPeerIP == null ? '' : this.props.selectedPeerIP}
+              onChange={e => this.props.onSelect( e.target.value)}
+              onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
+            />
+            &nbsp;
+            <button type="button" class="btn btn-sm btn-light" onClick={this.decreaseScale}>-</button>
+            &nbsp;
+            <button type="button" class="btn btn-sm btn-light" onClick={this.increaseScale}>+</button>
+          </div>
         </div>
         <div className='graphLayer'>
           <div id={`${this.props.id}-container`}>
