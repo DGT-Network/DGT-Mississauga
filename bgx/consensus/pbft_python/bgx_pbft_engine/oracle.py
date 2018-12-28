@@ -88,7 +88,8 @@ class PbftOracle:
         
         self._nodes = json.loads(nodes)
         self._node = self._nodes[self._validator_id] if self._validator_id in self._nodes else 'plink'
-        LOGGER.debug('PbftOracle:: _validator_id=%s is [%s] nodes=%s init DONE',_short_id(self._validator_id),self._node,nodes)
+        LOGGER.debug('_validator_id=%s is [%s]',self._validator_id,self._node)
+        LOGGER.debug('nodes=%s',nodes)
         self._canceled = False
         #sid = self.get_validator_id().encode()
         #sidd = sid.decode()
