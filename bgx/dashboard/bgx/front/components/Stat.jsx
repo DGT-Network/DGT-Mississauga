@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 import React from 'react';
+import { apiUrl } from '../actions/actions';
 
 import Card from './Card';
 
@@ -22,7 +23,7 @@ class Stat extends React.Component {
       [
         ['PubKey', 'fbb1b73c4f0bda4f67dca266ce6ef42f520eea98'],
         ['KYCKey', '0ABD7E'],
-        ['IP', '18.222.2333.160'],
+        ['IP', apiUrl.host],
       ],
       [
         ['Name', 'BGX TEST Network'],
