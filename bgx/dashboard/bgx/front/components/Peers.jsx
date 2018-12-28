@@ -26,6 +26,8 @@ import Hash from './Hash';
 
 import ReactTable from 'react-table';
 
+import { getPeers } from '../actions/actions';
+
 class Peers extends React.Component {
   constructor(props){
     super(props);
@@ -34,6 +36,13 @@ class Peers extends React.Component {
       selectedFilters: {},
       legend: [],
     };
+
+    this.update = this.update.bind(this)
+  }
+
+  update(){
+    console.log('update')
+    store.dispatch(getPeers());
   }
 
   selectPeer(ip) {
@@ -68,6 +77,7 @@ class Peers extends React.Component {
         <div className='row'>
           <div className='col-9'>
             <Graph data={data}
+              btns={[{name: 'Update', handler: this.update}]}
               filters={filters}
               selectedPeerIP={selectedIP}
               selectedFilters={selectedFilters}

@@ -15,7 +15,6 @@
 import colorbrewer from 'colorbrewer';
 
 export function convertPeers(data) {
-  //console.log('data',data)
   let parent_node = data.data.net_structure.parent_node;
   const data2 = {
       IP: parent_node.IP,
@@ -35,6 +34,7 @@ export function convertPeers(data) {
 
 function convertFilters(filters, d){
   let f = filters.map((f) => {
+    f.list = []
     d.forEach((i) => {
       if ( !f.list.includes(i[f.field]) ){
         f.list.push(i[f.field])

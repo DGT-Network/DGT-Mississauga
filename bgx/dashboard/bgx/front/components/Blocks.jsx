@@ -21,7 +21,7 @@ import Hash from './Hash';
 import Card from './Card';
 import Graph from './Graph';
 
-import { showModal } from '../actions/actions';
+import { showModal, getBlocks } from '../actions/actions';
 
 class Blocks extends React.Component {
   constructor(props){
@@ -31,6 +31,10 @@ class Blocks extends React.Component {
 
   selectBlock(ip) {
     this.setState({selectedBlock: ip});
+  }
+
+  update(){
+    store.dispatch(getBlocks());
   }
 
   render() {
@@ -49,6 +53,7 @@ class Blocks extends React.Component {
         ) : (
             <div >
               <Graph data={data} id='blocks_graph' title='Ladger'
+                btns={[{name: 'Update', handler: this.update}]}
                 size={{width: 1000, height: 800}}
                 selectedPeerIP={selectedBlock}
                 onSelect={(e) => this.selectBlock(e)}
@@ -56,7 +61,8 @@ class Blocks extends React.Component {
                 collapseFront={false}/>
 
               <div className="tab-offset">
-                <Card id='ledger' title='Ledger Data'>
+                <Card id='ledger' title='Ledger Data'
+                  btns={[{name: 'Update', handler: this.update}]}>
                   <ReactTable data={data}
                   defaultPageSize={10}
                   minRows={0}

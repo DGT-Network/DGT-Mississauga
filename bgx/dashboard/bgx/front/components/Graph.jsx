@@ -197,11 +197,9 @@ graph.data = cloneDeep(this.props.data);
 
     var display = $(`#${this.props.id}`).css('display');
     $(`#${this.props.id}`)
-        .css('display', 'block')
         .css('height', this.props.size.height + 'px');
     graph.width  = this.props.size.width  - graph.margin.left - graph.margin.right;
     graph.height = this.props.size.height - graph.margin.top  - graph.margin.bottom;
-    $(`#${this.props.id}`).css('display', display);
 
     var div = d3.select(`#${this.props.id}`).append("div")
         .attr("class", "tooltip")
@@ -998,7 +996,7 @@ graph.data = cloneDeep(this.props.data);
 
   render() {
     return(
-      <Card id='node_graph' title={`${this.props.title} Graph`}>
+      <Card id={this.props.id} title={`${this.props.title} Graph`} btns = {this.props.btns}>
         <div className='search-panel float-right'>
           <FontAwesomeIcon icon='search' />
           <ReactAutocomplete

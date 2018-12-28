@@ -20,7 +20,8 @@ import Hash from './Hash'
 
 import humanize from '../helpers/humanize';
 
-import { showModal } from '../actions/actions';
+import { showModal, getTransactions } from '../actions/actions';
+
 
 import ReactTable from 'react-table'
 import Card from './Card'
@@ -39,10 +40,15 @@ class Transactions extends React.Component {
     }))
   }
 
+  update(){
+    store.dispatch(getTransactions());
+  }
+
   render() {
     const {transactions, columns} = this.props
     return (
-      <Card id='transactions_card' title='Transactions'>
+      <Card id='transactions_card' title='Transactions'
+        btns={[{name: 'Update', handler: this.update}]}>
         {!transactions.length ? (
         <strong> No transactions</strong>
         ) : (

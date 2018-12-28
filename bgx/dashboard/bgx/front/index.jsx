@@ -20,7 +20,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope,
          faChevronUp,
          faChevronDown,
-         faSearch } from '@fortawesome/free-solid-svg-icons';
+         faSearch,
+         faSync } from '@fortawesome/free-solid-svg-icons';
 
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Provider } from 'react-redux';
@@ -39,6 +40,8 @@ library.add(faEnvelope);
 library.add(faChevronUp);
 library.add(faChevronDown);
 library.add(faSearch);
+library.add(faSync);
+
 
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 

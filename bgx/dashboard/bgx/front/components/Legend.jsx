@@ -60,7 +60,10 @@ class Legend extends React.Component {
               )
           }
           <div className='close-icon text-secondary'>
-            <FontAwesomeIcon icon={this.state.collapsed ? "chevron-down" : "chevron-up"} />
+            <button type="button"
+                  class="btn btn-sm btn-light">
+              <FontAwesomeIcon icon={this.state.collapsed ? "chevron-down" : "chevron-up"} />
+            </button>
           </div>
         </div>
 

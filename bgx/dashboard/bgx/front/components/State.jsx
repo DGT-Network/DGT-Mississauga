@@ -21,12 +21,18 @@ import Card from './Card';
 
 import ReactTable from "react-table";
 
-import { getState, showModal } from '../actions/actions';
+import { getStates, showModal } from '../actions/actions';
 
 class State extends React.Component {
+
+  update(){
+    store.dispatch(getStates());
+  }
+
   render() {
     const {state, columns} = this.props;
-    return (<Card id='card_state' title='State'>
+    return (<Card id='card_state' title='State'
+      btns={[{name: 'Update', handler: this.update}]}>
       {!state.length  ? (
         <strong> No State</strong>
       ) : (

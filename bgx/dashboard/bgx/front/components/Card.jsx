@@ -14,27 +14,56 @@
 
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import $ from 'jquery';
 
 class Card extends React.Component {
   constructor(props){
     super(props);
     this.state = {collapsed: false};
+    this.handleClick = this.handleClick.bind(this);
+    this.collapse = this.collapse.bind(this);
   }
 
+  collapse(){
+    this.setState({collapsed: !this.state.collapsed});
+    console.log('12213424', $(`#${this.props.id}`))
+    $(`#${this.props.id}`).collapse('toggle')
+  }
+
+  handleClick(e, callback){
+    e.stopPropagation();
+    callback();
+  }
+
+
   render() {
-    const {id, title, children} = this.props;
+    const {id, title, children, btns} = this.props;
 
     return (
       <div className="card">
         <div className='card-header'
-          onClick={() => this.setState({collapsed: !this.state.collapsed})}
-          data-toggle="collapse"
-          data-target={`#${id}`}
+          onClick={ this.collapse }
           aria-expanded="false"
           aria-controls="collapseExample">
           {title}
           <div className='float-right close-icon text-secondary'>
-            <FontAwesomeIcon icon={this.state.collapsed ? "chevron-down" : "chevron-up"} />
+            { btns.map(b =>
+              (
+                <button type="button"
+                  class="btn btn-sm btn-light"
+                  onClick={ (e) => this.handleClick(e, b.handler) }>
+                {
+                  b.name == 'Update' ? (
+                    <FontAwesomeIcon icon={"sync"} />
+                  ) : (
+                    b.name
+                  )
+                }</button>))
+            }
+            <button type="button"
+                  class="btn btn-sm btn-light">
+              <FontAwesomeIcon icon={this.state.collapsed ? "chevron-down" : "chevron-up"} />
+            </button>
           </div>
         </div>
         <div id={id} className='card-body collapse show'>
@@ -44,5 +73,10 @@ class Card extends React.Component {
     );
   }
 }
+
+Card.defaultProps = {
+  btns: [],
+}
+
 
 export default Card;
