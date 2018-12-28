@@ -323,7 +323,7 @@ graph.data = cloneDeep(this.props.data);
         .links(graph.links)
         .linkStrength(function(d) { return d.strength; })
         .size([graph.width, graph.height])
-        .linkDistance(this.state.scale*8)
+        .linkDistance(this.state.scale*6)
         .charge(this.state.scale * -50)
         .on('tick', tick)
 
@@ -570,7 +570,9 @@ graph.data = cloneDeep(this.props.data);
     let graph = this.graphh;
     let that = this;
 
-    $(`#${this.props.id}-container`).off('click').on('click', function(e) {
+    const container = $(`#${this.props.id}-container`)
+
+    container.off('click').on('click', function(e) {
       if (!$(e.target).closest('.node').length) {
         that.deselectObject();
       }
@@ -632,34 +634,24 @@ graph.data = cloneDeep(this.props.data);
           return !that.checkNodeFiltered(d)
         })
 
-      var padding  = {
-          left: 5,
-          right: 5,
-          top: 5,
-          bottom: 5,
-        },
-      margin   = {
-          left: 1,
-          right:1,
-          top: 0,
-          bottom: 0,
-        }//config.graph.labelMargin,
+      var padding  = 5,
+          margin   = 1
 
       //oldWidth = bounds.x2 - bounds.x1;
 
       //bounds.x1 -= oldWidth/2;
       //bounds.x2 -= oldWidth/2;
 
-      bounds.x1 -= (that.checkNodeFiltered(d) ? 0 : 3) + padding.left;
-      bounds.y1 -= (that.checkNodeFiltered(d) ? 0 : 3) + padding.top;
-      bounds.x2 += (that.checkNodeFiltered(d) ? 0 : 3) + padding.left;
-      bounds.y2 += (that.checkNodeFiltered(d) ? 0 : 3) + padding.bottom;
+      bounds.x1 -= (that.checkNodeFiltered(d) ? 0 : 3) + padding;
+      bounds.y1 -= (that.checkNodeFiltered(d) ? 0 : 3) + padding;
+      bounds.x2 += (that.checkNodeFiltered(d) ? 0 : 3) + padding;
+      bounds.y2 += (that.checkNodeFiltered(d) ? 0 : 3) + padding;
 
       d.extent = {
-        left   : bounds.x1 - margin.left,
-        right  : bounds.x2 + margin.left + margin.right,
-        top    : bounds.y1 - margin.top,
-        bottom : bounds.y2 + margin.top  + margin.bottom
+        left   : bounds.x1 - margin,
+        right  : bounds.x2 + margin + margin,
+        top    : bounds.y1 - margin,
+        bottom : bounds.y2 + margin  + margin
       };
 
       d.edge = {
