@@ -52,6 +52,10 @@ function convertFilters(filters, d){
   })
   let colors = colorbrewer.Set3[count+5];
 
+  const t = colors[0];
+  colors[0] = colors[1];
+  colors[1] = t;
+
   let r = 0;
 
   f.forEach((f) => {

@@ -179,7 +179,7 @@ class Graph extends React.Component {
   }
 
   drawGraph() {
-    $(`#${this.props.id}`).empty();
+    $(`#${this.props.id}-graph`).empty();
 
     let that = this;
 
@@ -195,13 +195,13 @@ graph.data = cloneDeep(this.props.data);
         left   : 20
     };
 
-    var display = $(`#${this.props.id}`).css('display');
-    $(`#${this.props.id}`)
+    var display = $(`#${this.props.id}-graph`).css('display');
+    $(`#${this.props.id}-graph`)
         .css('height', this.props.size.height + 'px');
     graph.width  = this.props.size.width  - graph.margin.left - graph.margin.right;
     graph.height = this.props.size.height - graph.margin.top  - graph.margin.bottom;
 
-    var div = d3.select(`#${this.props.id}`).append("div")
+    var div = d3.select(`#${this.props.id}-graph`).append("div")
         .attr("class", "tooltip")
         .attr("id", `${this.props.id}-tooltip`)
         .style("opacity", 0)
@@ -235,7 +235,7 @@ graph.data = cloneDeep(this.props.data);
         });
     }
 
-    graph.svg = d3.select(`#${this.props.id}`)
+    graph.svg = d3.select(`#${this.props.id}-graph`)
       .append('svg')
         .attr('width' , this.props.size.width)//graph.width + graph.margin.right  + graph.margin.left)
         .attr('height', this.props.size.height-40)//graph.height + graph.margin.top  + graph.margin.bottom)
@@ -1021,7 +1021,7 @@ graph.data = cloneDeep(this.props.data);
         </div>
         <div className='graphLayer'>
           <div id={`${this.props.id}-container`}>
-            <div  id={this.props.id}>
+            <div  id={`${this.props.id}-graph`}>
               <div id={`{${this.props.id}-tooltip}`} />
             </div>
           </div>
