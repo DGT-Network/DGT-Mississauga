@@ -21,7 +21,7 @@ import { convertTransactions } from '../logic/transactions'
 import { convertStates, convertState } from '../logic/state'
 import { convertBlocks } from '../logic/blocks'
 
-const apiUrl = 'http://18.217.2.175:8003/';
+const apiUrl = 'http://18.217.2.175:8003';
 //const apiUrl = 'http://18.222.233.160:8003';
 
 export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
@@ -38,9 +38,9 @@ export function getTransactions() {
         dispatch(getTransactionsSuccess(convertTransactions(response.data)));
       })
       .catch(error => {
-        console.log(error)
-        dispatch(getTransactionsSuccess(convertTransactions(transactions)));
-        // throw(error);
+        //console.log(error)
+        //dispatch(getTransactionsSuccess(convertTransactions(transactions)));
+         throw(error);
       })
   };
 }
@@ -52,8 +52,8 @@ export function getStates() {
         dispatch(getStatesSuccess(convertStates(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        dispatch(getStatesSuccess(convertStates(states)));
+        throw(error);
+        // dispatch(getStatesSuccess(convertStates(states)));
       })
   };
 }
@@ -77,8 +77,8 @@ export function getBlocks() {
         dispatch(getBlocksSuccess(convertBlocks(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        dispatch(getBlocksSuccess(convertBlocks(blocks)));
+        throw(error);
+        // dispatch(getBlocksSuccess(convertBlocks(blocks)));
       })
   };
 }
@@ -90,8 +90,8 @@ export function getPeers() {
         dispatch(getPeersSuccess(convertPeers(response.data)));
       })
       .catch(error => {
-        // throw(error);
-        dispatch(getPeersSuccess(convertPeers(nodes)))
+        throw(error);
+        // dispatch(getPeersSuccess(convertPeers(nodes)))
       })
   };
 }
