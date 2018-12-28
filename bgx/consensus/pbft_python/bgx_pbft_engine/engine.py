@@ -20,6 +20,7 @@ import json
 
 from sawtooth_sdk.consensus.engine import Engine
 from sawtooth_sdk.consensus import exceptions
+from sawtooth_sdk.messaging.future import FutureTimeoutError
 from sawtooth_sdk.protobuf.validator_pb2 import Message
 
 from bgx_pbft_engine.oracle import PbftOracle, PbftBlock
@@ -182,6 +183,9 @@ class PbftEngine(Engine):
             return None
         except exceptions.BlockNotReady:
             #LOGGER.debug('exceptions.BlockNotReady')
+            return None
+        except FutureTimeoutError:
+            LOGGER.debug('_summarize_block FutureTimeoutError.Try again')
             return None
 
     def _finalize_block(self):
