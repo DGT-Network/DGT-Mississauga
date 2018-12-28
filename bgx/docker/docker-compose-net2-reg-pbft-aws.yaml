@@ -282,7 +282,7 @@ services:
         - https_proxy
         - no_proxy
         - BGX_TOP=bgx
-    image: sawtooth-pbft-python-bgx:${ISOLATION_ID}
+    image: sawtooth-pbft-python-bgx2:${ISOLATION_ID}
     networks:
     - network1
     environment:
