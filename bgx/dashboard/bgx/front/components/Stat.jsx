@@ -23,7 +23,7 @@ class Stat extends React.Component {
       [
         ['PubKey', 'fbb1b73c4f0bda4f67dca266ce6ef42f520eea98'],
         ['KYCKey', '0ABD7E'],
-        ['IP', apiUrl.host],
+        ['IP', apiUrl],
       ],
       [
         ['Name', 'BGX TEST Network'],

@@ -21,7 +21,8 @@ import { convertTransactions } from '../logic/transactions'
 import { convertStates, convertState } from '../logic/state'
 import { convertBlocks } from '../logic/blocks'
 
-export const apiUrl = location;
+export const apiUrl = location.origin;
+//const apiUrl = 'http://18.217.2.175:8003';
 //const apiUrl = 'http://18.222.233.160:8003';
 
 export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
