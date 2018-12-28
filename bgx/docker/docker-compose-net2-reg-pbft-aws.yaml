@@ -128,7 +128,7 @@ services:
         cd bgx/families/smart_bgt_python
         python3 setup.py clean --all
         python3 setup.py build
-        smart-bgt-tp-python -vv -C tcp://validator-bgx-2:4006
+        smart-bgt-tp-python -vv -C tcp://validator-2:4006
       "
     stop_signal: SIGKILL
 
