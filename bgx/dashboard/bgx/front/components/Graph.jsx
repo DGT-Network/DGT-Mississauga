@@ -722,8 +722,8 @@ graph.data = cloneDeep(this.props.data);
         })
         .each(function(d) {
           d3.select(this).selectAll('.extra-active')
-          .attr('fill',  d.node_state == 'active' ? '#ffffb3' : '#8dd3c7' )
-          .attr('stroke',  d.node_state == 'active' ? '#b3b37d' : '#63948b' )
+          .attr('fill',  d.node_state != 'active' ? '#ffffb3' : '#8dd3c7' )
+          .attr('stroke',  d.node_state != 'active' ? '#b3b37d' : '#63948b' )
         })
     });
 
