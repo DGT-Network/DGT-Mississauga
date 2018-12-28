@@ -526,11 +526,12 @@ class ConnectionManager(InstrumentedThread):
                 # to peers, but at first connection no peer had a valid chain
                 # head. Keep querying connected peers until a valid chain head
                 # is received.
-                LOGGER.debug("ConnectionManager:Keep querying connected peers until a valid chain head has_chain_head=%s",has_chain_head)
+                #LOGGER.debug("ConnectionManager:Keep querying connected peers until a valid chain head has_chain_head=%s",has_chain_head)
                 has_chain_head = has_chain_head or \
                     self._current_chain_head_func() is not None
-                LOGGER.debug("ConnectionManager:peered_connections %s",self._current_chain_head_func())
+                #LOGGER.debug("ConnectionManager:peered_connections has_chain_head=%s",self._current_chain_head_func())
                 if not has_chain_head:
+                    LOGGER.debug("ConnectionManager:peered_connections HAS NOT chain_head=%s",self._current_chain_head_func())
                     peered_connections = self._get_peered_connections()
                     LOGGER.debug("ConnectionManager:peered_connections %s",len(peered_connections))
                     if peered_connections:

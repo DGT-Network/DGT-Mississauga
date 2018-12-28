@@ -92,6 +92,7 @@ class BgtEngine(Engine):
         return switch
 
     def _check_block(self, block_id):
+        LOGGER.warning("_check_block: block_id=%s\n",_short_id(block_id.hex()))
         self._service.check_blocks([block_id])
 
     def _fail_block(self, block_id):
@@ -104,6 +105,7 @@ class BgtEngine(Engine):
         return BgtBlock(self._service.get_blocks([block_id])[block_id])
 
     def _commit_block(self, block_id):
+        LOGGER.warning("_commit_block: block_id=%s\n",_short_id(block_id.hex()))
         self._service.commit_block(block_id)
 
     def _ignore_block(self, block_id):
@@ -111,8 +113,10 @@ class BgtEngine(Engine):
 
     def _cancel_block(self):
         try:
+            LOGGER.warning("_cancel_block: \n")
             self._service.cancel_block()
         except exceptions.InvalidState:
+            LOGGER.warning("_cancel_block:  InvalidState\n")
             pass
 
     def _summarize_block(self):
@@ -270,7 +274,7 @@ class BgtEngine(Engine):
 
     def _handle_new_block(self, block):
         block = BgtBlock(block)
-        LOGGER.info('handle_new_block:Received %s', _short_id(block.block_id.hex()))
+        LOGGER.info('=> NEW_BLOCK:Received %s', _short_id(block.block_id.hex()))
 
         if self._check_consensus(block):
             LOGGER.info('Passed consensus check: %s', _short_id(block.block_id.hex()))
@@ -310,7 +314,7 @@ class BgtEngine(Engine):
             self._ignore_block(block.block_id)
 
     def _handle_committed_block(self, block_id):
-        LOGGER.info('Chain head updated to %s, abandoning block in progress',_short_id(block_id.hex()))
+        LOGGER.info('=> BLOCK_COMMIT Chain head updated to %s, abandoning block in progress',_short_id(block_id.hex()))
 
         self._cancel_block()
 

@@ -512,11 +512,11 @@ class PbftBlockPublisher(BlockPublisherInterface):
             # initializing, we will not be prevented from doing so because of PBFT
             # policies.
 
-            self._wait_timer = None
-
+            self._wait_timer = 20
+        self._wait_timer = 20
         PbftBlockPublisher._previous_block_id = None
         block_header.consensus = b"pbft"
-        LOGGER.debug('PbftBlockPublisher::initialize_block DONE..')
+        LOGGER.debug('PbftBlockPublisher::initialize_block DONE _wait_timer=%s',self._wait_timer)
         self._block_header = block_header
         return True
 
@@ -545,7 +545,11 @@ class PbftBlockPublisher(BlockPublisherInterface):
             return not consensus_state.is_step_NotStarted
             """
         # Only claim readiness if the wait timer has expired
-        return True #self._wait_timer.has_expired(now=time.time())
+        if self._wait_timer > 0:
+            self._wait_timer -= 1
+            return False
+        # wait_timer has expired
+        return True 
 
     def finalize_block(self, block_header):
         """Finalize a block to be claimed. Provide any signatures and
@@ -566,6 +570,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
             At this point _block_id is previous and summary for current block
             save state with block_header key
             """
+            """
             state = ConsensusState.consensus_state_for_block_id(
                     block_id=summary,
                     block_cache=self._block_cache,
@@ -578,7 +583,7 @@ class PbftBlockPublisher(BlockPublisherInterface):
             LOGGER.debug('FINALIZE BLOCK CANDIDATE: state=%s',state)
             # save in store
             state.set_consensus_state_for_block_id(summary,self._consensus_state_store)
-            
+            """
             """
             state_view = BlockWrapper.state_view_for_block(
                     block_wrapper=self._block_cache.block_store.chain_head,

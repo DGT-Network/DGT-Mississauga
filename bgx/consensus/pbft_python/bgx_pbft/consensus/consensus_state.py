@@ -28,6 +28,8 @@ from bgx_pbft.consensus.pbft_settings_view import PbftSettingsView
 from bgx_pbft.consensus.signup_info import SignupInfo
 
 from bgx_pbft_common.validator_registry_view.validator_registry_view import ValidatorRegistryView
+
+from bgx_pbft_common.protobuf.pbft_consensus_pb2 import PbftMessage,PbftMessageInfo,PbftBlockMessage
 from bgx_pbft_common.utils import _short_id
 
 LOGGER = logging.getLogger(__name__)
@@ -206,6 +208,13 @@ class ConsensusState:
         self._mode = "Normal"     # Normal, ViewChanging, Checkpointing
         self._sequence_number = 0
         self._node = node if node else 'plink'
+        self._block_id = None
+        self._block = None
+        self._block_valid = False
+        self._summary = 'None'
+        self._unknown_block = False
+        self._new_block = False
+        self._wait_check = False
         #LOGGER.debug("ConsensusState: __init__ node=%s",self._node)
 
     def set_consensus_state_for_block_id(self,block_id,consensus_state_store):
@@ -240,6 +249,51 @@ class ConsensusState:
     def published(self):
         return self._published
 
+
+    @property
+    def unknown_block(self):
+        return self._unknown_block
+
+
+    @property
+    def block_id(self):
+        return self._block_id
+
+
+    @property
+    def block_valid(self):
+        return self._block_valid
+
+
+    @property
+    def wait_check(self):
+        return self._wait_check
+
+
+    @property
+    def new_block(self):
+        return self._new_block
+
+    @property
+    def block(self):
+        if self._block is None:
+            return None
+        #block = PbftBlockMessage().ParseFromString(self._block)
+        dblock = cbor.loads(self._block)
+        block = PbftBlockMessage(
+                    block_id  = dblock['block_id'],
+                    signer_id = dblock['signer_id'],
+                    block_num = dblock['block_num'],
+                    summary   = dblock['summary'] 
+                )
+        #LOGGER.debug("ConsensusState: get_block[%s] '%s'",type(block),dblock)
+        return block 
+
+
+    @property
+    def summary(self):
+        return self._summary
+
     def reset_step(self):
         self._step = 0
 
@@ -258,8 +312,44 @@ class ConsensusState:
         """
         self._published = val
 
+    def set_block_id(self,id=None):
+        """
+        Set external block id for summary map 
+        """
+        self._block_id = id
+
+    def set_block_valid(self):
+        self._block_valid = True
+
+
+    def set_wait_check(self):
+        self._wait_check = True
+
+
+    def set_new_block(self):
+        self._new_block = True
+
+    def set_block(self,block=None):
+        """
+        Set external block  for summary map 
+        """
+        dblock = {'block_id' : block.block_id,
+                  'signer_id' : block.signer_id,
+                  'block_num' : block.block_num,
+                  'summary' :  block.summary
+                  }
+        self._block = cbor.dumps(dblock) # block.SerializeToString()
+        #LOGGER.debug("ConsensusState: set_block[%s] '%s'",type(block),self._block)
+
+    def set_summary(self,summary='None'):
+        self._summary = summary
+
     def set_node(self,node):
         self._node = node
+
+    def set_unknown_block(self):
+        self._unknown_block = True
+
 
     def mark_as_own(self):
         self._is_own = True
@@ -492,6 +582,13 @@ class ConsensusState:
             '_step': self._step,
             '_node': self._node,
             '_is_own': self._is_own,
+            '_block_id': self._block_id,
+            '_block_valid': self._block_valid,
+            '_block' : self._block,
+            '_summary' : self._summary,
+            '_wait_check' : self._wait_check,
+            '_unknown_block' : self._unknown_block,
+            '_new_block' : self._new_block,
             '_sequence_number': self._sequence_number,
             '_validators': self._validators
         }
@@ -526,6 +623,13 @@ class ConsensusState:
             self._step = self_dict['_step']
             self._node = self_dict['_node']
             self._is_own = self_dict['_is_own']
+            self._block_id = self_dict['_block_id']
+            self._block_valid = self_dict['_block_valid']
+            self._block = self_dict['_block']
+            self._summary = self_dict['_summary']
+            self._unknown_block = self_dict['_unknown_block']
+            self._new_block = self_dict['_new_block']
+            self._wait_check = self_dict['_wait_check']
             self._sequence_number = int(self_dict['_sequence_number'])
             self._aggregate_local_mean = float(self_dict['_aggregate_local_mean'])
             self._local_mean = None
@@ -587,10 +691,12 @@ class ConsensusState:
              key, value in self._validators.items()]
 
         return \
-            'mode={},step={},node={},SEQNUM={},OWN={},PEERS={}'.format(
+            'mode={},step={},node={},SEQNUM={},ID={},CHECK={},PEERS={}'.format(
                 self._mode,
                 self.step,
                 self._node,
                 self._sequence_number,
-                self._is_own,
-                validators)
+                'None' if self._block is None else 'block',
+                self._wait_check,
+                validators
+                )

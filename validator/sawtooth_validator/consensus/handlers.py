@@ -224,16 +224,16 @@ class ConsensusSummarizeBlockHandler(ConsensusServiceHandler):
 
     def handle_request(self, request, response):
         try:
-            LOGGER.debug('ConsensusSummarizeBlockHandler: proxy:summarize_block')
+            #LOGGER.debug('ConsensusSummarizeBlockHandler: proxy:summarize_block')
             summary = self._proxy.summarize_block()
-            LOGGER.debug('ConsensusSummarizeBlockHandler: proxy:summarize_block summary[%s]=%s',type(summary),summary)
+            LOGGER.debug('ConsensusSummarizeBlockHandler: proxy:summarize_block summary[%s]=%s',type(summary),summary.hex())
             response.summary = summary
         except BlockNotInitialized:
             LOGGER.debug('ConsensusSummarizeBlockHandler: BlockNotInitialized')
             response.status =\
                 consensus_pb2.ConsensusSummarizeBlockResponse.INVALID_STATE
         except BlockEmpty:
-            LOGGER.debug('ConsensusSummarizeBlockHandler: BlockEmpty')
+            #LOGGER.debug('ConsensusSummarizeBlockHandler: BlockEmpty')
             response.status =\
                 consensus_pb2.ConsensusSummarizeBlockResponse.BLOCK_NOT_READY
         except Exception:  # pylint: disable=broad-except
@@ -256,7 +256,7 @@ class ConsensusFinalizeBlockHandler(ConsensusServiceHandler):
         try:
             LOGGER.debug('ConsensusFinalizeBlockHandler: proxy:finalize_block data[%s]=%s',type(request.data),request.data)
             response.block_id = self._proxy.finalize_block(request.data)
-            LOGGER.debug('ConsensusFinalizeBlockHandler: proxy:finalize_block response.block_id[%s]=%s',type(response.block_id),response.block_id)
+            LOGGER.debug('ConsensusFinalizeBlockHandler: proxy:finalize_block response.block_id[%s]=%s',type(response.block_id),response.block_id.hex())
         except BlockNotInitialized:
             response.status =\
                 consensus_pb2.ConsensusFinalizeBlockResponse.INVALID_STATE

@@ -259,11 +259,13 @@ class GossipBroadcastHandler(Handler):
                 # this new batch for this node 
                 self._gossip.broadcast_batch(batch, exclude)
         elif gossip_message.content_type == GossipMessage.BLOCK:
-            LOGGER.debug("GossipBroadcastHandler:handle BLOCK !!!")
+            #LOGGER.debug("GossipBroadcastHandler:handle BLOCK !!!")
             block = Block()
             block.ParseFromString(gossip_message.content)
+            LOGGER.debug("GossipBroadcastHandler:handle BLOCK=%s!!!",block)
             # If we already have this block, don't forward it
             if not self._completer.get_block(block.header_signature):
+                LOGGER.debug("GossipBroadcastHandler:.broadcast_block!!!")
                 self._gossip.broadcast_block(block, exclude)
         else:
             LOGGER.info("received %s, not BATCH or BLOCK",

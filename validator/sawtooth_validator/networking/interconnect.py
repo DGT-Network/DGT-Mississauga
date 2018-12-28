@@ -206,6 +206,7 @@ class _SendReceive:
                 # The concurrent.futures.CancelledError is caught by asyncio
                 # when the Task associated with the coroutine is cancelled.
                 # The raise is required to stop this component.
+                LOGGER.debug("_do_heartbeat:CancelledError to stop this component!")
                 raise
             except Exception as e:  # pylint: disable=broad-except
                 LOGGER.exception(
@@ -333,6 +334,7 @@ class _SendReceive:
                 # The concurrent.futures.CancelledError is caught by asyncio
                 # when the Task associated with the coroutine is cancelled.
                 # The raise is required to stop this component.
+                LOGGER.debug("_dispatch_message:CancelledError to stop this component!")
                 raise
             except Exception as e:  # pylint: disable=broad-except
                 LOGGER.exception("Received a message on address %s that "
@@ -362,6 +364,7 @@ class _SendReceive:
                 # The concurrent.futures.CancelledError is caught by asyncio
                 # when the Task associated with the coroutine is cancelled.
                 # The raise is required to stop this component.
+                LOGGER.debug("_receive_message:CancelledError to stop this component!")
                 raise
             except Exception as e:  # pylint: disable=broad-except
                 LOGGER.exception("Received a message on address %s that "
@@ -581,6 +584,7 @@ class _SendReceive:
                 # The concurrent.futures.CancelledError is caught by asyncio
                 # when the Task associated with the coroutine is cancelled.
                 # The raise is required to stop this component.
+                LOGGER.debug("_monitor_disconnects:CancelledError to stop this component!")
                 raise
             except Exception as e:  # pylint: disable=broad-except
                 LOGGER.exception(
