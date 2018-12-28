@@ -214,7 +214,8 @@ class PbftOracle:
         #block_str = int2hex(block.block_num)
         block_id = block.block_id.hex()
         summary = block.summary.hex()
-        
+        signer_id  = block.signer_id.hex()
+        LOGGER.info('=> NEW_BLOCK id=%s block_num=%s signer=%s.%s summary=%s prev_id=%s\n', _short_id(block_id),block.block_num,self.get_node_type_by_id(signer_id),_short_id(signer_id),_short_id(summary),_short_id(block.previous_id.hex()))
         LOGGER.debug("PbftOracle: start_consensus for block='%s'",_short_id(block_id))
         state = self.get_consensus_state_for_block_id(block) # create in case state is not exists 
         if state is not None:

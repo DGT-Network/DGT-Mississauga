@@ -373,7 +373,7 @@ class PbftEngine(Engine):
         Legitimacy of new block is checked by looking at the signer_id of the block in the BlockNew message,
         and making sure the previous_id is valid as the current chain head. T
         """
-        LOGGER.info('=> NEW_BLOCK id=%s block_num=%s signer=%s summary=%s prev_id=%s\n', _short_id(block.block_id.hex()),block.block_num,_short_id(block.signer_id.hex()),_short_id(block.summary.hex()),_short_id(block.previous_id.hex()))
+        #LOGGER.info('=> NEW_BLOCK id=%s block_num=%s signer=%s summary=%s prev_id=%s\n', _short_id(block.block_id.hex()),block.block_num,_short_id(block.signer_id.hex()),_short_id(block.summary.hex()),_short_id(block.previous_id.hex()))
         if block.payload == b'Genesis':
             LOGGER.info('PbftEngine: handle NEW_BLOCK  GENESIS')
             #self._ignore_block(block.block_id)
