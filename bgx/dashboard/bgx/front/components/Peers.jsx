@@ -21,6 +21,7 @@ import humanize from '../helpers/humanize';
 import Graph from './Graph';
 import Legend from './Legend';
 import Filters from './Filters';
+import Card from './Card';
 
 import Hash from './Hash';
 
@@ -69,7 +70,7 @@ class Peers extends React.Component {
   }
 
   render() {
-    const { data, filters } = this.props;
+    const { data, filters, columns } = this.props;
     const { selectedIP, selectedFilters, legend } = this.state;
 
     return (
@@ -94,6 +95,33 @@ class Peers extends React.Component {
           filters={filters}
           selectedFilters={selectedFilters}
           onFilter={(e) => this.filterPeer(e)}/>
+
+        <div className='tab-offset'>
+        <Card id='node-data' title='Node Data'
+                  btns={[{name: 'Update', handler: this.update}]}>
+          <ReactTable data={data}
+              defaultPageSize={10}
+              columns={columns}
+              minRows={0}
+              className='-striped'
+              getTrProps={(state, rowInfo) => {
+                if (rowInfo && rowInfo.row) {
+                  return {
+                    onClick: () => {
+                      this.selectPeer(rowInfo.original.IP)
+                    },
+                    style: {
+                      background: rowInfo.original.IP === this.state.selectedIP ? '#b8daff' :
+                       rowInfo.viewIndex%2 == 0 ? 'rgba(0,0,0,.05)' : 'white',
+                    }
+                  }
+                }else{
+                  return {}
+                }
+              }}/>
+          </Card>
+
+        </div>
       </div>
     )
   }
@@ -102,6 +130,29 @@ class Peers extends React.Component {
 Peers.defaultProps = {
   data: [],
   filters: [],
+  columns: [
+    {
+      id: 'ip',
+      Header: 'IP',
+      accessor: t => `${t.IP}:${t.port}`,
+      width: 180,
+    },
+    { id: 'node_state',
+      Header: humanize('node_state'),
+      accessor: t => humanize(t.node_state),
+      width: 100,
+    },
+    {
+      id: 'node_type',
+      Header: humanize('node_type'),
+      accessor: t => humanize(t.node_type),
+      width: 100,
+    },
+    { id: 'public_key',
+      Header: 'Public Key',
+      accessor: t => <Hash hash={t.public_key} length={40}/>,
+    },
+  ],
 };
 
 function mapStateToProps(store) {
