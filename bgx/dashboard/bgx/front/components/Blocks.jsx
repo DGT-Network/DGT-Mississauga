@@ -52,7 +52,7 @@ class Blocks extends React.Component {
           </div>
         ) : (
             <div >
-              <Graph data={data} id='blocks_graph' title='Ladger'
+              <Graph data={data} id='blocks_graph' title='Ledger'
                 btns={[{name: 'Update', handler: this.update}]}
                 size={{width: 1000, height: 800}}
                 selectedPeerIP={selectedBlock}
