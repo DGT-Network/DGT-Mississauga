@@ -21,8 +21,14 @@ import $ from 'jquery';
 import { trimHash } from '../helpers/helper';
 
 class Modal extends React.Component {
+  componentDidUpdate() {
+    const { json } = this.props.modal;
+    if (json.length != 0)
+      $('#myModal').modal('show')
+  }
+
   render() {
-    const { json, title} = this.props.modal
+    const { json, title } = this.props.modal;
     return (
       <div className="modal fade hide" id="myModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered" role="document">
@@ -54,9 +60,6 @@ Modal.defaultProps = {
 }
 
 function mapStateToProps(store) {
-  if (Object.keys(store.modalReducer.json).length != 0)
-    $('#myModal').modal('show')
-
   return {
     modal: store.modalReducer
   };
