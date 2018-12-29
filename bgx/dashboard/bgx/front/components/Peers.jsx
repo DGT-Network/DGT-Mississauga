@@ -27,7 +27,7 @@ import Hash from './Hash';
 
 import ReactTable from 'react-table';
 
-import { getPeers } from '../actions/actions';
+import { showModal, getPeers } from '../actions/actions';
 
 class Peers extends React.Component {
   constructor(props){
@@ -110,6 +110,10 @@ class Peers extends React.Component {
                   return {
                     onClick: () => {
                       this.selectPeer(rowInfo.original.IP)
+
+                      store.dispatch(showModal({title: 'Node raw data',
+                        json: rowInfo.original.raw_data
+                      }))
                     },
                     style: {
                       background: rowInfo.original.IP === this.state.selectedIP ? '#b8daff' :
