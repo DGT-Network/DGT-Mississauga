@@ -49,7 +49,7 @@ class BGXlistener:
                 except:
                     LOGGER.debug('BGXlistener cant read json %s',sys.exc_info()[0])
 
-        if True :
+        if False :
             # Connecting to test net ropsten through infura
             infura_provider = HTTPProvider('https://ropsten.infura.io')
             web3 = Web3(infura_provider)
