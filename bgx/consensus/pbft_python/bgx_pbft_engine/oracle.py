@@ -250,7 +250,7 @@ class PbftOracle:
                     """
                      leader node - send prePrepare to plink nodes
                     """
-                    if block_num == 0 or signer_id == self._validator_id:
+                    if signer_id == self._validator_id:  # block_num == 0 or signer_id == self._validator_id
                         self._send_pre_prepare(state,block)
                         # we already have prePrepare message go to the new state
                         state.next_step() # => Preparing
