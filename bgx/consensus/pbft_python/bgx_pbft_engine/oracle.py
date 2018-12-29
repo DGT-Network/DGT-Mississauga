@@ -54,6 +54,8 @@ _LEADER_  = 'leader'
 _AUX_     = 'aux'
 _ARBITER_ = 'arbiter'
 
+_THE_SAME_ID_ = True # mode when we make chain with the same block ID 
+
 class PbftOracle:
     """
     This is a wrapper around the PBFT structures (publisher,verifier, fork resolver) and their attendant proxies.
@@ -215,7 +217,8 @@ class PbftOracle:
         block_id = block.block_id.hex()
         summary = block.summary.hex()
         signer_id  = block.signer_id.hex()
-        LOGGER.info('=> NEW_BLOCK id=%s block_num=%s signer=%s.%s summary=%s prev_id=%s\n', _short_id(block_id),block.block_num,self.get_node_type_by_id(signer_id),_short_id(signer_id),_short_id(summary),_short_id(block.previous_id.hex()))
+        block_num  = block.block_num
+        LOGGER.info('=> NEW_BLOCK id=%s block_num=%s signer=%s.%s summary=%s prev_id=%s\n', _short_id(block_id),block_num,self.get_node_type_by_id(signer_id),_short_id(signer_id),_short_id(summary),_short_id(block.previous_id.hex()))
         LOGGER.debug("PbftOracle: start_consensus for block='%s'",_short_id(block_id))
         state = self.get_consensus_state_for_block_id(block) # create in case state is not exists 
         if state is not None:
@@ -247,21 +250,24 @@ class PbftOracle:
                     """
                      leader node - send prePrepare to plink nodes
                     """
-                    self._send_pre_prepare(state,block)
-                    # we already have prePrepare message go to the new state
-                    state.next_step() # => Preparing
-                    self.set_consensus_state_for_block_id(block_id,state)
+                    if block_num == 0 or signer_id == self._validator_id:
+                        self._send_pre_prepare(state,block)
+                        # we already have prePrepare message go to the new state
+                        state.next_step() # => Preparing
+                        self.set_consensus_state_for_block_id(block_id,state)
+                        LOGGER.debug('PbftOracle: LEADER node CONSENSUS step=%s',state.step)
                   
                 elif state.node == _PLINK_ :
                     """
                     just change step of consensus and ignore BlockNew messages; only append them to their logs
                     """
-                    # try send PrePrepare for starting consensus in case it's leader block 
-                    # use nodes map for checking
-                    self._send_pre_prepare(state,block)
-                    state.next_step() # => Preparing
-                    self.set_consensus_state_for_block_id(block_id,state)
-                    LOGGER.debug('PbftOracle: PLINK node CONSENSUS step=%s',state.step)
+                    if block_num == 0 or signer_id == self._validator_id:
+                        # try send PrePrepare for starting consensus in case it's leader block 
+                        # use nodes map for checking
+                        self._send_pre_prepare(state,block)
+                        state.next_step() # => Preparing
+                        self.set_consensus_state_for_block_id(block_id,state)
+                        LOGGER.debug('PbftOracle: PLINK node CONSENSUS step=%s',state.step)
                 elif state.node == _ARBITER_ :
                     """
                     just change step of consensus and ignore BlockNew messages; only append them to their logs
@@ -282,8 +288,22 @@ class PbftOracle:
                 self.cancel_curr_block()
                 #self._service.ignore_block(block.block_id)
             else:
-                LOGGER.debug('PbftOracle: cant START CONSENSUS for block_id=%s (incorrect state=%s) ',_short_id(block_id),state.step)
-                self.cancel_curr_block()
+                """
+                It could be case when NEW BLOCK appeared after PrePrepare request for consensus
+                it means that we can choice external or own block for commiting
+                """
+                
+                if _THE_SAME_ID_:
+                    """
+                    consider this block in consensus 
+                    mark it with new_block
+                    """ 
+                    LOGGER.debug('PbftOracle: NEW BLOCK %s appeared after PrePrepare request!\n',_short_id(block_id))
+                    state.set_new_block()
+                    self.set_consensus_state_for_block_id(block_id,state)
+                else:
+                    LOGGER.debug('PbftOracle: NEW BLOCK %s appeared after PrePrepare request IGNORE it !\n',_short_id(block_id))
+                    self.cancel_curr_block()
 
         else:
             LOGGER.debug('PbftOracle: there is no CONSENSUS_STATE for block_id=%s',_short_id(block_id))
@@ -750,9 +770,9 @@ class PbftOracle:
                 if ext_block is not None:
                     wait_check = estate.wait_check
                     estate = self.get_consensus_state_for_block_id(ext_block,False)
-                    LOGGER.debug('=> BLOCK_VALID for EXTERNAL block_id=%s state=%s ',_short_id(ext_block.block_id.hex()),estate) 
+                    LOGGER.debug('=> BLOCK_VALID for EXTERNAL block_id=%s NEW_BLOCK=%s state=%s ',_short_id(ext_block.block_id.hex()),estate.new_block,estate) 
                     if estate is not None:
-                        if estate.is_step_Checking:
+                        if estate.is_step_Checking and not estate.new_block:
                             self.consensus_handler(estate,msg_type,ext_block,ext_block.block_id.hex()) 
                             if not wait_check:
                                 return estate.published

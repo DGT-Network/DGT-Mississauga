@@ -68,7 +68,10 @@ class BGXlistener:
             LOGGER.debug('WEB3 total=%s val=%s', total, val)
             return float(val)
         else:
-            return 0
+            total = 2000000000
+            val = 10000000.0
+            LOGGER.debug('WEB3 total=%s val=%s', total, val)
+            return val
 
 # Namespace for general configuration
 
