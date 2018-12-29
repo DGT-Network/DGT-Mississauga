@@ -53,9 +53,10 @@ class State extends React.Component {
 
 
   render() {
-    const {state, columns} = this.props;
+    const {state, columns, loading} = this.props;
     return (<Card id='card_state' title='State'
-      btns={[{name: 'Update', handler: this.update}]}>
+      btns={[{name: 'Update', handler: this.update}]}
+      loading={loading}>
       {!state.length  ? (
         <strong> No State</strong>
       ) : (
@@ -112,6 +113,7 @@ class State extends React.Component {
 
 State.defaultProps = {
   decodedData: {},
+  loading: false,
   state: [],
   columns: [{
     id: 'address',
@@ -130,6 +132,7 @@ State.defaultProps = {
 function mapStateToProps(store) {
   return {
     state: store.stateReducer.data,
+    loading: store.stateReducer.loading,
   };
 }
 

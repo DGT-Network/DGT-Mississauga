@@ -42,7 +42,6 @@ class Peers extends React.Component {
   }
 
   update(){
-    console.log('update')
     store.dispatch(getPeers());
   }
 
@@ -70,7 +69,7 @@ class Peers extends React.Component {
   }
 
   render() {
-    const { data, filters, columns } = this.props;
+    const { data, filters, columns, loading } = this.props;
     const { selectedIP, selectedFilters, legend } = this.state;
 
     return (
@@ -85,7 +84,8 @@ class Peers extends React.Component {
               id='peers_graph'
               title='Node'
               onSelect={(e) => this.selectPeer(e)}
-              onFilter={(e) => this.filterPeer(e)}/>
+              onFilter={(e) => this.filterPeer(e)}
+              loading={loading}/>
           </div>
           <div className='col-3'>
             <Legend legend= {legend}/>
@@ -98,7 +98,8 @@ class Peers extends React.Component {
 
         <div className='tab-offset'>
         <Card id='node-data' title='Node Data'
-                  btns={[{name: 'Update', handler: this.update}]}>
+                  btns={[{name: 'Update', handler: this.update}]}
+                  loading={loading}>
           <ReactTable data={data}
               defaultPageSize={10}
               columns={columns}
@@ -129,6 +130,7 @@ class Peers extends React.Component {
 
 Peers.defaultProps = {
   data: [],
+  loading: false,
   filters: [],
   columns: [
     {
@@ -158,6 +160,7 @@ Peers.defaultProps = {
 function mapStateToProps(store) {
   return {
     data: store.peersReducer.data.data,
+    loading: store.peersReducer.loading,
     filters:  store.peersReducer.data.length == 0 ?
       [] : store.peersReducer.data.filters.filters,
   };

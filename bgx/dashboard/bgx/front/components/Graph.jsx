@@ -970,7 +970,7 @@ graph.data = cloneDeep(this.props.data);
 
   componentDidUpdate(prevProps, prevState) {
 
-    const { data, lastN } = this.props;
+    const { data, lastN, loading } = this.props;
 
     if (JSON.stringify(data) !== JSON.stringify(prevProps.data)) {
       this.drawGraph();
@@ -1008,8 +1008,11 @@ graph.data = cloneDeep(this.props.data);
   }
 
   render() {
+    const {id, title, btns, loading, data, selectedPeerIP} = this.props;
+
     return(
-      <Card id={this.props.id} title={`${this.props.title} Graph`} btns = {this.props.btns}>
+      <Card id={id} title={`${title} Graph`} btns = {btns}
+        loading={loading}>
         <div className='search-panel float-right'>
           <div className='input-group mb-2'>
             <div className="input-group-prepend">
@@ -1019,7 +1022,7 @@ graph.data = cloneDeep(this.props.data);
             </div>
 
             <ReactAutocomplete
-              items={this.props.data}
+              items={data}
               shouldItemRender={(item, value) => item.IP.toLowerCase().indexOf(value.toLowerCase()) > -1}
               getItemValue={item => item.IP}
               renderItem={(item, highlighted) =>
@@ -1029,7 +1032,7 @@ graph.data = cloneDeep(this.props.data);
                   {item.IP}
                 </div>
               }
-              value={this.props.selectedPeerIP == null ? '' : this.props.selectedPeerIP}
+              value={selectedPeerIP == null ? '' : selectedPeerIP}
               onChange={e => this.props.onSelect( e.target.value)}
               onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
             />
@@ -1040,9 +1043,9 @@ graph.data = cloneDeep(this.props.data);
           </div>
         </div>
         <div className='graphLayer'>
-          <div id={`${this.props.id}-container`}>
-            <div  id={`${this.props.id}-graph`}>
-              <div id={`{${this.props.id}-tooltip}`} />
+          <div id={`${id}-container`}>
+            <div  id={`${id}-graph`}>
+              <div id={`{${id}-tooltip}`} />
             </div>
           </div>
         </div>
@@ -1061,6 +1064,7 @@ Graph.defaultProps = {
   lastN: null,
   collapseBack: true,
   collapseFront: true,
+  loading: false,
 }
 
 export default Graph;

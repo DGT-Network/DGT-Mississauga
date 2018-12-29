@@ -39,7 +39,7 @@ class Blocks extends React.Component {
 
   render() {
     const that = this;
-    const {columns, data} = this.props;
+    const {columns, data, loading} = this.props;
     const {selectedBlock} = this.state;
 
     return (
@@ -58,11 +58,13 @@ class Blocks extends React.Component {
                 selectedPeerIP={selectedBlock}
                 onSelect={(e) => this.selectBlock(e)}
                 lastN={10}
-                collapseFront={false}/>
+                collapseFront={false}
+                loading={loading}/>
 
               <div className="tab-offset">
                 <Card id='ledger' title='Ledger Data'
-                  btns={[{name: 'Update', handler: this.update}]}>
+                  btns={[{name: 'Update', handler: this.update}]}
+                  loading={loading}>
                   <ReactTable data={data}
                   defaultPageSize={10}
                   minRows={0}
@@ -102,6 +104,7 @@ class Blocks extends React.Component {
 
 Blocks.defaultProps = {
   data: null,
+  loading: false,
   columns: [
   {
     id: 'blockNum',
@@ -141,6 +144,7 @@ Blocks.defaultProps = {
 function mapStateToProps(store) {
   return {
     data: store.blocksReducer.data,
+    loading: store.blocksReducer.loading,
   };
 }
 
