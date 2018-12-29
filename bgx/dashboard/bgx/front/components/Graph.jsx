@@ -618,7 +618,12 @@ graph.data = cloneDeep(this.props.data);
           bounds.y2 = box.y + box.height;
         })
       .attr('text-anchor', 'middle')
-      .attr('font-size', that.state.scale)
+      .attr('font-size', function(d) {
+          return  that.checkNodeSelected(d.IP) ? that.state.scale+1 : that.state.scale
+        })
+      .attr('font-weight', function(d) {
+          return   that.checkNodeSelected(d.IP) ? 'bold' : 'normal'
+        })
       .attr('display',  function(d){
         return that.checkNodeHidden(d.IP) ? 'none' : 'block'
       })
@@ -631,6 +636,7 @@ graph.data = cloneDeep(this.props.data);
         .classed('filter-enable', function(d){
           return !that.checkNodeFiltered(d)
         })
+
 
       var padding  = 5,
           margin   = 1
@@ -670,6 +676,9 @@ graph.data = cloneDeep(this.props.data);
         })
         .attr('stroke', function(d) {
           return  that.colorForDarker(d)
+        })
+        .attr('stroke-width', function(d) {
+          return   that.checkNodeSelected(d.IP) ? 3 : 1
         })
         .attr('fill', function(d) {
           return that.colorFor(d);
@@ -730,6 +739,10 @@ graph.data = cloneDeep(this.props.data);
     for (var i = 0; i < 50; i++) {
         graph.force.tick();
     }
+  }
+
+  checkNodeSelected(ip){
+    return ip == this.props.selectedPeerIP;
   }
 
   checkNodeIsCollapsed(ip){
@@ -805,10 +818,10 @@ graph.data = cloneDeep(this.props.data);
   colorFor(d) {
     const { selectedFilters, filters, selectedPeerIP } = this.props;
 
-    if (d.IP == selectedPeerIP)
-      return '#ffc107'
+    // if (d.IP == selectedPeerIP)
+    //   return '#ffc107'
 
-    else if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
+    if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
       return '#17a2b8';
 
     const key = Object.keys(selectedFilters)[0]
