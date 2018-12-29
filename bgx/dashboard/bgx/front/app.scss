@@ -238,6 +238,10 @@ opacity: 0;
 }
 
 .search-panel {
+  position: absolute;
+  right: 1.25rem;
+  z-index: 10;
+
   svg:first-child {
     margin-right: 10px;
   }

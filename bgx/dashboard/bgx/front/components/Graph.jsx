@@ -195,9 +195,9 @@ graph.data = cloneDeep(this.props.data);
         left   : 20
     };
 
-    var display = $(`#${this.props.id}-graph`).css('display');
     $(`#${this.props.id}-graph`)
-        .css('height', this.props.size.height + 'px');
+        .css('height', this.props.size.height + 'px')
+        .css('position', 'relative');
     graph.width  = this.props.size.width  - graph.margin.left - graph.margin.right;
     graph.height = this.props.size.height - graph.margin.top  - graph.margin.bottom;
 
@@ -929,15 +929,15 @@ graph.data = cloneDeep(this.props.data);
 
   showTooltip(d){
     var div = d3.select(`#${this.props.id}-tooltip`)
-
     div.style("opacity", .9)
       .html(
           Object.keys(d.tooltip).map(key => {
               let s = isNaN(Number(key))  ?  `${key}: ` : ''
               return s + humanize(d.tooltip[key])
           }).reverse().join('<br/>'))
-      .style("left", d.x + 15 + "px")
-      .style("top", d.y - div.node().getBoundingClientRect().height + 90 +"px");
+
+      .style("left", d.x - this.state.scale + "px")
+      .style("top", d.y - div.node().getBoundingClientRect().height - this.state.scale + "px");
   }
 
   selectObject(obj) {
