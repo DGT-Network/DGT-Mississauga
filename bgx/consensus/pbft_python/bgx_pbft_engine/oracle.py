@@ -161,7 +161,7 @@ class PbftOracle:
             while(True): 
                 chain_block = PbftBlock(self._service.get_blocks([chain_block.previous_id])[chain_block.previous_id]) 
                 LOGGER.debug('PbftOracle: while chain_block.block_num=%s == new_fork_head.block_num=%s',chain_block.block_num,new_fork_head.block_num) 
-                if chain_block.block_num == new_fork_head.block_num or num > 20:
+                if chain_block.block_num == new_fork_head.block_num:
                     LOGGER.debug('PbftOracle: found block')
                     break
                 num += 1 
@@ -176,8 +176,12 @@ class PbftOracle:
                 """
                 This is our own block
                 """
-                LOGGER.debug('PbftOracle: switch_forks TRUE blocks ID are the same')
-                return True
+                if cur_fork_head.block_num == 0:
+                    LOGGER.debug('PbftOracle: switch_forks TRUE blocks ID are the same') 
+                    return True   
+                else:
+                    LOGGER.debug('PbftOracle: switch_forks FALSE blocks ID are the same')
+                    return True
 
 
         return False
@@ -250,7 +254,7 @@ class PbftOracle:
                     """
                      leader node - send prePrepare to plink nodes
                     """
-                    if signer_id == self._validator_id:  # block_num == 0 or signer_id == self._validator_id
+                    if block_num == 0 or signer_id == self._validator_id:  # block_num == 0 or signer_id == self._validator_id
                         self._send_pre_prepare(state,block)
                         # we already have prePrepare message go to the new state
                         state.next_step() # => Preparing
