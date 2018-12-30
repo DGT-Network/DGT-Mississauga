@@ -1,4 +1,4 @@
-# Copyright 2018 NTRLab
+# Copyright 2018 NTRlab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,15 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import logging
 import hashlib
 import cbor
 import json
-
 import os
-
 
 from sawtooth_sdk.processor.handler import TransactionHandler
 from sawtooth_sdk.processor.exceptions import InvalidTransaction
@@ -33,7 +31,6 @@ from smart_bgt.processor.token import Token
 from smart_bgt.processor.token import MetaToken
 from smart_bgt.processor.emission import EmissionMechanism
 from sawtooth_signing import create_context
-
 
 
 LOGGER = logging.getLogger(__name__)
@@ -66,7 +63,6 @@ class SmartBgtTransactionHandler(TransactionHandler):
             elif verb == 'init':
                 #private_key = args['private_key']
                 #digital_signature = BGXCrypto.DigitalSignature(private_key)
-
                 validator_digital_signature = BGXCrypto.get_validator_signature()
                 validator_address = validator_digital_signature.get_verifying_key()
                 #state = _get_state_data([args['Name'], open_key, SMART_BGT_META_ADDRESS], context)
@@ -170,37 +166,14 @@ def _do_smart_bgt(verb, args, state):
         # This would be a programming error.
         raise InternalError('Unhandled verb: {}'.format(verb))
 
-
+# generates new private key
 def _do_generate_key(state):
     digital_signature = BGXCrypto.DigitalSignature()
     private_key = digital_signature.getSigningKey()
     LOGGER.debug("New private key generated: " + str(private_key))
-    #updated = {k: v for k, v in state.items()}
-    LOGGER.debug("_do_init ...")
-    #LOGGER.debug(
-    #    "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& %s",
-    #    os.environ['HOME'])
-    #path = os.getenv("SAWTOOTH_HOMEDMKFDKDMSLFLSDFLMLDFSMFLKDMLDMDSLFMKLDF")
-    #LOGGER.debug(path)
-
-    #if path is None:
-    #    LOGGER.debug("#################################################################### 0000000000000 YEAH ITS NONE")
-
-    #path = os.getenv("SAWTOOTH_HOME")
-    #LOGGER.debug(path)
-
-    #if path is None:
-    #    LOGGER.debug("#################################################################### 0000000000000 OHNO ITS NONE")
-
-    ds = BGXCrypto.get_validator_signature()
-    LOGGER.debug(ds.getVerifyingKey())
-    LOGGER.debug(ds.getSigningKey())
-
-    LOGGER.debug("#################################################################### 0000000000000")
-    #return updated
     return state
 
-
+# release new tokens
 def _do_init(args, state):
     LOGGER.debug("_do_init ...")
     try:
@@ -265,7 +238,8 @@ def _do_init(args, state):
     LOGGER.debug("Init - ready! updated=%s", updated)
     return updated
 
-
+# transfer <num_bgt> tokens <group_id> from account <from_addr> to account <to_addr> 
+# TODO: add check and usage of allowance settings
 def _do_transfer(args, state):
     LOGGER.debug("_do_transfer ...")
     try:
@@ -359,7 +333,7 @@ def _do_transfer(args, state):
     LOGGER.debug("Transfer - ready! updated=%s", updated)
     return updated
 
-
+# internal exchange of tokens with different type of group_id 
 def _do_transfer_bgx(args, state):
     LOGGER.debug("_do_transfer_bgx ...")
     try:
@@ -448,6 +422,7 @@ def _do_transfer_bgx(args, state):
     LOGGER.debug("Internal transfer - ready! updated=%s", updated)
     return updated
 
+# allow <spender_addr> to withdraw tokens <group_id> from account <user_addr>
 def _do_approve(args, state):
     LOGGER.debug("_do_approve ...")
     try:
@@ -478,6 +453,7 @@ def _do_approve(args, state):
     updated[ALLOWANCE_INFO] = str(allowance_storage.to_json())
     return updated
 
+# returns the amount of tokens <group_id> which <spender_addr> is still allowed to withdraw from <user_addr>
 def _do_allowance(args, state):
     LOGGER.debug("_do_allowance ...")
     try:
@@ -505,7 +481,7 @@ def _do_allowance(args, state):
     LOGGER.debug("_do_allowance - approved amount = %s", str(amount))
     return state
 
-
+# returns balance of <addr>
 def _get_balance_of(args, state):
     LOGGER.debug("_get_balance_of ...")
     try:
@@ -526,7 +502,7 @@ def _get_balance_of(args, state):
     LOGGER.debug("_get_balance_of - address %s balance = %s", addr, str(balance))
     return state
 
-
+# returns total supply of tokens <token_name>
 def _get_total_supply(args, state):
     LOGGER.debug("_get_total_supply ...")
     try:

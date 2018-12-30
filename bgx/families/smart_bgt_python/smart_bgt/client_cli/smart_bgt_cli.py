@@ -1,4 +1,4 @@
-# Copyright 2016, 2018 NTRlab
+# Copyright 2018 NTRlab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 import argparse
 import getpass
@@ -34,8 +35,6 @@ from smart_bgt.client_cli.load import add_load_parser
 from smart_bgt.client_cli.load import do_load
 from smart_bgt.client_cli.smart_bgt_workload import add_workload_parser
 from smart_bgt.client_cli.smart_bgt_workload import do_workload
-
-
 
 from smart_bgt.client_cli.exceptions import SmartBgtCliException
 from smart_bgt.client_cli.exceptions import SmartBgtClientException
@@ -131,7 +130,7 @@ def create_parser(prog_name):
 
 
 def add_init_parser(subparsers, parent_parser):
-    message = 'Sends an bgt transaction to init <name> to <value>.'
+    message = 'Sends bgt transaction to generate <token_name> token.'
 
     parser = subparsers.add_parser(
         'init',
@@ -183,7 +182,7 @@ def add_init_parser(subparsers, parent_parser):
 
 
 def add_transfer_parser(subparsers, parent_parser):
-    message = 'Sends an num_bgt transaction to transfer <from_addr> to <to_addr>.'
+    message = 'Transfers token <group_id> from <from_addr> to <to_addr>.'
 
     parser = subparsers.add_parser(
         'transfer',
@@ -231,7 +230,7 @@ def add_transfer_parser(subparsers, parent_parser):
 
 
 def add_transfer_bgx_parser(subparsers, parent_parser):
-    message = 'Changes num_bgt with type <from_group> to type <to_group>.'
+    message = 'Changes num_bgt tokens with type <from_group> to type <to_group>.'
 
     parser = subparsers.add_parser(
         'transfer_bgx',

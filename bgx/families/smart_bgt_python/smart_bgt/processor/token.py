@@ -1,4 +1,17 @@
-
+# Copyright 2018 NTRlab
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------------
 
 from smart_bgt.processor.crypto import BGXCrypto
 import math
@@ -12,7 +25,8 @@ LOGGER = logging.getLogger(__name__)
 
 BASIC_DECIMALS = 18
 
-# Prototype for a MetaToken class.
+# Prototype for a MetaToken class. Contains general information
+# about tokens with specific <group_code>.
 
 class MetaToken:
 
@@ -22,7 +36,7 @@ class MetaToken:
         if json_string is not None:
             self.from_json(json_string)
         else:
-            if not self.__checkValues(total_supply, internal_token_price, digital_signature):
+            if not self.__check_values(total_supply, internal_token_price, digital_signature):
                 LOGGER.error("Init metatoken - wrong args")
                 raise InternalError('Failed to init metatoken')
 
@@ -41,7 +55,8 @@ class MetaToken:
             self.ethereum_conversion = False
             self.owner_key = digital_signature.get_verifying_key()
 
-    def __checkValues(self, total_supply, internal_token_price, digital_signature = None):
+    # checks parameters values
+    def __check_values(self, total_supply, internal_token_price, digital_signature = None):
 
         if not isinstance(total_supply, int) or total_supply < 0:
             LOGGER.debug('Bad integer : total_supply')
@@ -66,7 +81,6 @@ class MetaToken:
         return json.dumps(data)
 
     def from_json(self, json_string):
-
         try:
             data = json.loads(json_string)
         except:
@@ -92,7 +106,7 @@ class MetaToken:
             LOGGER.error("json with metatoken has not all arg")
             raise InternalError('Failed to load metatoken')
 
-        if not self.__checkValues(total_supply, internal_token_price):
+        if not self.__check_values(total_supply, internal_token_price):
             LOGGER.error("Init metatoken - wrong args")
             raise InternalError('Failed to init metatoken')
 
@@ -155,7 +169,7 @@ class Token:
                 self.owner_key = 'None'
                 self.sign = 'None'
             else:
-                if not self.__checkValues(balance, granularity, decimals, digital_signature):
+                if not self.__check_values(balance, granularity, decimals, digital_signature):
                     LOGGER.error("Init token - wrong args")
                     raise InternalError('Failed to init token')
 
@@ -165,13 +179,13 @@ class Token:
                 self.granularity = granularity
                 self.decimals = decimals
                 self.owner_key = str(digital_signature.get_verifying_key())
-                self.sign = str(digital_signature.sign(self.getImprint()))
+                self.sign = str(digital_signature.sign(self.get_imprint()))
 
     def __str__(self):
-        return self.getImprint()
+        return self.get_imprint()
 
     def __eq__(self, other):
-        return self.getImprint() == other.getImprint()
+        return self.get_imprint() == other.get_imprint()
 
     def get_id(self):
         return self.group_code
@@ -181,7 +195,8 @@ class Token:
         self.group_code = token.get_id()
         #self.owner_key = owner_key
 
-    def __checkValues(self, balance, granularity, decimals, digital_signature=None):
+    # checks parameters values
+    def __check_values(self, balance, granularity, decimals, digital_signature=None):
 
         if not isinstance(balance, int) or balance < 0:
             LOGGER.debug('Bad integer : balance')
@@ -200,10 +215,12 @@ class Token:
             return False
         return True
 
-    def verifyToken(self, digital_signature):
-        return digital_signature.verify(self.sign, self.getImprint())
+    # checks sign of current token
+    def verify_token(self, digital_signature):
+        return digital_signature.verify(self.sign, self.get_imprint())
 
-    def getImprint(self):
+    # returns unique general information about token 
+    def get_imprint(self):
         imprint = self.group_code + str(self.balance) + str(self.granularity) + \
                   str(self.decimals) + self.owner_key
         return imprint
@@ -214,7 +231,6 @@ class Token:
         return json.dumps(data)
 
     def from_json(self, json_string):
-
         try:
             data = json.loads(json_string)
         except:
@@ -232,7 +248,7 @@ class Token:
             LOGGER.error("json with token has not all arg")
             raise InternalError('Failed to load token')
 
-        if not self.__checkValues(balance, granularity, decimals):
+        if not self.__check_values(balance, granularity, decimals):
             LOGGER.error("Loading token from JSON - wrong args")
             raise InternalError('Failed to load token')
 
@@ -250,22 +266,23 @@ class Token:
     def getOwnerKey(self):
         return self.owner_key
 
-    def getBalance(self):
+    def get_balance(self):
         return self.balance
 
     def get_amount(self):
         return self.balance * pow(10, self.decimals - BASIC_DECIMALS)
 
-    def __setBalance(self, balance):
+    def __set_balance(self, balance):
         self.balance = balance
 
-    def getDecimals(self):
+    def get_decimals(self):
         return self.decimals
 
-    def __setDecimals(self, decimals):
+    def __set_decimals(self, decimals):
         self.decimals = decimals
 
-    def __intToIternalFormat(self, amount):
+    # converts int value to (decimals, amount) pair
+    def __int_to_iternal_format(self, amount):
         if amount <= 0:
             return BASIC_DECIMALS, 0
 
@@ -277,45 +294,15 @@ class Token:
             decimals += 1
         return decimals, int(amount)
 
-    #def send(self, to_token, amount = 0):
-    #    if  not isinstance(to_token, Token) or (not isinstance(amount, float) and \
-    #        not isinstance(amount, int)) or amount <= 0 or pow(10, BASIC_DECIMALS) * amount < 1:
-    #        LOGGER.debug("Sending token - wrong args")
-    #        return False
-
-    #    from_decimals = self.getDecimals()
-    #    from_balance = self.getBalance()
-
-    #    to_decimals = to_token.getDecimals()
-    #    to_balance = to_token.getBalance()
-
-    #    from_amount = from_balance * pow(10, from_decimals)
-    #    to_amount = to_balance * pow(10, to_decimals)
-    #    send_amount = int(amount * pow(10, BASIC_DECIMALS))
-
-    #    if from_amount < send_amount:
-    #        LOGGER.debug("Sending token - not enough money")
-    #        return False
-
-    #    from_amount -= send_amount
-    #    to_amount += send_amount
-    #    from_decimals, from_balance = self.__intToIternalFormat(from_amount)
-    #    to_decimals, to_balance = self.__intToIternalFormat(to_amount)
-
-    #    self.__setDecimals(from_decimals)
-    #    self.__setBalance(from_balance)
-    #    to_token.__setDecimals(to_decimals)
-    #    to_token.__setBalance(to_balance)
-    #    return True
-
+    # removes amount from current token
     def get_amount(self, amount=0):
         if (not isinstance(amount, float) and not isinstance(amount, int)) or amount <= 0 or pow(10, BASIC_DECIMALS) * \
                 amount < 1:
             LOGGER.debug("Get amount from token - wrong args")
             return False
 
-        token_decimals = self.getDecimals()
-        token_balance = self.getBalance()
+        token_decimals = self.get_decimals()
+        token_balance = self.get_balance()
 
         token_amount = token_balance * pow(10, token_decimals)
         transfer_amount = int(amount * pow(10, BASIC_DECIMALS))
@@ -326,109 +313,27 @@ class Token:
 
         token_amount -= transfer_amount
 
-        token_decimals, token_balance = self.__intToIternalFormat(token_amount)
-        self.__setDecimals(token_decimals)
-        self.__setBalance(token_balance)
+        token_decimals, token_balance = self.__int_to_iternal_format(token_amount)
+        self.__set_decimals(token_decimals)
+        self.__set_balance(token_balance)
         return True
 
+    # adds amount to current token
     def add_amount(self, amount=0):
         if (not isinstance(amount, float) and not isinstance(amount, int)) or amount <= 0 or pow(10, BASIC_DECIMALS) * \
                 amount < 1:
             LOGGER.debug("Add amount to token - wrong args")
             return False
 
-        token_decimals = self.getDecimals()
-        token_balance = self.getBalance()
+        token_decimals = self.get_decimals()
+        token_balance = self.get_balance()
 
         token_amount = token_balance * pow(10, token_decimals)
         transfer_amount = int(amount * pow(10, BASIC_DECIMALS))
         token_amount += transfer_amount
 
-        token_decimals, token_balance = self.__intToIternalFormat(token_amount)
-        self.__setDecimals(token_decimals)
-        self.__setBalance(token_balance)
+        token_decimals, token_balance = self.__int_to_iternal_format(token_amount)
+        self.__set_decimals(token_decimals)
+        self.__set_balance(token_balance)
         return True
 
-    @classmethod
-    def transfer(cls, from_token, to_token, beneficiary_token, amount = 0):
-        if (not isinstance(amount, float) and not isinstance(amount, int)) or amount <= 0 \
-            or pow(10, BASIC_DECIMALS) * amount < 1:
-            LOGGER.debug("Sending token - wrong args")
-            return False
-
-        from_decimals = from_token.getDecimals()
-        from_balance = from_token.getBalance()
-
-        to_decimals = to_token.getDecimals()
-        to_balance = to_token.getBalance()
-
-        beneficiary_decimals = beneficiary_token.getDecimals()
-        beneficiary_balance = beneficiary_token.getBalance()
-
-        from_amount = from_balance * pow(10, from_decimals)
-        to_amount = to_balance * pow(10, to_decimals)
-        beneficiary_amount = beneficiary_balance * pow(10, beneficiary_decimals)
-        transfer_amount = int(amount * pow(10, BASIC_DECIMALS))
-
-        if from_amount < transfer_amount:
-            LOGGER.debug("Sending token - not enough money")
-            return False
-
-        beneficiary_part = transfer_amount * TRANSFER_FEE
-        recievers_part = transfer_amount - beneficiary_part
-
-        if beneficiary_part < 0 or recievers_part < 0:
-            LOGGER.debug("Sending token - wrong transfer fee")
-            return False
-
-        from_amount -= transfer_amount
-        to_amount += recievers_part
-        beneficiary_amount += beneficiary_part
-
-        from_decimals, from_balance = from_token.__intToIternalFormat(from_amount)
-        to_decimals, to_balance = to_token.__intToIternalFormat(to_amount)
-        beneficiary_decimals, beneficiary_balance = beneficiary_token.__intToIternalFormat(beneficiary_amount)
-
-        from_token.__setDecimals(from_decimals)
-        from_token.__setBalance(from_balance)
-        to_token.__setDecimals(to_decimals)
-        to_token.__setBalance(to_balance)
-        beneficiary_token.__setDecimals(beneficiary_decimals)
-        beneficiary_token.__setBalance(beneficiary_balance)
-        return True
-
-    def send_allowance(self, amount = 0):
-        if (not isinstance(amount, float) and not isinstance(amount, int)) or amount <= 0 or \
-                pow(10, BASIC_DECIMALS) * amount < 1:
-            LOGGER.debug("Sending token allowance - wrong args")
-            return False
-
-        from_decimals = self.getDecimals()
-        from_balance = self.getBalance()
-
-        from_amount = from_balance * pow(10, from_decimals)
-        send_amount = int(amount * pow(10, BASIC_DECIMALS))
-
-        if from_amount < send_amount:
-            LOGGER.debug("Sending token allowance - not enough money")
-            return False
-        return True
-
-    def add(self, amount = 0):
-        if (not isinstance(amount, float) and not isinstance(amount, int)) or amount <= 0 or \
-                pow(10, BASIC_DECIMALS) * amount < 1:
-            LOGGER.debug("Add extra tokens - wrong args")
-            return False
-
-        cur_decimals = self.getDecimals()
-        cur_balance = self.getBalance()
-
-        cur_amount = cur_balance * pow(10, cur_decimals)
-        add_amount = int(amount * pow(10, BASIC_DECIMALS))
-
-        cur_amount += add_amount
-        decimals, balance = self.__intToIternalFormat(cur_amount)
-
-        self.__setDecimals(decimals)
-        self.__setBalance(balance)
-        return True
