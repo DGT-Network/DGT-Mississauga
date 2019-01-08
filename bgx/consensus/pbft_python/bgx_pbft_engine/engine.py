@@ -434,6 +434,7 @@ class PbftEngine(Engine):
                 break
 
             self._resolve_fork(block)
+        LOGGER.info('_process_pending_forks DONE')
 
     def _resolve_fork(self, block):
         chain_head = self._get_chain_head()
@@ -461,7 +462,7 @@ class PbftEngine(Engine):
         # make sure that bloock candidate is empty
         self._cancel_block()
         self.reset_loop_state()
-        self._process_pending_forks()
+        #self._process_pending_forks()
 
     def _handle_peer_connected(self, block):
         """
