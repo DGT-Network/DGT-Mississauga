@@ -82,6 +82,11 @@ def main(args=None):
     proto_dir = JOIN(TOP_DIR, "bgx/protos/families/smart_bgt")
     protoc(proto_dir, "bgx/families/bgt_python", "bgt_common/protobuf")
 
+    # new SW validator
+    proto_dir = JOIN(TOP_DIR, "protos-n")
+    protoc(proto_dir, "validator-n", "sawtooth_validator/protobuf")
+    #protoc(proto_dir, "validator", "sawtooth_validator/protobuf")
+
 
 def protoc(src_dir, base_dir, pkg, language="python"):
     if language == "python":

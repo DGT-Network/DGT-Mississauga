@@ -181,7 +181,7 @@ class PbftOracle:
                     return True   
                 else:
                     LOGGER.debug('PbftOracle: switch_forks FALSE blocks ID are the same')
-                    return True
+                    return False
 
 
         return False
@@ -347,19 +347,35 @@ class PbftOracle:
         LOGGER.warning("PbftOracle: IGNORE block_id=%s => state=%s",_short_id(block_id),state.step)
 
     def commit_block(self,state,block_id,env):
-        LOGGER.debug('PbftOracle: %s call commit_block',env)
+        LOGGER.debug('%s call commit_block',env)
         if state.unknown_block:
-            LOGGER.debug('PbftOracle: %s DONT TRY commit_block (UnknownBlock)\n',env)
+            LOGGER.debug('%s DONT TRY commit_block (UnknownBlock)\n',env)
             return
         elif not state.new_block:
-            LOGGER.debug('PbftOracle: %s SKIP call commit_block (FOR EXTERNAL BLOCK)\n',env)
+            LOGGER.debug('%s SKIP call commit_block (FOR EXTERNAL BLOCK)\n',env)
             return
         try:
             """
             Do commit only in case we have NEW BLOCK for this block
             if not we just help others node do his consensus
+            Check using 'summary' maybe there is another block with more id if so don't do commit for this block
             """
-            self._service.commit_block(block_id)
+            summary = state.summary
+            b_id = block_id.hex()
+            sstate = self.get_state_by_summary(summary,"INTO COMMIT_BLOCK")
+            commit = True
+            if sstate is not None:
+                # check previouse commits
+                LOGGER.debug('%s state for %s\n',env,_short_id(summary))
+                commit = sstate.try_commit(b_id)
+                sstate.set_consensus_state_for_block_id(summary,self._consensus_state_store)
+
+            if commit :
+                LOGGER.debug('%s do commit for %s\n',env,_short_id(b_id))
+                self._service.commit_block(block_id)
+            else:
+                LOGGER.debug('%s IGNORE commit for %s\n',env,_short_id(b_id))
+
         except UnknownBlock as err:
             LOGGER.debug('PbftOracle: %s commit_block UnknownBlock err=%s\n',env,err)
         except Exception as err:
@@ -374,7 +390,7 @@ class PbftOracle:
             bid = block.block_id
             summary = block.summary.hex()
             # get state for summary
-            s_state = self.get_state_by_summary(summary,"CHECK_BLOCK")
+            s_state = self.get_state_by_summary(summary,"INTO CHECK_BLOCK")
 
             if not state.new_block:
                 # take block id from summary because this is external block corresponding with internal block with same summary
@@ -394,7 +410,7 @@ class PbftOracle:
                         self._service.check_blocks([bid])
                         return False
 
-            if s_state is not None and s_state.block_valid:
+            if s_state is not None and s_state.block_valid(block_id):
                 # Already was checked
                 LOGGER.debug('%s ALREADY CHECKED block[%s]',env,_short_id(block_id))
                 return True
@@ -505,6 +521,12 @@ class PbftOracle:
                 state.next_step() # => Committing
                 self.set_consensus_state_for_block_id(block_id,state)
                 self._send_commit(state,block)
+                if state.commits:
+                    LOGGER.debug('PLINK in state Checking ALREADY HAS COMMIT!')
+                    state.next_step() # => Finished
+                    self.set_consensus_state_for_block_id(block_id,state)
+                    self.commit_block(state,block.block_id,'PLINK')
+
             else:
                  LOGGER.debug('PbftOracle: PLINK NOT BLOCK_VALID in state Checking IGNORE!')
 
@@ -631,6 +653,12 @@ class PbftOracle:
                 state.next_step() # => Committing
                 self.set_consensus_state_for_block_id(block_id,state)
                 self._send_commit(state,block)
+                if state.commits:
+                    # 
+                    LOGGER.debug('LEADER in state Checking ALREADY HAS COMMIT!')
+                    state.next_step() # => Finished
+                    self.set_consensus_state_for_block_id(block_id,state)
+                    self.commit_block(state,block.block_id,'LEADER')
 
             else:
                  LOGGER.debug('=> NOT BLOCK_VALID LEADER in state Checking IGNORE!')
@@ -731,6 +759,7 @@ class PbftOracle:
     def message_consensus_handler(self,msg_type,block):
         block_id = block.block_id.hex()
         summary  = block.summary.hex()
+        
         state = self.get_consensus_state_for_block_id(block,False)
 
         if state is None:
@@ -768,7 +797,8 @@ class PbftOracle:
             """
             estate = self.get_state_by_summary(state.summary,"BLOCK_VALID")
             if estate is not None:
-                estate.set_block_valid()
+                # add block_id into valid list
+                estate.set_block_valid(block_id)
                 estate.set_consensus_state_for_block_id(state.summary,self._consensus_state_store)
                 ext_block = estate.block
                 if ext_block is not None:
@@ -783,7 +813,13 @@ class PbftOracle:
                             # else check for own internal block too
                 else:
                     LOGGER.debug('There is not ext_block for state=%s ',estate)
-                
+        elif msg_type == PbftMessageInfo.COMMIT_MSG:
+            # save commit message 
+            signer_id = block.signer_id.hex()
+            state.add_committer(signer_id)
+            state.set_consensus_state_for_block_id(block_id,self._consensus_state_store)
+            LOGGER.debug('Save committer=%s for =%s',_short_id(signer_id),_short_id(block_id))
+
 
         self.consensus_handler(state,msg_type,block,block_id)
         return state.published

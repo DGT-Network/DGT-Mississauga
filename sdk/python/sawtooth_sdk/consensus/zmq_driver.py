@@ -61,8 +61,8 @@ class ZmqDriver(Driver):
                     name=self._engine.name(),
                     version=self._engine.version()),
                 startup_state)
-        except Exception:  # pylint: disable=broad-except
-            LOGGER.exception("Uncaught engine exception")
+        except Exception as ex:  # pylint: disable=broad-except
+            LOGGER.exception("Uncaught engine exception(%s)",ex)
 
         self.stop()
         driver_thread.join()

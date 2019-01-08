@@ -323,8 +323,8 @@ class PbftEngine(Engine):
                 """        
             
 
-            except Exception:  # pylint: disable=broad-except
-                LOGGER.exception("PbftEngine:Unhandled exception in message loop")
+            except Exception as ex:  # pylint: disable=broad-except
+                LOGGER.exception("PbftEngine:Unhandled exception in message loop (%s)",ex)
 
         LOGGER.debug('PbftEngine: start DONE')
 
@@ -446,7 +446,7 @@ class PbftEngine(Engine):
             # stop process _process_pending_forks()
             self._committing = True   
         else:
-            #LOGGER.info('Ignoring block=%s', _short_id(block.block_id.hex()))
+            LOGGER.info('Ignoring block=%s', _short_id(block.block_id.hex()))
             # mark block as ignored
             self._oracle.ignore_block(block)
 

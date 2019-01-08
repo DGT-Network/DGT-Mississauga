@@ -210,11 +210,14 @@ class ConsensusState:
         self._node = node if node else 'plink'
         self._block_id = None
         self._block = None
-        self._block_valid = False
+        self._block_valid = {}
         self._summary = 'None'
         self._unknown_block = False
         self._new_block = False
         self._wait_check = False
+        self._committers = {}
+        self._commits = 0
+        self._blocks = []
         #LOGGER.debug("ConsensusState: __init__ node=%s",self._node)
 
     def set_consensus_state_for_block_id(self,block_id,consensus_state_store):
@@ -261,8 +264,12 @@ class ConsensusState:
 
 
     @property
-    def block_valid(self):
-        return self._block_valid
+    def commits(self):
+        return self._commits
+
+
+    def block_valid(self,block_id):
+        return block_id in self._block_valid
 
 
     @property
@@ -318,10 +325,24 @@ class ConsensusState:
         """
         self._block_id = id
 
-    def set_block_valid(self):
-        self._block_valid = True
+    def set_block_valid(self,block_id):
+        
+        if block_id not in self._block_valid:
+            self._block_valid [block_id] = True
 
+    def add_committer(self,signer_id):
+        if signer_id not in self._committers:
+            self._committers [signer_id] = True
+            self._commits += 1
 
+    def try_commit(self,block_id):
+        self._blocks.append(block_id)
+        LOGGER.debug("try_commit blocks=[%s]",self._blocks)
+        for id in self._blocks:
+            if id > block_id:
+                return False
+        
+        return True
     def set_wait_check(self):
         self._wait_check = True
 
@@ -590,7 +611,10 @@ class ConsensusState:
             '_unknown_block' : self._unknown_block,
             '_new_block' : self._new_block,
             '_sequence_number': self._sequence_number,
-            '_validators': self._validators
+            '_validators': self._validators,
+            '_committers':self._committers,
+            '_commits': self._commits,
+            '_blocks': self._blocks
         }
         return cbor.dumps(self_dict)
 
@@ -630,6 +654,10 @@ class ConsensusState:
             self._unknown_block = self_dict['_unknown_block']
             self._new_block = self_dict['_new_block']
             self._wait_check = self_dict['_wait_check']
+            self._commits = self_dict['_commits']
+            self._committers = self_dict['_committers']
+            self._blocks = self_dict['_blocks']
+
             self._sequence_number = int(self_dict['_sequence_number'])
             self._aggregate_local_mean = float(self_dict['_aggregate_local_mean'])
             self._local_mean = None
