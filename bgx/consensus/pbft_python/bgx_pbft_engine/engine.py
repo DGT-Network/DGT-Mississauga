@@ -413,11 +413,11 @@ class PbftEngine(Engine):
 
 
     def _handle_valid_block(self, block_id):
-        LOGGER.info('=> VALID_BLOCK:Received id=%s\n', _short_id(block_id.hex()))
+        LOGGER.info('=> VALID_BLOCK:Received block_id=%s\n', _short_id(block_id.hex()))
         block = self._get_block(block_id)
-
-        self._pending_forks_to_resolve.push(block)
-        self._process_pending_forks()
+        self._resolve_fork(block)    
+        #self._pending_forks_to_resolve.push(block)
+        #self._process_pending_forks()
         # after pending_forks block could be ingored
         self._oracle.message_consensus_handler(Message.CONSENSUS_NOTIFY_BLOCK_VALID,block)
 
@@ -462,7 +462,7 @@ class PbftEngine(Engine):
         # make sure that bloock candidate is empty
         self._cancel_block()
         self.reset_loop_state()
-        #self._process_pending_forks()
+        #self._process_pending_forks() # FIXME - 
 
     def _handle_peer_connected(self, block):
         """
