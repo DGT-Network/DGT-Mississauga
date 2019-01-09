@@ -105,6 +105,7 @@ def _get_state_data(names, context):
         states = {}
         for entry  in state_entries:
             state = cbor.loads(entry.data)
+            LOGGER.debug('_get_state_data state=(%s)', state)
             for key, val in state.items():
                 LOGGER.debug('_get_state_data add=%s', key)
                 states[key] = val
