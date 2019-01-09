@@ -112,7 +112,8 @@ def _get_state_data(names, context):
     except IndexError:
         return {}
     except:
-        raise InternalError('Failed to load state data')
+        LOGGER.debug('_get_state_data: Failed to load state data')
+        raise InvalidTransaction('Failed to load state data')
 
 
 def _set_state_data(state, context):
