@@ -34,6 +34,7 @@ class EmissionMechanism:
         self.type = "BGX"
 
     def checkEthereum(self, bgt_amount, wallet_address, bgt_price, dec_price):
+        return True
         dec_amount = BGXlistener.balanceOf(wallet_address)
         return int(bgt_amount) * bgt_price <= dec_amount * dec_price
 
