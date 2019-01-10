@@ -68,7 +68,12 @@ class SmartBgtTransactionHandler(TransactionHandler):
             else:
                 state = _get_state_data([args['Name']], context)
 
-            updated_state = _do_smart_bgt(verb, args, state)
+            try:
+                updated_state = _do_smart_bgt(verb, args, state)
+            except InvalidTransaction as exc:
+                if not (verb == 'generate_key' or verb == 'balance_of' or verb == 'total_supply'):
+                    _set_state_data(state, context)
+                raise exc
 
             if not (verb == 'generate_key' or verb == 'balance_of' or verb == 'total_supply'):
                 _set_state_data(updated_state, context)
@@ -246,7 +251,7 @@ def _do_transfer(args, state):
         return updated
 
     if from_addr not in state:
-        # raise InvalidTransaction('Verb is "transfer" but name "{}" not in state'.format(from_addr))
+        raise InvalidTransaction('Verb is "transfer" but name "{}" not in state'.format(from_addr))
         LOGGER.debug("Sending tokens - address %s not registered", from_addr)
         return updated
 
