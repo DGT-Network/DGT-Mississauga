@@ -15,15 +15,6 @@
 import colorbrewer from 'colorbrewer';
 
 export function convertPeers(data) {
-  let parent_node = data.data.net_structure.parent_node;
-  const data2 = {
-      IP: parent_node.IP,
-      public_key: parent_node.public_key,
-      children: parent_node.children.map((j) => {
-        return {IP: j.IP,
-                size: 4000}
-      }),
-  };
   let r = [];
   convertNode(r, data.data.net_structure.parent_node );
   return {
@@ -52,9 +43,12 @@ function convertFilters(filters, d){
   })
   let colors = colorbrewer.Set3[count+5];
 
-  const t = colors[0];
-  colors[0] = colors[1];
-  colors[1] = t;
+  console.log('color', colors)
+
+  colors[1] = '#8dd3c7';
+  colors[0] = '#ffffb3';
+
+  console.log('color2', colors)
 
   let r = 0;
 
@@ -132,6 +126,7 @@ function convertNode(r, node, parent_node = null){
         'IP': node.IP,
       },
       filtered: false,
+      raw_data: node,
     });
 
   return r;

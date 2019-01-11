@@ -195,9 +195,9 @@ graph.data = cloneDeep(this.props.data);
         left   : 20
     };
 
-    var display = $(`#${this.props.id}-graph`).css('display');
     $(`#${this.props.id}-graph`)
-        .css('height', this.props.size.height + 'px');
+        .css('height', this.props.size.height + 'px')
+        .css('position', 'relative');
     graph.width  = this.props.size.width  - graph.margin.left - graph.margin.right;
     graph.height = this.props.size.height - graph.margin.top  - graph.margin.bottom;
 
@@ -618,7 +618,12 @@ graph.data = cloneDeep(this.props.data);
           bounds.y2 = box.y + box.height;
         })
       .attr('text-anchor', 'middle')
-      .attr('font-size', that.state.scale)
+      .attr('font-size', function(d) {
+          return  that.checkNodeSelected(d.IP) ? that.state.scale+1 : that.state.scale
+        })
+      .attr('font-weight', function(d) {
+          return   that.checkNodeSelected(d.IP) ? 'bold' : 'normal'
+        })
       .attr('display',  function(d){
         return that.checkNodeHidden(d.IP) ? 'none' : 'block'
       })
@@ -631,6 +636,7 @@ graph.data = cloneDeep(this.props.data);
         .classed('filter-enable', function(d){
           return !that.checkNodeFiltered(d)
         })
+
 
       var padding  = 5,
           margin   = 1
@@ -670,6 +676,9 @@ graph.data = cloneDeep(this.props.data);
         })
         .attr('stroke', function(d) {
           return  that.colorForDarker(d)
+        })
+        .attr('stroke-width', function(d) {
+          return   that.checkNodeSelected(d.IP) ? 3 : 1
         })
         .attr('fill', function(d) {
           return that.colorFor(d);
@@ -730,6 +739,10 @@ graph.data = cloneDeep(this.props.data);
     for (var i = 0; i < 50; i++) {
         graph.force.tick();
     }
+  }
+
+  checkNodeSelected(ip){
+    return ip == this.props.selectedPeerIP;
   }
 
   checkNodeIsCollapsed(ip){
@@ -805,10 +818,10 @@ graph.data = cloneDeep(this.props.data);
   colorFor(d) {
     const { selectedFilters, filters, selectedPeerIP } = this.props;
 
-    if (d.IP == selectedPeerIP)
-      return '#ffc107'
+    // if (d.IP == selectedPeerIP)
+    //   return '#ffc107'
 
-    else if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
+    if (null == selectedFilters || Object.keys(selectedFilters).length == 0 )
       return '#17a2b8';
 
     const key = Object.keys(selectedFilters)[0]
@@ -929,15 +942,15 @@ graph.data = cloneDeep(this.props.data);
 
   showTooltip(d){
     var div = d3.select(`#${this.props.id}-tooltip`)
-
     div.style("opacity", .9)
       .html(
           Object.keys(d.tooltip).map(key => {
               let s = isNaN(Number(key))  ?  `${key}: ` : ''
               return s + humanize(d.tooltip[key])
           }).reverse().join('<br/>'))
-      .style("left", d.x + 15 + "px")
-      .style("top", d.y - div.node().getBoundingClientRect().height + 90 +"px");
+
+      .style("left", d.x - this.state.scale + "px")
+      .style("top", d.y - div.node().getBoundingClientRect().height - this.state.scale + "px");
   }
 
   selectObject(obj) {
@@ -957,7 +970,7 @@ graph.data = cloneDeep(this.props.data);
 
   componentDidUpdate(prevProps, prevState) {
 
-    const { data, lastN } = this.props;
+    const { data, lastN, loading } = this.props;
 
     if (JSON.stringify(data) !== JSON.stringify(prevProps.data)) {
       this.drawGraph();
@@ -995,8 +1008,11 @@ graph.data = cloneDeep(this.props.data);
   }
 
   render() {
+    const {id, title, btns, loading, data, selectedPeerIP} = this.props;
+
     return(
-      <Card id={this.props.id} title={`${this.props.title} Graph`} btns = {this.props.btns}>
+      <Card id={id} title={`${title} Graph`} btns = {btns}
+        loading={loading}>
         <div className='search-panel float-right'>
           <div className='input-group mb-2'>
             <div className="input-group-prepend">
@@ -1006,7 +1022,7 @@ graph.data = cloneDeep(this.props.data);
             </div>
 
             <ReactAutocomplete
-              items={this.props.data}
+              items={data}
               shouldItemRender={(item, value) => item.IP.toLowerCase().indexOf(value.toLowerCase()) > -1}
               getItemValue={item => item.IP}
               renderItem={(item, highlighted) =>
@@ -1016,7 +1032,7 @@ graph.data = cloneDeep(this.props.data);
                   {item.IP}
                 </div>
               }
-              value={this.props.selectedPeerIP == null ? '' : this.props.selectedPeerIP}
+              value={selectedPeerIP == null ? '' : selectedPeerIP}
               onChange={e => this.props.onSelect( e.target.value)}
               onSelect={value => {this.props.onSelect(value); this.setState({ value })}}
             />
@@ -1027,9 +1043,9 @@ graph.data = cloneDeep(this.props.data);
           </div>
         </div>
         <div className='graphLayer'>
-          <div id={`${this.props.id}-container`}>
-            <div  id={`${this.props.id}-graph`}>
-              <div id={`{${this.props.id}-tooltip}`} />
+          <div id={`${id}-container`}>
+            <div  id={`${id}-graph`}>
+              <div id={`{${id}-tooltip}`} />
             </div>
           </div>
         </div>
@@ -1048,6 +1064,7 @@ Graph.defaultProps = {
   lastN: null,
   collapseBack: true,
   collapseFront: true,
+  loading: false,
 }
 
 export default Graph;

@@ -119,8 +119,6 @@ marker#end {
 }
 
 .node rect {
-    stroke-width: 1.5px;
-
     transition: opacity 250ms;
     -webkit-transition: opacity 250ms;
     -moz-transition: opacity 250ms;
@@ -238,6 +236,10 @@ opacity: 0;
 }
 
 .search-panel {
+  position: absolute;
+  right: 1.25rem;
+  z-index: 10;
+
   svg:first-child {
     margin-right: 10px;
   }

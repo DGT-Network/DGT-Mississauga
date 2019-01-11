@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import classNames from 'classnames/bind';
 import $ from 'jquery';
 
 class Card extends React.Component {
@@ -26,7 +27,6 @@ class Card extends React.Component {
 
   collapse(){
     this.setState({collapsed: !this.state.collapsed});
-    console.log('12213424', $(`#${this.props.id}`))
     $(`#${this.props.id}`).collapse('toggle')
   }
 
@@ -37,7 +37,7 @@ class Card extends React.Component {
 
 
   render() {
-    const {id, title, children, btns} = this.props;
+    const {id, title, children, btns, loading} = this.props;
 
     return (
       <div className="card">
@@ -67,7 +67,10 @@ class Card extends React.Component {
           </div>
         </div>
         <div id={id} className='card-body collapse show'>
-          {children}
+          <div className={classNames(loading ? 'd-block' : 'd-none', 'text-center text-muted')}>Loading...</div>
+          <div className={classNames(loading ? 'd-none' : 'd-block')}>
+            {children}
+          </div>
         </div>
       </div>
     );
@@ -76,6 +79,7 @@ class Card extends React.Component {
 
 Card.defaultProps = {
   btns: [],
+  loading: false,
 }
 
 

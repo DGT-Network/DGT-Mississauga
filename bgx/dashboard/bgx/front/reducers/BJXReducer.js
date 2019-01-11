@@ -20,6 +20,10 @@ import {
   GET_STATE,
   GET_STATES,
   GET_BLOCKS,
+  BLOCKS_LOADING,
+  STATES_LOADING,
+  TRANSACTIONS_LOADING,
+  PEERS_LOADING,
   FILTER_PEERS,
   SHOW_MODAL
 } from '../actions/actions'
@@ -32,6 +36,7 @@ const initialModalState = {
 
 const initialState = {
   data: [],
+  loading: false,
 }
 
 const initialPeersState = {
@@ -43,7 +48,13 @@ function stateReducer(state=initialState, action) {
   switch(action.type) {
     case GET_STATES:
       return Object.assign({}, state, {
-        data: action.data
+        data: action.data,
+        loading: false,
+      });
+
+    case STATES_LOADING:
+      return Object.assign({}, state, {
+        loading: true,
       });
 
     case GET_STATE:
@@ -61,7 +72,13 @@ function blocksReducer(state=initialState, action) {
   switch(action.type) {
     case GET_BLOCKS:
       return Object.assign({}, state, {
-        data: action.data
+        data: action.data,
+        loading: false,
+      });
+
+    case BLOCKS_LOADING:
+      return Object.assign({}, state, {
+        loading: true,
       });
 
       default:
@@ -74,7 +91,13 @@ function transactionReducer(state=initialState, action) {
   switch(action.type) {
     case GET_TRANSACTIONS:
       return Object.assign({}, state, {
-        data: action.data
+        data: action.data,
+        loading: false,
+      });
+
+    case TRANSACTIONS_LOADING:
+      return Object.assign({}, state, {
+        loading: true,
       });
 
       default:
@@ -87,7 +110,13 @@ function peersReducer(state=initialPeersState, action) {
   switch(action.type) {
     case GET_PEERS:
       return Object.assign({}, state, {
-        data: action.data
+        data: action.data,
+        loading: false,
+      });
+
+    case PEERS_LOADING:
+      return Object.assign({}, state, {
+        loading: true,
       });
 
       default:
