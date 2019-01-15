@@ -216,7 +216,6 @@ class PbftBlockPublisher(BlockPublisherInterface):
                 'pbft_public_key': pbft_public_key,
             }
         sealed_signup_data = base64.b64encode(dict2json(signup_data).encode()).decode('utf-8')
-
         """
         signup_info = SignupInfo.create_signup_info(
                 pbft_enclave_module=pbft_enclave_module,

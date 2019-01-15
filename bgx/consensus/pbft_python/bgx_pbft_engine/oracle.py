@@ -16,6 +16,7 @@
 import logging
 import os
 import binascii
+
 import json
 
 import sawtooth_signing as signing
@@ -61,6 +62,7 @@ class PbftOracle:
     This is a wrapper around the PBFT structures (publisher,verifier, fork resolver) and their attendant proxies.
     """
     CONSENSUS_MSG = ['PrePrepare','Prepare','Commit','CheckPoint']
+
     def __init__(self, service, component_endpoint,
                  config_dir, data_dir, key_dir):
         

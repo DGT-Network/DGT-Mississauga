@@ -72,7 +72,8 @@ class SmartBgtTransactionHandler(TransactionHandler):
                 updated_state = _do_smart_bgt(verb, args, state)
             except InvalidTransaction as exc:
                 if not (verb == 'generate_key' or verb == 'balance_of' or verb == 'total_supply'):
-                    _set_state_data(state, context)
+                    pass
+                    #_set_state_data(state, context)
                 raise exc
 
             if not (verb == 'generate_key' or verb == 'balance_of' or verb == 'total_supply'):
