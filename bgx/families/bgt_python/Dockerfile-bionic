@@ -50,7 +50,7 @@ ENV PATH=$PATH:/project/$BGX_TOP/bgx/bin:/project/$BGX_TOP/bin
 
 WORKDIR /project/$BGX_TOP
 
-RUN pip install asyncio-nats-client
+RUN pip3 install asyncio-nats-client
 
 CMD echo "\033[0;32m--- Building bgt-python ---\n\033[0m" \
  && bgx/bin/protogen \
