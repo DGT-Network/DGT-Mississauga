@@ -16,6 +16,7 @@
 import sys
 import argparse
 import pkg_resources
+import logging
 
 from sawtooth_sdk.processor.core import TransactionProcessor
 from sawtooth_sdk.processor.log import init_console_logging
@@ -25,8 +26,16 @@ from sawtooth_sdk.processor.config import get_log_dir
 from sawtooth_bgt.processor.handler import BgtTransactionHandler
 
 
-DISTRIBUTION_NAME = 'sawtooth-bgt'
+LOGGER = logging.getLogger(__name__)
+# testing NATS
+import asyncio
+from nats.aio.client import Client as NATS
+from nats.aio.errors import ErrConnectionClosed, ErrTimeout, ErrNoServers
+from sawtooth_sdk.protobuf.validator_pb2 import Message
+#
 
+DISTRIBUTION_NAME = 'sawtooth-bgt'
+_NATS_ = True
 
 def parse_args(args):
     parser = argparse.ArgumentParser(
@@ -56,6 +65,62 @@ def parse_args(args):
 
     return parser.parse_args(args)
 
+async def run(loop,nats):
+    nc = NATS()
+
+    try:
+        # Setting explicit list of servers in a cluster.
+        await nc.connect(servers=[nats], loop=loop)
+    except ErrNoServers as e:
+        LOGGER.debug("Cant connect err=%s",e)
+        return
+    LOGGER.debug("Connected '%s'",nats)
+
+    async def message_handler(msg):
+        subject = msg.subject
+        reply = msg.reply
+        data = msg.data.decode()
+        LOGGER.debug("message_handler subject='%s' reply='%s'",subject,reply)
+        for i in range(0, 20):
+            message = Message(
+                        correlation_id="XXX",
+                        content="ii={i}".format(i=i).encode(),
+                        message_type=Message.CLIENT_TRANSACTION_LIST_REQUEST)
+            val = "ii={i}".format(i=i).encode()
+            val1 = message.SerializeToString()
+            LOGGER.debug("message_handler val=%s val=%s",val,val1)
+            await nc.publish(reply,val1) 
+
+    await nc.subscribe("help.>", cb=message_handler)
+    LOGGER.debug("subscribe DONE")
+
+    async def request_handler(msg):
+        subject = msg.subject
+        reply = msg.reply
+        data = msg.data.decode()
+        LOGGER.debug("data=%s data=%s",type(data),data)
+        try:
+            message = Message()
+            mesg = message.ParseFromString(data)
+            LOGGER.debug("data=%s mesg=%s",type(data),type(mesg))
+            LOGGER.debug("Received a message on {subject} {reply}: {msg}".format(subject=subject,reply=reply,msg=data))
+        except Exception as e:
+            LOGGER.debug("Cant decode err=%s",e)
+    # Signal the server to stop sending messages after we got 10 already.
+    await nc.request("help.please", b'help', expected=11, cb=request_handler)
+
+    try:
+        # Flush connection to server, returns when all messages have been processed.
+        # It raises a timeout if roundtrip takes longer than 1 second.
+        await nc.flush(1)
+    except ErrTimeout:
+        LOGGER.debug("Flush timeout")
+
+    await asyncio.sleep(1, loop=loop)
+
+    # Drain gracefully closes the connection, allowing all subscribers to
+    # handle any pending messages inflight that the server may have sent.
+    await nc.drain()
 
 def main(args=None):
     if args is None:
@@ -84,11 +149,18 @@ def main(args=None):
         # The prefix should eventually be looked up from the
         # validator's namespace registry.
         
-        handler = BgtTransactionHandler()
-
-        processor.add_handler(handler)
         
-        processor.start()
+        if _NATS_:
+            LOGGER.debug("TESTING NATS CLIENT")
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(run(loop,"nats://nats:4222"))
+            loop.close()
+            LOGGER.debug("DONE TESTING NATS CLIENT")
+        else:
+            #processor = TransactionProcessor(url=opts.connect)
+            handler = BgtTransactionHandler()
+            processor.add_handler(handler)
+            processor.start()
         
     except KeyboardInterrupt:
         pass

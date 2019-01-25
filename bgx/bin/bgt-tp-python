@@ -26,6 +26,7 @@ TOP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.insert(0, os.path.join(TOP_DIR,'bgx', 'families', 'bgt_python'))
 sys.path.insert(0, os.path.join(TOP_DIR,'sdk', 'python'))
 sys.path.insert(0, os.path.join(TOP_DIR,'signing'))
+#sys.path.insert(0, os.path.join(TOP_DIR,'bgx','rest-api'))
 
 from sawtooth_bgt.processor.main import main
 
