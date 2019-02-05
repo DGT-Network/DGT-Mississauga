@@ -57,6 +57,24 @@ services:
     container_name: bgx-nats
     hostname: nats-server
 
+  orientdb:
+    image: broadinstitute/orientdb:2.1.0
+    networks: 
+     - network1
+    expose:
+      - "2424"
+      - "2480"
+    ports:
+      - "2424:2424"
+      - "2480:2480"
+    container_name: orientdb
+    environment:
+      ORIENTDB_ROOT_PASSWORD: 'foo'
+    volumes:
+      - /orientdb/config:/opt/orientdb/config
+      - /orientdb/databases:/opt/orientdb/databases
+      - /orientdb/backup:/opt/orientdb/backup
+
   bgt-tp-python:
     build:
       context: ../..
@@ -76,6 +94,8 @@ services:
     container_name: bgt-tp-python-bgx
     depends_on:
       - validator
+      - orientdb
+      - nats
     command: |
       bash -c "
         bgx/bin/protogen
