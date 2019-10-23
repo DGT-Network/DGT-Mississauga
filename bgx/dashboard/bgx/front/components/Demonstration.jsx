@@ -116,8 +116,9 @@ class Demonstration extends React.Component {
       command: 0,
       params: {},
       url: 0,
-      total: 25,
-      failed: 5,
+      total: 5,
+      failed: 1,
+      delay: 1,
       names: [Math.random().toString(36).substring(7), Math.random().toString(36).substring(7)]
 
     }
@@ -138,26 +139,25 @@ class Demonstration extends React.Component {
     const {family, names, url} = this.state;
 
     const commands = failed ? fails[family] : goods[family];
-
     const keys = Object.keys(commands).filter(k => commands[k].length > 0)
     const key = keys[Math.floor(Math.random()*keys.length)];
-
     const cmds = commands[key];
-    let cmd = cmds[Math.floor(Math.random()*cmds.length)];
 
+    let cmd = cmds[Math.floor(Math.random()*cmds.length)];
     cmd.args.wallet = names[Math.floor(Math.random()*names.length)];
 
-    return {...cmd.args, family: family, command: key, url: url};
+    return {...cmd.args, family: family, cmd: key, url: url};
   }
 
   initialTransactions() {
-    const {family, names} = this.state;
+    const {family, names, url} = this.state;
     let tr=[]
     for (let i = 0; i < 2; i++) {
       tr.push({
         family: family,
+        url: url,
         cmd: 'set',
-        vallet: names[i],
+        wallet: names[i],
         amount: 500,
       });
     }
@@ -175,9 +175,7 @@ class Demonstration extends React.Component {
     for (;i < total; i++)
       tr.push(this.transaction())
 
-
     this.runTransactions(tr, 0);
-
     return tr;
   }
 
@@ -185,7 +183,7 @@ class Demonstration extends React.Component {
     if (tr.length <= index) return
     this.props.onRun(tr[index]);
     console.log('index', index);
-    setTimeout(() => this.runTransactions(tr, ++index), 100);
+    setTimeout(() => this.runTransactions(tr, ++index), this.state.delay*1000);
   }
 
   familySelector() {
@@ -257,6 +255,16 @@ class Demonstration extends React.Component {
     )
   }
 
+  logs() {
+    const {logs} = this.props;
+    return (
+      <div className="log">
+        {
+          logs.map(l => {return <div>{l}</div>})
+        }
+      </div>)
+  }
+
   handleSubmit(e) {
     e.preventDefault();
     this.generateTransactions();
@@ -300,9 +308,9 @@ class Demonstration extends React.Component {
           <form onSubmit={(e) => this.handleSubmit(e)}>
             {this.familySelector()}
             {this.urlSelector()}
-            {this.commandSelector()}
             {this.configInputs()}
             <button type="submit" class="btn btn-secondary">Execute</button>
+            {this.logs()}
           </form>
 
           <Line data={data}
@@ -371,7 +379,8 @@ export default connect (
     receipt: state.batchesReducer.batch_link,
     urls: [state.blocksReducer.nodes.identity.IP].concat(state.blocksReducer.nodes.data.map(d => d.component).filter(dd => {return dd != null})),
     tfamilies: state.familiesReducer.data,
-    demoData: state.demoReducer.data
+    demoData: state.demoReducer.data,
+    logs: state.demoReducer.logs,
   }),
   dispatch => ({
     onLoadTxFamilies: () => loadTxFamilies(dispatch),

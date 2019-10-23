@@ -58,7 +58,8 @@ export const LOAD_TX_FAMILY = 'LOAD_TX_FAMILY';
 
 export const SHOW_MODAL = 'SHOW_MODAL';
 
-export const GET_RUN_DEMO = 'GET_RUN_DEMO'
+export const GET_RUN_DEMO = 'GET_RUN_DEMO';
+export const TO_LOG = 'TO_LOG';
 
 const local = false;
 
@@ -287,15 +288,22 @@ export function run(dispatch, params) {
 
 export function getRunDemoSuccess(dispatch, link) {
   if (local) {
-    if ('data' in link)
+    if ('data' in link) {
+      dispatch({type: TO_LOG, log: `Success from ${link}`})
       dispatch(getRunDemoStatusSuccess(link))
+    }
     else
       setTimeout(() => getRunDemoSuccess(dispatch, link), 500);
     return;
   }
 
   return axios.get(`${apiUrl}/run_statuses?link=${encodeURI(link)}`).then( response => {
-      dispatch(getRunDemoStatusSuccess(convertBatch(response.data)));
+    if ('data' in link) {
+      dispatch({type: TO_LOG, log: `Success from ${link}`})
+      dispatch(getRunDemoStatusSuccess(convertBatch(response.data)))
+    }
+    else
+      setTimeout(() => getRunDemoSuccess(dispatch, link), 500);
   })
   .catch(error => {
         alert(error);
@@ -305,11 +313,13 @@ export function getRunDemoSuccess(dispatch, link) {
 
 export function runDemo(dispatch, params) {
   if (local) {
+    dispatch({type: TO_LOG, log: `Run ${params.cmd} to ${params.url}`})
     getRunDemoSuccess(dispatch, linkData);
     return;
   }
 
   return axios.get(`${apiUrl}/run?${new URLSearchParams(params).toString()}`).then( response => {
+    dispatch({type: TO_LOG, log: `Run ${params.cmd} to ${params.url}`})
     getRunDemoSuccess(dispatch, response.data);
   })
   .catch(error => {

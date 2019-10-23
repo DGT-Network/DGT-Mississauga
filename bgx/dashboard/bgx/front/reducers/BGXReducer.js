@@ -44,6 +44,7 @@ import {
   LOAD_TX_FAMILY,
 
   GET_RUN_DEMO,
+  TO_LOG,
 
   PRINT_TOPOLOGY,
   PRINT_TRANSACTIONS,
@@ -62,6 +63,13 @@ const initialState = {
   data: [],
   loading: false,
 }
+
+const initialDemoState = {
+  data: [],
+  logs: [],
+  loading: false,
+}
+
 
 const initialBatches = {
   command: {},
@@ -139,13 +147,14 @@ function stateReducer(state=initialState, action) {
   return state;
 }
 
-function demoReducer(state=initialState, action) {
-  console.log('ddddd',action);
+function demoReducer(state=initialDemoState, action) {
   switch(action.type) {
     case GET_RUN_DEMO:
       return {...state, loading: false, data: [...state.data, {...action.data, date: Date.now()}]};
-      default:
-        return state;
+    case TO_LOG:
+      return {...state, logs: [...state.logs, `${new Date().toLocaleTimeString()}: ${action.log}`]};
+    default:
+      return state;
   }
   return state;
 }

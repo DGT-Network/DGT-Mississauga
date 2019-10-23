@@ -259,14 +259,23 @@ opacity: 0;
 
 
 @media print {
-    .web {
-     display: none;
-    }
-    .no-print {
-      display: none;
-    }
+  .web {
+   display: none;
+  }
 
-    .print {
-      display: block !important;
-    }
+  .no-print {
+    display: none;
+  }
+
+  .print {
+    display: block !important;
+  }
+}
+
+.log {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 5px;
+  height: 400px;
+  overflow: scroll;
+  margin-top: 20px;
 }

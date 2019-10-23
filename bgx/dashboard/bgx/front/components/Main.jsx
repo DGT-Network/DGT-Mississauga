@@ -235,7 +235,7 @@ class Main extends React.Component {
               <th>Signer Public Key</th>
             </tr>
             { this.props.batches.map(d => {
-              var date = new Date(d.timestamp*1000);
+              var date = new Date('timestamp' in d ? d.timestamp*1000 : 0);
               return <tr>
                 <td>{<Hash hash={d.header_signature}/>}</td>
                 <td>{d.header.transaction_ids.map(i => {return <div><Hash hash={i}/><br/></div>})}</td>
