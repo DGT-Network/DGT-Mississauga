@@ -14,7 +14,7 @@
 
 import axios from 'axios';
 import { nodes, transactions, states, state, blocks, topology,
-  dagNest, batches, reciept,link, linkData, tx_families  } from '../dummies'
+  dagNest, batches, reciept,linkLink, linkData, tx_families  } from '../dummies'
 
 import { convertPeers } from '../logic/peers'
 import { convertTransactions } from '../logic/transactions'
@@ -57,6 +57,8 @@ export const PRINT_JSON = 'PRINT_JSON';
 export const LOAD_TX_FAMILY = 'LOAD_TX_FAMILY';
 
 export const SHOW_MODAL = 'SHOW_MODAL';
+
+export const GET_RUN_DEMO = 'GET_RUN_DEMO'
 
 const local = false;
 
@@ -283,6 +285,40 @@ export function run(dispatch, params) {
   })
 }
 
+export function getRunDemoSuccess(dispatch, link) {
+  if (local) {
+    if ('data' in link)
+      dispatch(getRunDemoStatusSuccess(link))
+    else
+      setTimeout(() => getRunDemoSuccess(dispatch, link), 500);
+    return;
+  }
+
+  return axios.get(`${apiUrl}/run_statuses?link=${encodeURI(link)}`).then( response => {
+      dispatch(getRunDemoStatusSuccess(convertBatch(response.data)));
+  })
+  .catch(error => {
+        alert(error);
+    throw(error);
+  })
+}
+
+export function runDemo(dispatch, params) {
+  if (local) {
+    getRunDemoSuccess(dispatch, linkData);
+    return;
+  }
+
+  return axios.get(`${apiUrl}/run?${new URLSearchParams(params).toString()}`).then( response => {
+    getRunDemoSuccess(dispatch, response.data);
+  })
+  .catch(error => {
+        alert(error);
+    throw(error);
+  })
+}
+
+
 export function refreshLink(dispatch, link) {
   if (local) {
     dispatch(getRefreshSuccess(reciept))
@@ -438,6 +474,14 @@ function getRunSuccess(data) {
 function getRefreshSuccess(data) {
   return {
     type: GET_REFRESH,
+    loading: false,
+    data,
+    };
+}
+
+function getRunDemoStatusSuccess(data) {
+  return {
+    type: GET_RUN_DEMO,
     loading: false,
     data,
     };
