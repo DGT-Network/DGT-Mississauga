@@ -286,24 +286,25 @@ export function run(dispatch, params) {
   })
 }
 
-export function getRunDemoSuccess(dispatch, link) {
+export function getRunDemoSuccess(dispatch, data) {
+  console.log('data', data)
   if (local) {
-    if ('data' in link) {
+    if ('data' in data) {
       dispatch({type: TO_LOG, log: `Success from ${link}`})
       dispatch(getRunDemoStatusSuccess(link))
     }
     else
-      setTimeout(() => getRunDemoSuccess(dispatch, link), 500);
+      setTimeout(() => getRunDemoSuccess(dispatch, data.link), 500);
     return;
   }
 
-  return axios.get(`${apiUrl}/run_statuses?link=${encodeURI(link)}`).then( response => {
-    if ('data' in link) {
-      dispatch({type: TO_LOG, log: `Success from ${link}`})
+  return axios.get(`${apiUrl}/run_statuses?link=${encodeURI(data.link)}`).then( response => {
+    if ('data' in data) {
+      dispatch({type: TO_LOG, log: `Success from ${data.link}`})
       dispatch(getRunDemoStatusSuccess(convertBatch(response.data)))
     }
     else
-      setTimeout(() => getRunDemoSuccess(dispatch, link), 500);
+      setTimeout(() => getRunDemoSuccess(dispatch, data), 500);
   })
   .catch(error => {
         alert(error);
@@ -490,6 +491,7 @@ function getRefreshSuccess(data) {
 }
 
 function getRunDemoStatusSuccess(data) {
+  console.log('getRunDemoStatusSuccess', data )
   return {
     type: GET_RUN_DEMO,
     loading: false,
